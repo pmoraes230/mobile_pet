@@ -1,4 +1,5 @@
 import { View, Text, StyleSheet, Image } from "react-native";
+import { InputEmail } from "../components/inputs/inputEmail";
 
 export default function LoginApp() {
     return (
@@ -9,6 +10,11 @@ export default function LoginApp() {
                 resizeMode="contain"
             />
             <Text style={styles.text}>Login</Text>
+            <InputEmail
+                value=""
+                onChangeText={() => {}}
+                error={false}
+            />
         </View>
     )
 }
