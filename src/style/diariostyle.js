@@ -1,0 +1,211 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  scrollContent: {
+    padding: 18,
+    paddingTop: 15,
+    paddingBottom: 100,
+  },
+  headerdiario: {
+    display: 'none',
+  },
+  title: {
+    display: 'none',
+  },
+  subtitle: {
+    display: 'none',
+  },
+  // CARD DO GRÁFICO
+  chartCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+  },
+  chartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  chartTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#000',
+  },
+  petBadge: {
+    backgroundColor: '#E8D5F7',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  petBadgeText: {
+    color: '#7C3AED',
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  chartPlaceholder: {
+    height: 120,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#efefef',
+  },
+  // CARD ROXO DE REGISTRO
+  inputCard: {
+    backgroundColor: '#9127E1',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 25,
+  },
+  emojiRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  emojiBtn: {
+    width: 55,
+    height: 55,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emojiSelected: {
+    backgroundColor: 'rgba(255,255,255,0.4)',
+  },
+  labelWhite: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 11,
+    fontWeight: '700',
+    marginBottom: 8,
+    marginTop: 15,
+    letterSpacing: 0.5,
+  },
+  selectWhite: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    paddingHorizontal: 15,
+    marginBottom: 18,
+  },
+  inputWhite: {
+    backgroundColor: '#FFF',
+    borderRadius: 15,
+    padding: 14,
+    height: 90,
+    textAlignVertical: 'top',
+    color: '#333',
+    marginBottom: 18,
+  },
+  btnFull: {
+    backgroundColor: '#FFF',
+    height: 50,
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  btnFullText: {
+    color: '#7C3AED',
+    fontWeight: '700',
+    fontSize: 13,
+  },
+  // LISTA DE REGISTROS
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 12,
+    marginTop: 10,
+  },
+  historyCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 15,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  historyEmoji: {
+    fontSize: 24,
+    marginRight: 12,
+  },
+  historyInfo: {
+    flex: 1,
+  },
+  historyHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  historyName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#000',
+  },
+  historyDate: {
+    fontSize: 11,
+    color: '#999',
+    backgroundColor: '#f5f5f5',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
+  historyText: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 2,
+  },
+
+  headerContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 18,
+    paddingVertical: 15,
+    backgroundColor: '#f5f5f5',
+  },
+
+  voltarBtn: {
+    width: 45,
+    height: 45,
+    borderRadius: 12,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+  },
+
+  voltarIcon: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#000',
+  },
+
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+  },
+});

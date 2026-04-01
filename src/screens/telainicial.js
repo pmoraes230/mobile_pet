@@ -6,12 +6,46 @@ import {
   Text,
   SafeAreaView,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { styles } from '../style/telainicialstyle';
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
 
 export default function TelaInicial() {
+  const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('home');
+
+  const handleLogout = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
+
+  const handleCardPress = (cardId) => {
+    switch(cardId) {
+      case 1:
+        navigation.navigate('Agendamento');
+        break;
+      case 2:
+        navigation.navigate('Prontuario');
+        break;
+      case 3:
+        navigation.navigate('Diario');
+        break;
+      case 4:
+        navigation.navigate('MeusPets');
+        break;
+      case 5:
+        navigation.navigate('Cupidopet');
+        break;
+      case 6:
+        navigation.navigate('Adocao');
+        break;
+      default:
+        break;
+    }
+  };
 
   const cards = [
     {
@@ -23,9 +57,9 @@ export default function TelaInicial() {
     },
     {
       id: 2,
-      title: 'Relatórios de consultas.',
-      description: 'Acesse o relatório',
-      icon: '📊',
+      title: 'Prontuário',
+      description: 'Acesse o prontuário de seus pets.',
+      icon: '📋',
       color: '#E8D5F7',
     },
     {
@@ -44,17 +78,17 @@ export default function TelaInicial() {
     },
     {
       id: 5,
-      title: 'Tinder pet',
-      description: 'Faça o relatório semanal.',
+      title: 'cupidopet',
+      description: 'Faça o seu pet encontrar um novo parceiro.',
       icon: '💜',
       color: '#E8D5F7',
       badge: true,
     },
     {
       id: 6,
-      title: 'Prontuário',
-      description: 'Acesse o prontuário de seus pets.',
-      icon: '📋',
+      title: 'Adoção',
+      description: 'Adote um pet e dê uma nova chance.',
+      icon: '🐶',
       color: '#E8D5F7',
     },
   ];
@@ -76,6 +110,7 @@ export default function TelaInicial() {
                 key={card.id} 
                 style={styles.card}
                 activeOpacity={0.7}
+                onPress={() => handleCardPress(card.id)}
               >
                 {card.badge && <View style={styles.badge} />}
                 
@@ -91,7 +126,7 @@ export default function TelaInicial() {
         </ScrollView>
 
         {/* TAB BAR */}
-        <TabBar activeTab={activeTab} onTabPress={setActiveTab} />
+        <TabBar activeTab={activeTab} onTabPress={setActiveTab} onLogout={handleLogout} />
       </View>
     </SafeAreaView>
   );

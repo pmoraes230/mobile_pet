@@ -1,32 +1,134 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { styles } from './headerHomeStyle';
 
-export default function HeaderHome({ userName = 'Pedro' }) {
+export default function HeaderHome({ 
+  userName = 'Pedro', 
+  showSearch = true,
+  showBackButton = false,
+  onBackPress,
+  showNotifications = true,
+  showGreeting = true
+}) {
+  const [showNotifModal, setShowNotifModal] = useState(false);
+  const [notificationCount] = useState(3);
+
+  const notifications = [
+    {
+      id: 1,
+      title: 'Consulta Confirmada',
+      message: 'Sua consulta com o Dr. Silva foi confirmada para amanhã às 14h',
+      time: '2h atrás',
+      icon: '✓',
+      color: '#10B981'
+    },
+    {
+      id: 2,
+      title: 'Lembrete de Medicação',
+      message: 'Hora de dar o remédio para a Missy',
+      time: '5h atrás',
+      icon: '💊',
+      color: '#F59E0B'
+    },
+    {
+      id: 3,
+      title: 'Novo Recurso',
+      message: 'Confira o novo recurso de Tinder Pet!',
+      time: '1d atrás',
+      icon: '⭐',
+      color: '#8B5CF6'
+    },
+  ];
+
   return (
-    <View style={styles.container}>
-      {/* GREETING */}
-      <View style={styles.greetingContainer}>
-        <View>
-          <Text style={styles.greeting}>Olá {userName}</Text>
-          <Text style={styles.subGreeting}>Que você tenha um excelente atendimento!</Text>
+    <>
+      <View style={styles.container}>
+        {/* GREETING SECTION */}
+        <View style={styles.greetingContainer}>
+          <View style={styles.greetingLeft}>
+            {showBackButton ? (
+              <TouchableOpacity 
+                style={styles.backBtn}
+                onPress={onBackPress}
+              >
+                <Text style={styles.backIcon}>←</Text>
+              </TouchableOpacity>
+            ) : null}
+            {showGreeting && (
+              <View>
+                <Text style={styles.greeting}>
+                  {showBackButton ? 'Bem-vindo!' : `Olá ${userName}`}
+                </Text>
+                <Text style={styles.subGreeting}>
+                  {showBackButton ? `Olá, ${userName}` : 'Que você tenha um excelente atendimento!'}
+                </Text>
+              </View>
+            )}
+          </View>
+          {showNotifications && (
+            <TouchableOpacity 
+              style={styles.notificationBtn}
+              onPress={() => setShowNotifModal(true)}
+            >
+              <Text style={styles.notificationIcon}>🔔</Text>
+              {notificationCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{notificationCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          )}
         </View>
-        <TouchableOpacity style={styles.notificationBtn}>
-          <Text style={styles.notificationIcon}>🔔</Text>
-        </TouchableOpacity>
+
+        {/* SEARCH BAR */}
+        {showSearch && (
+          <View style={styles.searchContainer}>
+            <TextInput
+              placeholder="O que deseja procurar"
+              placeholderTextColor="#999"
+              style={styles.searchInput}
+            />
+            <TouchableOpacity style={styles.filterBtn}>
+              <Text style={styles.filterIcon}>⊕</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
-      {/* SEARCH BAR */}
-      <View style={styles.searchContainer}>
-        <TextInput
-          placeholder="O que deseja procurar"
-          placeholderTextColor="#999"
-          style={styles.searchInput}
-        />
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterIcon}>⊕</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      {/* MODAL DE NOTIFICAÇÕES */}
+      <Modal
+        visible={showNotifModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowNotifModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Notificações</Text>
+              <TouchableOpacity onPress={() => setShowNotifModal(false)}>
+                <Text style={styles.closeIcon}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView style={styles.notificationsList}>
+              {notifications.map((notif) => (
+                <TouchableOpacity key={notif.id} style={styles.notificationItem}>
+                  <View style={[styles.notifIcon, { backgroundColor: notif.color }]}>
+                    <Text style={styles.notifIconText}>{notif.icon}</Text>
+                  </View>
+                  <View style={styles.notifContent}>
+                    <Text style={styles.notifTitle}>{notif.title}</Text>
+                    <Text style={styles.notifMessage}>{notif.message}</Text>
+                    <Text style={styles.notifTime}>{notif.time}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
+
