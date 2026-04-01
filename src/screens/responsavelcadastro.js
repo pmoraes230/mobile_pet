@@ -126,7 +126,7 @@ export default function ResponsavelCadastro() {
       />
 
       {/* BOTÃO CADASTRAR */}
-      <TouchableOpacity style={styles.botao}>
+      <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Home')}>
         <Text style={styles.textoBotao}>Cadastrar</Text>
       </TouchableOpacity>
 

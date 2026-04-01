@@ -49,7 +49,7 @@ export default function ResponsavelLogin() {
       </TouchableOpacity>
 
       {/* BOTÃO ENTRAR */}
-      <TouchableOpacity style={styles.botao}>
+      <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Home')}>
         <Text style={styles.textoBotao}>Entrar</Text>
       </TouchableOpacity>
 
