@@ -1,7 +1,8 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import LoginApp from "./src/screens/loginApp";
+import ResponsavelLogin from "./src/screens/responsavellogin";
+import ResponsavelCadastro from "./src/screens/responsavelcadastro";
 import SplashApp from "./src/screens/spleshApp";
 
 const Stack = createNativeStackNavigator();
@@ -11,7 +12,8 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Splash" component={SplashApp} />
-        <Stack.Screen name="Login" component={LoginApp} />
+        <Stack.Screen name="Login" component={ResponsavelLogin} />
+        <Stack.Screen name="Cadastro" component={ResponsavelCadastro} />
       </Stack.Navigator>
     </NavigationContainer>
   );
