@@ -5,6 +5,7 @@ import ResponsavelLogin from "./src/screens/responsavellogin";
 import ResponsavelCadastro from "./src/screens/responsavelcadastro";
 import SplashApp from "./src/screens/spleshApp";
 import TelaInicial from "./src/screens/telainicial";
+import Mensagens from "./src/screens/mensagens";
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,7 @@ export default function App() {
         <Stack.Screen name="Login" component={ResponsavelLogin} />
         <Stack.Screen name="Cadastro" component={ResponsavelCadastro} />
         <Stack.Screen name="Home" component={TelaInicial} />
+        <Stack.Screen name="Mensagens" component={Mensagens} />
       </Stack.Navigator>
     </NavigationContainer>
   );

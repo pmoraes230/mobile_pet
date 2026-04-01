@@ -1,0 +1,120 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  sectionHeader: {
+    paddingHorizontal: 18,
+    paddingTop: 10,
+    marginBottom: 10,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#000',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#444',
+    marginTop: 4,
+    fontWeight: '600',
+  },
+  lista: {
+    flex: 1,
+    marginHorizontal: 10,
+  },
+  listaContent: {
+    paddingBottom: 110,
+  },
+  empty: {
+    color: '#999',
+    textAlign: 'center',
+    marginTop: 30,
+    fontSize: 16,
+  },
+  conversaCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 18,
+    padding: 12,
+    marginVertical: 6,
+    marginHorizontal: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  avatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    marginRight: 12,
+  },
+  conversaInfo: {
+    flex: 1,
+  },
+  conversaNome: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#222',
+  },
+  conversaSubtitulo: {
+    fontSize: 13,
+    color: '#777',
+    marginTop: 2,
+  },
+  verPerfilBtn: {
+    borderWidth: 1,
+    borderColor: '#7C3AED',
+    borderRadius: 999,
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+  },
+  verPerfilText: {
+    color: '#7C3AED',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  inputBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  input: {
+    flex: 1,
+    height: 44,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 22,
+    paddingHorizontal: 16,
+    fontSize: 14,
+    color: '#222',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  botaoEnviar: {
+    marginLeft: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#7C3AED',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconeEnviar: {
+    fontSize: 18,
+    color: 'white',
+    fontWeight: '700',
+  },
+});

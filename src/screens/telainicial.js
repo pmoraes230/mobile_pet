@@ -6,12 +6,19 @@ import {
   Text,
   SafeAreaView,
 } from 'react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { styles } from '../style/telainicialstyle';
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
 
 export default function TelaInicial() {
   const [activeTab, setActiveTab] = useState('home');
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setActiveTab('home');
+    }, [])
+  );
 
   const cards = [
     {
@@ -58,6 +65,15 @@ export default function TelaInicial() {
       color: '#E8D5F7',
     },
   ];
+
+  const navigation = useNavigation();
+
+  const handleTabPress = (tabId) => {
+    setActiveTab(tabId);
+    if (tabId === 'mensagens') {
+      navigation.navigate('Mensagens');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
