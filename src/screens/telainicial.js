@@ -99,12 +99,12 @@ export default function TelaInicial() {
     },
   ];
 
-  const navigation = useNavigation();
+  const navigate = useNavigation();
 
   const handleTabPress = (tabId) => {
     setActiveTab(tabId);
     if (tabId === 'mensagens') {
-      navigation.navigate('Mensagens');
+      navigate.navigate('Mensagens');
     }
   };
 

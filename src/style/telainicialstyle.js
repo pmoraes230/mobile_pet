@@ -7,13 +7,14 @@ export const styles = StyleSheet.create({
   },
 
   container: {
+    paddingTop: 35,
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
 
   scrollContent: {
     paddingHorizontal: 15,
-    paddingTop: 15,
+    paddingTop: 80,
     paddingBottom: 100,
   },
 

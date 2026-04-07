@@ -18,6 +18,8 @@ export default function TabBar({ activeTab = 'home', onTabPress, onLogout }) {
   const handleTabPress = (tabId) => {
     if (tabId === 'home') {
       navigation.navigate('Home');
+    } else if (tabId === 'mensagens') {
+      navigation.navigate('Mensagens');
     } else if (tabId === 'geral') {
       setShowSidebar(true);
     } else {

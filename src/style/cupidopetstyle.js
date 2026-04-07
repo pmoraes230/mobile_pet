@@ -4,6 +4,7 @@ const { width, height } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   safeArea: {
+    paddingTop: 35,
     flex: 1,
     backgroundColor: '#F0F5F9', // Fundo levemente azulado como no print
   },
