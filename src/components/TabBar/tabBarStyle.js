@@ -10,13 +10,14 @@ export const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
-    paddingBottom: 10,
+    paddingBottom: 20,
+    paddingTop: 8,
   },
 
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
 
   icon: {
@@ -25,7 +26,7 @@ export const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '500',
   },
 });

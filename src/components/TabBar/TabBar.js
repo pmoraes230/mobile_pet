@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from './tabBarStyle';
 import Sidebar from '../Sidebar/Sidebar';
 import { Home, Clipboard, Plus, Settings } from 'lucide-react-native';
 
 export default function TabBar({ activeTab = 'home', onTabPress, onLogout }) {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const [showSidebar, setShowSidebar] = useState(false);
 
   const tabs = [
@@ -30,7 +32,7 @@ export default function TabBar({ activeTab = 'home', onTabPress, onLogout }) {
 
   return (
     <>
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingBottom: Math.max(insets.bottom, 5) }]}>
         {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.id}
