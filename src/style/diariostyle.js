@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
   scrollContent: {
     padding: 18,
     paddingTop: 15,
-    paddingBottom: 100,
+    paddingBottom: 120,
   },
   headerdiario: {
     display: 'none',

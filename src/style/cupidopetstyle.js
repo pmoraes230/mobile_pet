@@ -13,7 +13,7 @@ export const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 120,
   },
   // HEADER: SEU PET ATIVO (Compactado para mobile)
   activePetHeader: {
