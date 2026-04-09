@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Image } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { styles } from './headerHomeStyle';
 import { Bell, Check, Pill, Star } from 'lucide-react-native';
 
@@ -9,8 +10,10 @@ export default function HeaderHome({
   showBackButton = false,
   onBackPress,
   showNotifications = true,
-  showGreeting = true
+  showGreeting = true,
+  userProfileImage = null
 }) {
+  const navigation = useNavigation();
   const [showNotifModal, setShowNotifModal] = useState(false);
   const [notificationCount] = useState(3);
 
@@ -67,17 +70,37 @@ export default function HeaderHome({
             )}
           </View>
           {showNotifications && (
-            <TouchableOpacity 
-              style={styles.notificationBtn}
-              onPress={() => setShowNotifModal(true)}
-            >
-              <Bell size={20} color="#333" />
-              {notificationCount > 0 && (
-                <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{notificationCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+            <View style={styles.rightContainer}>
+              <TouchableOpacity 
+                style={styles.notificationBtn}
+                onPress={() => setShowNotifModal(true)}
+              >
+                <Bell size={20} color="#333" />
+                {notificationCount > 0 && (
+                  <View style={styles.badge}>
+                    <Text style={styles.badgeText}>{notificationCount}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.profileBtn}
+                onPress={() => navigation.navigate('Configuracoes')}
+              >
+                {userProfileImage ? (
+                  <Image 
+                    source={{ uri: userProfileImage }} 
+                    style={styles.profileImage}
+                  />
+                ) : (
+                  <View style={styles.profilePlaceholder}>
+                    <Text style={styles.profileInitial}>
+                      {userName.charAt(0).toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
           )}
         </View>
 

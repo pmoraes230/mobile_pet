@@ -63,6 +63,43 @@ export const styles = StyleSheet.create({
     position: 'relative',
   },
 
+  rightContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+
+  profileBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#7C3AED',
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 19,
+  },
+
+  profilePlaceholder: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 19,
+    backgroundColor: '#7C3AED',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  profileInitial: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFF',
+  },
+
   notificationIcon: {
     fontSize: 18,
   },
