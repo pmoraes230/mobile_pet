@@ -12,6 +12,7 @@ import TelaMeusPets from "./src/screens/meuspets";
 import TelaProntuario from "./src/screens/prontuario";
 import TinderPet from "./src/screens/cupidopet";
 import TelaAdocao from "./src/screens/adocao";
+import Configuracoes from "./src/screens/configuracoes";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,7 @@ export default function App() {
         <Stack.Screen name="Adocao" component={TelaAdocao} />
         <Stack.Screen name="Home" component={TelaInicial} />
         <Stack.Screen name="Mensagens" component={Mensagens} />
+        <Stack.Screen name="Configuracoes" component={Configuracoes} />
       </Stack.Navigator>
     </NavigationContainer>
   );

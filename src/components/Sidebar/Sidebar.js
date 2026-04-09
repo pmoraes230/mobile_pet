@@ -1,18 +1,24 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { styles } from './sidebarStyle';
 
 export default function Sidebar({ visible, onClose, onLogout }) {
+  const navigation = useNavigation();
+
   const menuItems = [
     { id: 1, label: 'Meu Perfil', icon: '👤', color: '#4A90E2' },
-    { id: 2, label: 'Configurações', icon: '⚙️', color: '#7E869E' },
+    { id: 2, label: 'Configurações', icon: '⚙️', color: '#7E869E', route: 'Configuracoes' },
     { id: 3, label: 'Sair', icon: '🚪', color: '#EF4444', isLogout: true },
   ];
 
   const handlePress = (item) => {
     if (item.isLogout) {
       onLogout();
+    } else if (item.route) {
+      navigation.navigate(item.route);
     }
+
     onClose();
   };
 
