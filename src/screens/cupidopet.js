@@ -97,7 +97,23 @@ export default function TinderPet() {
                <PawPrint size={35} color="#FFF" />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnCircle}>
+            <TouchableOpacity 
+              style={styles.btnCircle}
+              onPress={() => navigation.navigate('PetDetail', {
+                petData: {
+                  name: 'Niça',
+                  breed: 'Branco',
+                  age: '11',
+                  weight: '-- kg',
+                  castrated: 'Não',
+                  description: 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
+                  personality: 'Nenhuma característica informada.',
+                  tutor: 'Rayan Rodrigues',
+                  tutorImage: 'https://placekitten.com/80/80',
+                  image: 'https://placekitten.com/400/600'
+                }
+              })}
+            >
               <Text style={styles.iconI}>i</Text>
             </TouchableOpacity>
           </View>
