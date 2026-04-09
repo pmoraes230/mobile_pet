@@ -56,9 +56,13 @@ export default function TelaMeusPets() {
             <Text style={styles.btnAddText}>Adicionar pet</Text>
           </TouchableOpacity>
 
-          {/* LISTA DE PETS */}
+          {/* LISTA DE PETS - AQUI FOI LIGADO */}
           {pets.map((pet) => (
-            <View key={pet.id} style={styles.petCard}>
+            <TouchableOpacity 
+              key={pet.id} 
+              style={styles.petCard}
+              onPress={() => navigation.navigate('detalhespet')} // Comando para ligar as telas
+            >
               
               {/* CONTAINER DA IMAGEM */}
               <View style={styles.imageContainer}>
@@ -82,7 +86,7 @@ export default function TelaMeusPets() {
                 </View>
               </View>
 
-            </View>
+            </TouchableOpacity>
           ))}
 
         </ScrollView>
