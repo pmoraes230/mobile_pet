@@ -8,6 +8,7 @@ import {
   SafeAreaView 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Frown, Meh, Smile } from 'lucide-react-native';
 import { styles } from '../style/diariostyle';
 import TabBar from '../components/TabBar/TabBar';
 import HeaderHome from '../components/Header/HeaderHome';
@@ -25,9 +26,9 @@ export default function TelaDiario() {
   };
 
   const registros = [
-    { id: 1, pet: 'Missy', data: '12/03 • 17:21', relato: 'se sentiu sozinho', emoji: '😢' },
-    { id: 2, pet: 'Missy', data: '12/03 • 16:46', relato: 'acordou muito feliz', emoji: '😊' },
-    { id: 3, pet: 'Missy', data: '12/03 • 16:39', relato: 'ficou triste sem a comida', emoji: '😟' },
+    { id: 1, pet: 'Missy', data: '12/03 • 17:21', relato: 'se sentiu sozinho', icon: Frown },
+    { id: 2, pet: 'Missy', data: '12/03 • 16:46', relato: 'acordou muito feliz', icon: Smile },
+    { id: 3, pet: 'Missy', data: '12/03 • 16:39', relato: 'ficou triste sem a comida', icon: Frown },
   ];
 
   return (
@@ -58,19 +59,19 @@ export default function TelaDiario() {
               style={[styles.emojiBtn, mood === 'sad' && styles.emojiSelected]} 
               onPress={() => setMood('sad')}
             >
-              <Text style={{fontSize: 30}}>😢</Text>
+              <Frown size={30} color={mood === 'sad' ? '#FFF' : '#A0A7BA'} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.emojiBtn, mood === 'neutral' && styles.emojiSelected]} 
               onPress={() => setMood('neutral')}
             >
-              <Text style={{fontSize: 30}}>😐</Text>
+              <Meh size={30} color={mood === 'neutral' ? '#FFF' : '#A0A7BA'} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={[styles.emojiBtn, mood === 'happy' && styles.emojiSelected]} 
               onPress={() => setMood('happy')}
             >
-              <Text style={{fontSize: 30}}>😊</Text>
+              <Smile size={30} color={mood === 'happy' ? '#FFF' : '#A0A7BA'} />
             </TouchableOpacity>
           </View>
 
@@ -96,7 +97,7 @@ export default function TelaDiario() {
         <Text style={styles.sectionTitle}>Registros recentes</Text>
         {registros.map((item) => (
           <View key={item.id} style={styles.historyCard}>
-            <Text style={styles.historyEmoji}>{item.emoji}</Text>
+            <item.icon size={20} color="#A0A7BA" />
             <View style={styles.historyInfo}>
               <View style={styles.historyHeader}>
                 <Text style={styles.historyName}>{item.pet}</Text>

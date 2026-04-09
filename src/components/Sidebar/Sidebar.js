@@ -2,14 +2,15 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './sidebarStyle';
+import { User, Settings, LogOut } from 'lucide-react-native';
 
 export default function Sidebar({ visible, onClose, onLogout }) {
   const navigation = useNavigation();
 
   const menuItems = [
-    { id: 1, label: 'Meu Perfil', icon: '👤', color: '#4A90E2' },
-    { id: 2, label: 'Configurações', icon: '⚙️', color: '#7E869E', route: 'Configuracoes' },
-    { id: 3, label: 'Sair', icon: '🚪', color: '#EF4444', isLogout: true },
+    { id: 1, label: 'Meu Perfil', icon: User, color: '#4A90E2' },
+    { id: 2, label: 'Configurações', icon: Settings, color: '#7E869E' },
+    { id: 3, label: 'Sair', icon: LogOut, color: '#EF4444', isLogout: true },
   ];
 
   const handlePress = (item) => {
@@ -55,9 +56,7 @@ export default function Sidebar({ visible, onClose, onLogout }) {
                 ]}
                 onPress={() => handlePress(item)}
               >
-                <Text style={[styles.menuIcon, { color: item.color }]}>
-                  {item.icon}
-                </Text>
+                <item.icon size={20} color={item.color} />
                 <Text style={[styles.menuLabel, item.isLogout && styles.menuLabelLogout]}>
                   {item.label}
                 </Text>
