@@ -14,6 +14,7 @@ import TinderPet from "./src/screens/cupidopet";
 import TelaAdocao from "./src/screens/adocao";
 import Configuracoes from "./src/screens/configuracoes";
 import PetDetail from "./src/screens/petDetail";
+import detalhespet from "./src/screens/detalhespet";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,7 @@ export default function App() {
         <Stack.Screen name="detalhespet" component={detalhespet} />
         <Stack.Screen name="Prontuario" component={TelaProntuario} />
         <Stack.Screen name="Cupidopet" component={TinderPet} />
+        <Stack.Screen name="PetDetail" component={PetDetail} />
         <Stack.Screen name="Adocao" component={TelaAdocao} />
         <Stack.Screen name="Home" component={TelaInicial} />
         <Stack.Screen name="Mensagens" component={Mensagens} />
