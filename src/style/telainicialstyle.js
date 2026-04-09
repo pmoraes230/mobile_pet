@@ -14,7 +14,7 @@ export const styles = StyleSheet.create({
 
   scrollContent: {
     paddingHorizontal: 15,
-    paddingTop: 80,
+    paddingTop: 8,
     paddingBottom: 100,
   },
 
@@ -73,5 +73,39 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: '#808080',
     lineHeight: 17,
+  },
+
+  appointmentCard: {
+    backgroundColor: '#A855F7',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+
+  appointmentTitle: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: 'rgba(255, 255, 255, 0.85)',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
+  appointmentMain: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: 'white',
+    marginBottom: 8,
+  },
+
+  appointmentSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.8)',
+    lineHeight: 18,
   },
 });

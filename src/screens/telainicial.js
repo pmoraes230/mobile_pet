@@ -120,6 +120,13 @@ export default function TelaInicial() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContent}
         >
+          {/* PRÓXIMO COMPROMISSO CARD */}
+          <View style={styles.appointmentCard}>
+            <Text style={styles.appointmentTitle}>Próximo Compromisso</Text>
+            <Text style={styles.appointmentMain}>Sem agendamentos</Text>
+            <Text style={styles.appointmentSubtitle}>Tudo tranquilo por enquanto.</Text>
+          </View>
+
           <View style={styles.gridContainer}>
             {cards.map((card) => (
               <TouchableOpacity 

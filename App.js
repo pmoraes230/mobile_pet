@@ -13,7 +13,7 @@ import TelaProntuario from "./src/screens/prontuario";
 import TinderPet from "./src/screens/cupidopet";
 import TelaAdocao from "./src/screens/adocao";
 import Configuracoes from "./src/screens/configuracoes";
-import detalhespet from "./src/screens/detalhespet"; // 1. ADICIONE ESTE IMPORT
+import PetDetail from "./src/screens/petDetail";
 
 const Stack = createNativeStackNavigator();
 
