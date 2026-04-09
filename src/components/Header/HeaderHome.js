@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView } from 'react-native';
 import { styles } from './headerHomeStyle';
+import { Bell, Check, Pill, Star } from 'lucide-react-native';
 
 export default function HeaderHome({ 
   userName = 'Pedro', 
@@ -19,7 +20,7 @@ export default function HeaderHome({
       title: 'Consulta Confirmada',
       message: 'Sua consulta com o Dr. Silva foi confirmada para amanhã às 14h',
       time: '2h atrás',
-      icon: '✓',
+      icon: Check,
       color: '#10B981'
     },
     {
@@ -27,7 +28,7 @@ export default function HeaderHome({
       title: 'Lembrete de Medicação',
       message: 'Hora de dar o remédio para a Missy',
       time: '5h atrás',
-      icon: '💊',
+      icon: Pill,
       color: '#F59E0B'
     },
     {
@@ -35,7 +36,7 @@ export default function HeaderHome({
       title: 'Novo Recurso',
       message: 'Confira o novo recurso de Tinder Pet!',
       time: '1d atrás',
-      icon: '⭐',
+      icon: Star,
       color: '#8B5CF6'
     },
   ];
@@ -70,7 +71,7 @@ export default function HeaderHome({
               style={styles.notificationBtn}
               onPress={() => setShowNotifModal(true)}
             >
-              <Text style={styles.notificationIcon}>🔔</Text>
+              <Bell size={20} color="#333" />
               {notificationCount > 0 && (
                 <View style={styles.badge}>
                   <Text style={styles.badgeText}>{notificationCount}</Text>
@@ -115,7 +116,7 @@ export default function HeaderHome({
               {notifications.map((notif) => (
                 <TouchableOpacity key={notif.id} style={styles.notificationItem}>
                   <View style={[styles.notifIcon, { backgroundColor: notif.color }]}>
-                    <Text style={styles.notifIconText}>{notif.icon}</Text>
+                    <notif.icon size={16} color="white" />
                   </View>
                   <View style={styles.notifContent}>
                     <Text style={styles.notifTitle}>{notif.title}</Text>

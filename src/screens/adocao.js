@@ -8,6 +8,7 @@ import {
   SafeAreaView 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Search, Megaphone, User } from 'lucide-react-native';
 import { styles } from '../style/adocaostyle';
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
@@ -61,7 +62,10 @@ export default function TelaAdocao() {
           </TouchableOpacity>
 
           {/* SEUS PETS EM ANÚNCIO */}
-          <Text style={styles.sectionLabel}>📢 Seus Pets em Anúncio</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+            <Megaphone size={16} color="#333" />
+            <Text style={styles.sectionLabel}> Seus Pets em Anúncio</Text>
+          </View>
           <View style={styles.emptyBox}>
             <Text style={styles.emptyText}>Você não tem nenhum pet anunciado no momento.</Text>
           </View>
@@ -73,7 +77,10 @@ export default function TelaAdocao() {
             <View style={styles.line} />
           </View>
 
-          <Text style={[styles.sectionLabel, {marginBottom: 20}]}>🔍 Pets esperando por um lar</Text>
+          <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 20}}>
+            <Search size={16} color="#333" />
+            <Text style={styles.sectionLabel}> Pets esperando por um lar</Text>
+          </View>
 
           {/* GRID DE PETS PARA ADOÇÃO */}
           <View style={styles.grid}>
@@ -85,7 +92,7 @@ export default function TelaAdocao() {
                 <Text style={styles.petInfo}>{pet.info}</Text>
 
                 <View style={styles.tutorRow}>
-                  <Text style={{fontSize: 10}}>👤</Text>
+                  <User size={10} color="#333" />
                   <Text style={styles.tutorText}>Tutor: {pet.tutor}</Text>
                 </View>
 

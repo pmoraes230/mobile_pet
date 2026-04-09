@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from '../style/prontuariostyle';
+import { Folder } from 'lucide-react-native';
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
 
@@ -56,7 +57,7 @@ export default function TelaProntuario() {
 
             {/* ESTADO VAZIO (EMPTY STATE) IGUAL AO PRINT */}
             <View style={styles.emptyStateContainer}>
-              <Text style={styles.emptyIcon}>📁</Text> 
+              <Folder size={40} color="#A0A7BA" />
               <Text style={styles.emptyTitle}>Nenhum registro disponível</Text>
               <Text style={styles.emptySubtitle}>
                 Selecione outro pet ou aguarde registros futuros.

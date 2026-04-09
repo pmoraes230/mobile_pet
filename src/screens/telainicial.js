@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { styles } from '../style/telainicialstyle';
+import { Calendar, Clipboard, BookOpen, PawPrint, Heart, Dog } from 'lucide-react-native';
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
 
@@ -58,35 +59,35 @@ export default function TelaInicial() {
       id: 1,
       title: 'Agendamento',
       description: 'Acesse o Agendamento de Consultas.',
-      icon: '📅',
+      icon: Calendar,
       color: '#E8D5F7',
     },
     {
       id: 2,
       title: 'Prontuário',
       description: 'Acesse o prontuário de seus pets.',
-      icon: '📋',
+      icon: Clipboard,
       color: '#E8D5F7',
     },
     {
       id: 3,
       title: 'Diário emocional',
       description: 'Registre o diário.',
-      icon: '📓',
+      icon: BookOpen,
       color: '#E8D5F7',
     },
     {
       id: 4,
       title: 'Meus pets',
       description: 'Acesse seus pets.',
-      icon: '🐾',
+      icon: PawPrint,
       color: '#E8D5F7',
     },
     {
       id: 5,
       title: 'cupidopet',
       description: 'Faça o seu pet encontrar um novo parceiro.',
-      icon: '💜',
+      icon: Heart,
       color: '#E8D5F7',
       badge: true,
     },
@@ -94,7 +95,7 @@ export default function TelaInicial() {
       id: 6,
       title: 'Adoção',
       description: 'Adote um pet e dê uma nova chance.',
-      icon: '🐶',
+      icon: Dog,
       color: '#E8D5F7',
     },
   ];
@@ -130,7 +131,7 @@ export default function TelaInicial() {
                 {card.badge && <View style={styles.badge} />}
                 
                 <View style={[styles.iconContainer, { backgroundColor: card.color }]}>
-                  <Text style={styles.cardIcon}>{card.icon}</Text>
+                  <card.icon size={24} color="#333" />
                 </View>
                 
                 <Text style={styles.cardTitle}>{card.title}</Text>

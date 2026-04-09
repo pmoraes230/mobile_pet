@@ -8,6 +8,7 @@ import {
   ScrollView 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { PawPrint, RefreshCw } from 'lucide-react-native';
 import { styles } from '../style/cupidopetstyle';
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
@@ -41,12 +42,21 @@ export default function TinderPet() {
             <View style={styles.activePetInfo}>
               <Text style={styles.activePetName}>Missy</Text>
               <View style={styles.statsRow}>
-                <Text style={styles.statBadge}>👃 6 Cheiradas</Text>
-                <Text style={styles.statBadge}>🐾 1 Petch</Text>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <PawPrint size={12} color="#FFF" />
+                  <Text style={styles.statBadge}> 6 Cheiradas</Text>
+                </View>
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <PawPrint size={12} color="#FFF" />
+                  <Text style={styles.statBadge}> 1 Petch</Text>
+                </View>
               </View>
             </View>
             <TouchableOpacity style={styles.btnTrocar}>
-              <Text style={{fontSize: 10, fontWeight: 'bold', color: '#0D214F'}}>🔄 Trocar</Text>
+              <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <RefreshCw size={10} color="#0D214F" />
+                <Text style={{fontSize: 10, fontWeight: 'bold', color: '#0D214F'}}> Trocar</Text>
+              </View>
             </TouchableOpacity>
           </View>
 
@@ -84,7 +94,7 @@ export default function TinderPet() {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.btnMain}>
-               <Text style={{fontSize: 35}}>🐾</Text>
+               <PawPrint size={35} color="#FFF" />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.btnCircle}>
