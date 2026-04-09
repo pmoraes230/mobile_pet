@@ -15,7 +15,7 @@ import TelaAdocao from "./src/screens/adocao";
 import Configuracoes from "./src/screens/configuracoes";
 import PetDetail from "./src/screens/petDetail";
 import detalhespet from "./src/screens/detalhespet";
-
+import ChatPrivado from "./src/screens/chatprivado"; // Crie este arquivo
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -36,6 +36,7 @@ export default function App() {
         <Stack.Screen name="Home" component={TelaInicial} />
         <Stack.Screen name="Mensagens" component={Mensagens} />
         <Stack.Screen name="Configuracoes" component={Configuracoes} />
+        <Stack.Screen name="ChatPrivado" component={ChatPrivado} />
         
       </Stack.Navigator>
     </NavigationContainer>

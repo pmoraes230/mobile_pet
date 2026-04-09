@@ -18,18 +18,33 @@ export const styles = StyleSheet.create({
     paddingBottom: 100,
   },
 
+  // CARD ROXO (Ocupa 100% da largura interna)
+  appointmentCard: {
+    backgroundColor: '#A855F7',
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+    width: '100%', // Garante que use a largura toda
+  },
+
+  // GRADE DE CARDS (O segredo para desentortar está aqui)
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 12,
+    justifyContent: 'space-between', // Alinha os cards com as bordas do card roxo
   },
 
   card: {
-    width: '45%',
+    width: '48%', // Ajustado para que 2 cards + o espaço entre eles ocupem 100%
     backgroundColor: 'white',
     borderRadius: 18,
     padding: 18,
+    marginBottom: 15, // Espaço entre as linhas da grade
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
@@ -73,18 +88,6 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: '#808080',
     lineHeight: 17,
-  },
-
-  appointmentCard: {
-    backgroundColor: '#A855F7',
-    borderRadius: 24,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
   },
 
   appointmentTitle: {
