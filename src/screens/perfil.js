@@ -1,8 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, SafeAreaView, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Mail, Phone, ShieldCheck, PawPrint, Edit3, Lock, LogOut } from 'lucide-react-native';
+
+// IMPORTAÇÕES CORRIGIDAS
+import HeaderHome from '../components/Header/HeaderHome';
+import TabBar from '../components/TabBar/TabBar';
 import { styles } from '../style/perfilstyle';
-import { Mail, Phone, MapPin, ShieldCheck, PawPrint, Edit } from 'lucide-react-native';
 
 export default function Perfil() {
   const navigation = useNavigation();
@@ -16,7 +20,19 @@ export default function Perfil() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      
+      {/* 1. HEADER FIXO NO TOPO */}
+      <HeaderHome 
+        userName="Luiza Ferreira" 
+        showSearch={false} 
+        showBackButton={true} 
+        showGreeting={false} 
+        onBackPress={() => navigation.goBack()} 
+      />
+
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        
+        {/* CARD PERFIL PRINCIPAL */}
         <View style={styles.profileTopCard}>
           <View style={styles.profileRow}>
             <View style={styles.avatarWrapper}>
@@ -34,11 +50,11 @@ export default function Perfil() {
               <Text style={styles.memberText}>Membro Ativo</Text>
               <View style={styles.contactRow}>
                 <View style={styles.contactItem}>
-                  <Mail size={16} color="#8b5cf6" />
+                  <Mail size={14} color="#9127E1" />
                   <Text style={styles.contactText}>luiza@gmail.com</Text>
                 </View>
                 <View style={styles.contactItem}>
-                  <Phone size={16} color="#8b5cf6" />
+                  <Phone size={14} color="#9127E1" />
                   <Text style={styles.contactText}>Não informado</Text>
                 </View>
               </View>
@@ -46,17 +62,16 @@ export default function Perfil() {
           </View>
 
           <TouchableOpacity style={styles.editButton} activeOpacity={0.8} onPress={() => navigation.navigate('EditarPerfil')}>
-            <Edit size={16} color="#fff" />
-            <Text style={styles.editButtonText}>EDITAR</Text>
+            <Edit3 size={16} color="#fff" />
+            <Text style={styles.editButtonText}>EDITAR PERFIL</Text>
           </TouchableOpacity>
         </View>
 
+        {/* SEÇÕES DE DADOS */}
         <View style={styles.sectionRow}>
           <View style={styles.card}>
             <View style={styles.sectionHeader}>
-              <View style={styles.iconCircle}>
-                <ShieldCheck size={18} color="#7c3aed" />
-              </View>
+              <View style={styles.iconCircle}><ShieldCheck size={20} color="#9127E1" /></View>
               <Text style={styles.cardTitle}>Dados Pessoais</Text>
             </View>
             <View style={styles.detailRow}>
@@ -69,37 +84,32 @@ export default function Perfil() {
             </View>
             <View style={styles.detailRow}>
               <Text style={styles.detailLabel}>Endereço registrado</Text>
-              <Text style={styles.detailValue}>we 33 - 1021</Text>
+              <Text style={styles.detailValue}>WE 33 - 1021</Text>
             </View>
           </View>
 
           <View style={styles.card}> 
             <View style={styles.sectionHeader}>
-              <View style={styles.iconCirclePet}>
-                <PawPrint size={18} color="#0f766e" />
-              </View>
+              <View style={[styles.iconCircle, {backgroundColor: '#E6FFFA'}]}><PawPrint size={20} color="#00D7C4" /></View>
               <Text style={styles.cardTitle}>Meus Pets</Text>
             </View>
             <View style={styles.petItem}>
-              <View style={styles.petAvatar}>
-                <Text style={styles.petInitial}>M</Text>
-              </View>
-              <View style={styles.petInfo}>
-                <Text style={styles.petName}>Missy</Text>
-                <Text style={styles.petBreed}>Preta</Text>
+              <View style={styles.petAvatar}><Text style={styles.petInitial}>M</Text></View>
+              <View style={{marginLeft: 12}}>
+                <Text style={{fontWeight: 'bold', color: '#0D214F'}}>Missy</Text>
+                <Text style={{fontSize: 12, color: '#7E869E'}}>Preta</Text>
               </View>
             </View>
-            <TouchableOpacity style={styles.viewAllButton} activeOpacity={0.8} onPress={() => navigation.navigate('MeusPets')}>
-              <Text style={styles.viewAllText}>VER TODOS →</Text>
+            <TouchableOpacity style={styles.viewAllButton} onPress={() => navigation.navigate('MeusPets')}>
+              <Text style={styles.viewAllText}>VER TODOS OS PETS →</Text>
             </TouchableOpacity>
           </View>
         </View>
 
+        {/* PRIVACIDADE */}
         <View style={styles.bottomCard}>
           <View style={styles.sectionHeader}>
-            <View style={styles.iconCircle}>
-              <ShieldCheck size={18} color="#f97316" />
-            </View>
+            <View style={[styles.iconCircle, {backgroundColor: '#FFF4EE'}]}><Lock size={20} color="#FF7A2F" /></View>
             <Text style={styles.cardTitle}>Privacidade e Acesso</Text>
           </View>
           <Text style={styles.bottomText}>Gerencie o seu acesso, senha e segurança da conta.</Text>
@@ -108,11 +118,16 @@ export default function Perfil() {
               <Text style={styles.secondaryButtonText}>ALTERAR SENHA</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.primaryButton} activeOpacity={0.8} onPress={handleLogout}>
-              <Text style={styles.primaryButtonText}>DESCONECTAR</Text>
+              <Text style={styles.primaryButtonText}>SAIR DA CONTA</Text>
             </TouchableOpacity>
           </View>
         </View>
+
       </ScrollView>
+
+      {/* 2. TAB BAR FIXA NA BASE */}
+      <TabBar onLogout={handleLogout} />
+
     </SafeAreaView>
   );
 }

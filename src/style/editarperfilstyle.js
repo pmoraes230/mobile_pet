@@ -5,9 +5,11 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  // AJUSTE DE ESPAÇAMENTO DO HEADER E TABBAR
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 15,         // Distância ideal abaixo do Header
+    paddingBottom: 130,     // Garante que o botão de Salvar não fique embaixo da TabBar
   },
   headerRow: {
     flexDirection: 'row',
@@ -69,7 +71,7 @@ export const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 12,
-    backgroundColor: '#7c3aed',
+    backgroundColor: '#9127E1', // Roxo do seu site
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -105,7 +107,7 @@ export const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 14,
-    backgroundColor: '#ede9fe',
+    backgroundColor: '#F5E6FF',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -169,7 +171,7 @@ export const styles = StyleSheet.create({
     marginBottom: 16,
   },
   newContactText: {
-    color: '#7c3aed',
+    color: '#9127E1',
     fontWeight: '700',
     fontSize: 12,
   },
@@ -230,18 +232,18 @@ export const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: '#eef2ff',
+    backgroundColor: '#F3F5F9',
     borderRadius: 18,
     paddingVertical: 16,
     alignItems: 'center',
   },
   cancelText: {
-    color: '#1d4ed8',
+    color: '#7E869E',
     fontWeight: '700',
   },
   saveButton: {
     flex: 1,
-    backgroundColor: '#7c3aed',
+    backgroundColor: '#9127E1',
     borderRadius: 18,
     paddingVertical: 16,
     alignItems: 'center',

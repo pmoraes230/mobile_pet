@@ -5,9 +5,11 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  // AJUSTE DE ESPAÇAMENTO:
   scrollContent: {
-    padding: 20,
-    paddingBottom: 40,
+    paddingHorizontal: 20,
+    paddingTop: 20,         // Cria o respiro logo abaixo do Header
+    paddingBottom: 130,    // Garante que o conteúdo não fique escondido atrás da TabBar
   },
   profileTopCard: {
     backgroundColor: '#fff',
