@@ -1,147 +1,136 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 
 export const styles = StyleSheet.create({
   safeArea: {
-    paddingTop: 35,
     flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  container: {
-    flex: 1,
-  },
-  // Header igual ao seu figma, mas com cores da web
-  headerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-  },
-  voltarBtn: {
-    width: 45,
-    height: 45,
-    borderRadius: 12,
-    backgroundColor: '#FFF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-  },
-  voltarIcon: {
-    fontSize: 22,
-    color: '#0D214F',
-    fontWeight: 'bold',
+    backgroundColor: '#F8F9FD',
   },
   scrollContent: {
-    padding: 24,
-    paddingBottom: 120,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    paddingBottom: 100,
   },
-  // Títulos do Modal
-  modalHeader: {
-    marginBottom: 30,
+  // HEADER DA PÁGINA
+  headerPage: {
+    marginBottom: 20,
   },
-  modalTitle: {
-    fontSize: 24,
+  titlePage: {
+    fontSize: 26,
     fontWeight: 'bold',
     color: '#0D214F',
   },
-  modalSubtitle: {
+  subtitlePage: {
     fontSize: 14,
     color: '#7E869E',
     marginTop: 4,
   },
-  // Inputs estilo Web Modal
-  inputWrapper: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: '#A0A7BA',
-    marginBottom: 8,
-    letterSpacing: 1,
-    textTransform: 'uppercase',
-  },
-  selectField: {
+  // BOTÃO ROXO PRINCIPAL (IGUAL AO PRINT)
+  btnNovoAgendamento: {
+    backgroundColor: '#9127E1',
     height: 55,
-    backgroundColor: '#F3F5F9',
-    borderRadius: 15,
+    borderRadius: 18,
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  selectText: {
-    color: '#4A5568',
-    fontSize: 15,
-  },
-  // Calendário Horizontal (da sua Dashboard Web)
-  calendarSection: {
-    marginVertical: 10,
-  },
-  dayCard: {
-    width: 60,
-    height: 85,
-    backgroundColor: '#F3F5F9',
-    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 10,
+    marginBottom: 25,
+    elevation: 4,
+    shadowColor: '#9127E1',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
   },
-  dayCardActive: {
+  btnTextNovo: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  // CARD DO CALENDÁRIO
+  calendarCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 30,
+    padding: 20,
+    marginBottom: 30,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 15,
+  },
+  monthRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  monthTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0D214F',
+  },
+  arrows: {
+    flexDirection: 'row',
+    gap: 25,
+  },
+  // GRID DE DIAS (Ajustado para caber igual ao print)
+  daysGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  dayBox: {
+    width: '23%', // 4 por linha
+    height: 80,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#F1F1F1',
+  },
+  dayBoxActive: {
     backgroundColor: '#9127E1',
+    borderColor: '#9127E1',
+    elevation: 5,
+    shadowColor: '#9127E1',
+    shadowOpacity: 0.4,
   },
   dayLabel: {
-    fontSize: 10,
+    fontSize: 9,
     fontWeight: 'bold',
     color: '#A0A7BA',
+    textTransform: 'uppercase',
+    marginBottom: 4,
   },
   dayNum: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#1A1A1B',
+    color: '#0D214F',
   },
   textWhite: { color: '#FFF' },
 
-  // Campo de Observação
-  textArea: {
-    backgroundColor: '#F3F5F9',
-    borderRadius: 15,
-    padding: 15,
-    height: 100,
-    textAlignVertical: 'top',
-    fontSize: 15,
-    color: '#4A5568',
-    borderWidth: 1,
+  // SEÇÃO ESTA SEMANA
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0D214F',
+    marginBottom: 15,
+  },
+  emptyContainer: {
+    width: '100%',
+    height: 220,
+    borderRadius: 30,
+    borderWidth: 2,
     borderColor: '#E2E8F0',
-  },
-  // Botões de Baixo (Cancelar e Agendar)
-  rowButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 30,
-    gap: 12,
-  },
-  btnSecondary: {
-    flex: 1,
-    height: 55,
-    backgroundColor: '#F3F5F9',
-    borderRadius: 16,
+    borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
-  btnPrimary: {
-    flex: 1.5,
-    height: 55,
-    backgroundColor: '#9127E1',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-    elevation: 4,
-  },
-  btnTextSecondary: { color: '#7E869E', fontWeight: 'bold' },
-  btnTextPrimary: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+  emptyText: {
+    color: '#7E869E',
+    fontSize: 15,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 15,
+  }
 });

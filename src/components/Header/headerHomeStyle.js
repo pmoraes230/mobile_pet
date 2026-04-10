@@ -1,79 +1,121 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 18,
-    paddingTop: 12,
-    paddingBottom: 15,
+    backgroundColor: '#F8F9FD',
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'ios' ? 10 : 15,
+    paddingBottom: 20,
   },
 
+  // Alinhamento principal do topo
   greetingContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 18,
+    alignItems: 'center', // ISSO centraliza tudo verticalmente
+    marginBottom: 20,
+    height: 50, // Altura fixa para garantir simetria
   },
 
   greetingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-    gap: 12,
   },
 
+  // BOTÃO DE VOLTAR (Quadrado Perfeito e Centralizado)
   backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
+    width: 44,
+    height: 44,
+    borderRadius: 12,
     backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 2,
+    marginRight: 12,
+    // Sombras leves
+    elevation: 3,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
   },
 
   backIcon: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#0D214F',
+    textAlign: 'center',
+    // Remove paddings fantasmas do Android
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  },
+
+  // Texto de Saudação
+  greetingInfo: {
+    justifyContent: 'center',
   },
 
   greeting: {
-    fontSize: 26,
-    fontWeight: '700',
-    color: '#000',
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0D214F',
+    lineHeight: 24,
   },
 
   subGreeting: {
-    fontSize: 13,
-    color: '#666',
-    marginTop: 2,
+    fontSize: 12,
+    color: '#7E869E',
+    marginTop: -2,
   },
 
-  notificationBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#e8e8e8',
-    justifyContent: 'center',
-    alignItems: 'center',
-    position: 'relative',
-  },
-
+  // Lado Direito (Sino + Perfil)
   rightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
   },
 
+  // BOTÃO DE NOTIFICAÇÃO (Com Badge corrigido)
+  notificationBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#FFF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
+    position: 'relative', // Importante para o Badge flutuar
+  },
+
+  badge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    backgroundColor: '#EF4444',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#F8F9FD', // Cor do fundo para dar efeito de "corte"
+    zIndex: 10,
+  },
+
+  badgeText: {
+    color: '#FFF',
+    fontSize: 8,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  // BOTÃO DE PERFIL
   profileBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#7C3AED',
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: '#9127E1',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -82,16 +124,6 @@ export const styles = StyleSheet.create({
   profileImage: {
     width: '100%',
     height: '100%',
-    borderRadius: 19,
-  },
-
-  profilePlaceholder: {
-    width: '100%',
-    height: '100%',
-    borderRadius: 19,
-    backgroundColor: '#7C3AED',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 
   profileInitial: {
@@ -100,85 +132,57 @@ export const styles = StyleSheet.create({
     color: '#FFF',
   },
 
-  notificationIcon: {
-    fontSize: 18,
-  },
-
-  badge: {
-    position: 'absolute',
-    top: -6,
-    right: -6,
-    backgroundColor: '#EF4444',
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#f5f5f5',
-  },
-
-  badgeText: {
-    color: '#FFF',
-    fontSize: 9,
-    fontWeight: 'bold',
-  },
-
+  // BARRA DE BUSCA E FILTRO
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 11,
+    gap: 10,
   },
 
   searchInput: {
     flex: 1,
-    backgroundColor: 'white',
+    height: 48,
+    backgroundColor: '#FFF',
     paddingHorizontal: 16,
-    paddingVertical: 11,
-    borderRadius: 25,
-    fontSize: 13,
-    color: '#333',
-    borderColor: '#e0e0e0',
+    borderRadius: 15,
+    fontSize: 14,
+    color: '#4A5568',
+    borderColor: '#F0F0F0',
     borderWidth: 1,
   },
 
   filterBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 12,
-    backgroundColor: '#E8D5F7',
+    width: 48,
+    height: 48,
+    borderRadius: 15,
+    backgroundColor: '#F5E6FF',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
-  filterIcon: {
-    fontSize: 20,
-    color: '#7C3AED',
-  },
-
-  // MODAL
+  // MODAL DE NOTIFICAÇÕES
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(13, 33, 79, 0.4)',
     justifyContent: 'flex-end',
   },
 
   modalContent: {
     backgroundColor: '#FFF',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingTop: 20,
-    maxHeight: '90%',
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingTop: 10,
+    maxHeight: '80%',
   },
 
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingHorizontal: 25,
+    paddingVertical: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8ECF4',
+    borderBottomColor: '#F3F5F9',
   },
 
   modalTitle: {
@@ -187,57 +191,23 @@ export const styles = StyleSheet.create({
     color: '#0D214F',
   },
 
-  closeIcon: {
-    fontSize: 20,
-    color: '#0D214F',
-  },
-
-  notificationsList: {
-    paddingHorizontal: 16,
-  },
-
   notificationItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F5F9',
-    gap: 12,
-  },
-
-  notifIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    justifyContent: 'center',
     alignItems: 'center',
+    padding: 15,
+    marginHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F9FAFB',
   },
-
-  notifIconText: {
-    fontSize: 18,
-  },
-
-  notifContent: {
-    flex: 1,
-  },
-
+  
   notifTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#0D214F',
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#1A1A1B',
   },
 
   notifMessage: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#7E869E',
-    marginTop: 3,
-    lineHeight: 16,
-  },
-
-  notifTime: {
-    fontSize: 10,
-    color: '#A0A7BA',
-    marginTop: 4,
-  },
+  }
 });
-

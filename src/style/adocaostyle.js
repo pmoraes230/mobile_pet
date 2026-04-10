@@ -86,6 +86,47 @@ export const styles = StyleSheet.create({
     color: '#A0A7BA',
     letterSpacing: 1.5,
   },
+  // NOVOS CAMPOS: BUSCA E FILTROS
+  searchSection: {
+    marginBottom: 25,
+  },
+  searchInputWrapper: {
+    height: 50,
+    backgroundColor: '#F3F5F9',
+    borderRadius: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    marginBottom: 10,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 10,
+    fontSize: 14,
+    color: '#4A5568',
+  },
+  filterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  filterBox: {
+    width: '48%',
+    height: 45,
+    backgroundColor: '#F3F5F9',
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  filterText: {
+    fontSize: 13,
+    color: '#7E869E',
+  },
   // GRID DE ADOÇÃO
   grid: {
     flexDirection: 'row',
@@ -94,7 +135,7 @@ export const styles = StyleSheet.create({
   },
   adoptionCard: {
     backgroundColor: '#FFF',
-    width: '48%', // Dois cards por linha com espaçamento
+    width: '48%', 
     borderRadius: 25,
     padding: 10,
     marginBottom: 20,

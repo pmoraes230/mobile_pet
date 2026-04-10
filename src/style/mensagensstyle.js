@@ -8,11 +8,14 @@ export const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  // Título e Subtítulo
-  sectionHeader: {
+  // O SEGREDO DO ESPAÇAMENTO IGUAL AO DETALHES
+  scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 20,
-    marginBottom: 10,
+    paddingTop: 20,         
+    paddingBottom: 150, // Espaço para não cobrir o input e a TabBar
+  },
+  sectionHeader: {
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,
@@ -24,27 +27,23 @@ export const styles = StyleSheet.create({
     color: '#7E869E',
     marginTop: 4,
   },
-  // Lista de Conversas
-  listaContent: {
-    paddingHorizontal: 20,
-    paddingBottom: 150, // Espaço para não cobrir o input
-  },
+  // CARDS DA LISTA (ESTILO PREMIUM)
   conversaCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    borderRadius: 22,
+    borderRadius: 25,
     padding: 15,
     marginBottom: 12,
-    elevation: 3,
+    elevation: 4,
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 10,
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 15,
+    width: 55,
+    height: 55,
+    borderRadius: 18,
     backgroundColor: '#F3F5F9',
   },
   conversaInfo: {
@@ -65,7 +64,7 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F5E6FF',
     borderRadius: 12,
     paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingHorizontal: 15,
   },
   verPerfilText: {
     color: '#9127E1',
@@ -73,10 +72,21 @@ export const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.5,
   },
-  // ÁREA DE INPUT (CHAT PILL)
+  // ÁREA DE CHAT ATIVO (BALÕES)
+  messageReceived: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 20,
+    borderBottomLeftRadius: 5,
+    marginBottom: 15,
+    maxWidth: '80%',
+    elevation: 2,
+  },
+  // BARRA DE INPUT (CHAT PILL)
   inputWrapper: {
     position: 'absolute',
-    bottom: 90, // Fica logo acima da TabBar
+    bottom: 95, // Acima da TabBar
     left: 20,
     right: 20,
   },
@@ -87,10 +97,10 @@ export const styles = StyleSheet.create({
     borderRadius: 30,
     paddingHorizontal: 15,
     height: 60,
-    elevation: 8,
+    elevation: 10,
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: 15,
     borderWidth: 1,
     borderColor: '#F0F0F0',
   },
@@ -111,6 +121,6 @@ export const styles = StyleSheet.create({
   empty: {
     textAlign: 'center',
     color: '#A0A7BA',
-    marginTop: 40,
+    marginTop: 50,
   }
 });

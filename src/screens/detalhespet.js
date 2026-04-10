@@ -1,25 +1,14 @@
 import React, { useState } from 'react';
 import { 
-  View, 
-  ScrollView, 
-  Text, 
-  TouchableOpacity, 
-  Image, 
-  SafeAreaView, 
-  TextInput 
+  View, ScrollView, Text, TouchableOpacity, 
+  Image, SafeAreaView, TextInput, Platform 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { 
-  PencilLine, 
-  Scale, 
-  Venus, 
-  Calendar, 
-  Syringe, 
-  Plus,
-  CircleDashed
+  PencilLine, Scale, Venus, Calendar, Syringe, 
+  Plus, CircleDashed, Sun, CloudSun, Moon, Pill, ClipboardList
 } from 'lucide-react-native';
 
-// COMPONENTES
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
 import { styles } from '../style/detalhespetstyle';
@@ -35,8 +24,6 @@ export default function TelaDetalhesPet() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      
-      {/* HEADER - Seguindo o padrão de espaçamento do seu exemplo */}
       <HeaderHome 
         userName="Pedro" 
         showSearch={false} 
@@ -47,36 +34,23 @@ export default function TelaDetalhesPet() {
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* CARD DO PERFIL - FOTO E NOME */}
+        {/* CARD DO PERFIL */}
         <View style={styles.profileCard}>
-          <Image 
-            source={{ uri: 'https://placekitten.com/500/500' }} 
-            style={styles.petImg} 
-          />
+          <Image source={{ uri: 'https://placekitten.com/500/500' }} style={styles.petImg} />
           <View style={styles.nameWrapper}>
             <Text style={styles.petName}>Missy</Text>
-            <TouchableOpacity>
-              <PencilLine size={20} color="#9127E1" strokeWidth={2.5} />
-            </TouchableOpacity>
+            <TouchableOpacity><PencilLine size={20} color="#9127E1" strokeWidth={2.5} /></TouchableOpacity>
           </View>
           <Text style={styles.petBreed}>preta</Text>
 
-          {/* PESO E SEXO */}
           <View style={styles.statsRow}>
             <View style={[styles.statBox, { backgroundColor: '#E8D5F7' }]}>
-              <View>
-                <Text style={[styles.statLabel, { color: '#9127E1' }]}>PESO</Text>
-                <Text style={[styles.statValue, { color: '#9127E1' }]}>--- kg</Text>
-              </View>
-              <Scale size={22} color="#9127E1" strokeWidth={2.5} />
+              <View><Text style={[styles.statLabel, { color: '#9127E1' }]}>PESO</Text><Text style={[styles.statValue, { color: '#9127E1' }]}>--- kg</Text></View>
+              <Scale size={22} color="#9127E1" />
             </View>
-            
             <View style={[styles.statBox, { backgroundColor: '#C6F0FF' }]}>
-              <View>
-                <Text style={[styles.statLabel, { color: '#4A90E2' }]}>SEXO</Text>
-                <Text style={[styles.statValue, { color: '#4A90E2' }]}>Fêmea</Text>
-              </View>
-              <Venus size={22} color="#4A90E2" strokeWidth={2.5} />
+              <View><Text style={[styles.statLabel, { color: '#4A90E2' }]}>SEXO</Text><Text style={[styles.statValue, { color: '#4A90E2' }]}>Fêmea</Text></View>
+              <Venus size={22} color="#4A90E2" />
             </View>
           </View>
         </View>
@@ -93,16 +67,22 @@ export default function TelaDetalhesPet() {
           </View>
         </TouchableOpacity>
 
-        {/* SEÇÃO DE DETALHES COM ABAS INTERNAS */}
+        {/* SEÇÃO DE DETALHES COM 3 ABAS */}
         <View style={styles.contentCard}>
           <View style={styles.tabRow}>
-            {['Sobre', 'Saúde'].map(tab => (
+            {['Sobre', 'Vacinas', 'Medicamentos'].map(tab => (
               <TouchableOpacity 
                 key={tab}
                 onPress={() => setActiveTab(tab)}
                 style={[styles.tabBtn, activeTab === tab && styles.tabBtnActive]}
               >
-                <Text style={[styles.tabText, activeTab === tab && styles.tabTextActive]}>{tab}</Text>
+                <Text 
+                  style={[styles.tabText, activeTab === tab && styles.tabTextActive]}
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
+                >
+                  {tab}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -111,14 +91,8 @@ export default function TelaDetalhesPet() {
             <View>
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Sobre o Missy:</Text>
-                <TextInput 
-                  style={[styles.textInput, styles.textArea]}
-                  placeholder="Conte um pouco sobre o seu pet..."
-                  multiline
-                  placeholderTextColor="#A0A7BA"
-                />
+                <TextInput style={[styles.textInput, styles.textArea]} placeholder="Conte um pouco..." multiline placeholderTextColor="#A0A7BA" />
               </View>
-
               <View style={styles.inputGroup}>
                 <Text style={styles.label}>Personalidade</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -126,19 +100,12 @@ export default function TelaDetalhesPet() {
                   <Text style={{color: '#A0A7BA', fontStyle: 'italic', fontSize: 13}}>Nenhuma característica selecionada.</Text>
                 </View>
               </View>
-
               <View style={styles.rowInputs}>
-                <View style={{ width: '48%' }}>
-                  <Text style={styles.labelUpper}>ESPÉCIE</Text>
-                  <TextInput style={styles.textInput} value="Gato" editable={false} />
-                </View>
-                <View style={{ width: '48%' }}>
-                  <Text style={styles.labelUpper}>RAÇA</Text>
-                  <TextInput style={styles.textInput} value="preta" />
-                </View>
+                <View style={{ width: '48%' }}><Text style={styles.labelUpper}>ESPÉCIE</Text><TextInput style={styles.textInput} value="Gato" editable={false} /></View>
+                <View style={{ width: '48%' }}><Text style={styles.labelUpper}>RAÇA</Text><TextInput style={styles.textInput} value="preta" /></View>
               </View>
             </View>
-          ) : (
+          ) : activeTab === 'Vacinas' ? (
             <View>
               <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20}}>
                 <Text style={styles.label}>Carteira de vacinação</Text>
@@ -147,13 +114,10 @@ export default function TelaDetalhesPet() {
                   <Text style={{color: '#FFF', fontSize: 11, fontWeight: 'bold'}}>NOVO</Text>
                 </TouchableOpacity>
               </View>
-
               <View style={styles.vaccineItem}>
-                <View style={styles.vaccineCircle}>
-                  <Syringe size={22} color="#9127E1" />
-                </View>
+                <View style={styles.vaccineCircle}><Syringe size={22} color="#9127E1" /></View>
                 <View style={styles.vaccineInfo}>
-                  <Text style={styles.vaccineName}>vacina de raiva</Text>
+                  <Text style={{fontWeight: 'bold', color: '#0D214F'}}>vacina de raiva</Text>
                   <Text style={{fontSize: 12, color: '#7E869E'}}>12/03/2026</Text>
                 </View>
                 <View style={styles.nextDoseBox}>
@@ -162,17 +126,58 @@ export default function TelaDetalhesPet() {
                 </View>
               </View>
             </View>
+          ) : (
+            /* --- ABA MEDICAMENTOS (CRONOGRAMA DO SITE) --- */
+            <View>
+               <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20}}>
+                <Text style={styles.label}>Cronograma</Text>
+                <Pill size={20} color="#9127E1" />
+              </View>
+
+              <View style={styles.periodRow}>
+                <Sun size={18} color="#FF7A2F" /><Text style={styles.periodTitle}>Manhã</Text><Text style={styles.countBadge}>1</Text>
+              </View>
+
+              <View style={[styles.medicCard, { borderLeftColor: '#FF7A2F' }]}>
+                <View style={styles.medicHeader}>
+                  <Text style={styles.medicTime}>08:00</Text>
+                  <View style={styles.petBadgeMedic}><Text style={{fontSize: 9, fontWeight: '900', color: '#9127E1'}}>MISSY</Text></View>
+                </View>
+                <Text style={{fontSize: 18, fontWeight: 'bold', color: '#4A5568'}}>6769</Text>
+                <View style={styles.instructionBox}>
+                  <Text style={{fontSize: 12, color: '#7E869E'}}>dar quando tiver vontade</Text>
+                </View>
+              </View>
+
+              <View style={styles.periodRow}>
+                <CloudSun size={18} color="#4A90E2" /><Text style={styles.periodTitle}>Tarde</Text><Text style={styles.countBadge}>0</Text>
+              </View>
+
+              <View style={styles.periodRow}>
+                <Moon size={18} color="#0D214F" /><Text style={styles.periodTitle}>Noite</Text><Text style={styles.countBadge}>0</Text>
+              </View>
+
+              {/* TRATAMENTOS EM ANDAMENTO (CONFORME PRINT DO SITE) */}
+              <View style={styles.treatmentSection}>
+                 <View style={{flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 15}}>
+                    <ClipboardList size={20} color="#9127E1" />
+                    <Text style={styles.label}>Tratamentos em andamento</Text>
+                 </View>
+                 <View style={styles.treatmentEmpty}>
+                    <Text style={{color: '#A0A7BA', fontSize: 13, textAlign: 'center'}}>Nenhum tratamento ativo encontrado para os próximos dias.</Text>
+                 </View>
+              </View>
+            </View>
           )}
 
-          <TouchableOpacity style={styles.btnSave}>
+          <TouchableOpacity style={styles.btnSave} activeOpacity={0.8}>
             <Text style={styles.btnSaveText}>Salvar alterações</Text>
           </TouchableOpacity>
         </View>
 
       </ScrollView>
 
-      {/* TABBAR FIXA NA BASE */}
-      <TabBar activeTab={activeBottomTab} onTabPress={setActiveBottomTab} onLogout={handleLogout} />
+      <TabBar onLogout={handleLogout} />
       
     </SafeAreaView>
   );

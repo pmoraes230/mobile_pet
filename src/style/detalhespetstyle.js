@@ -7,20 +7,19 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FD',
   },
-  // CONTEÚDO COM SCROLL - Ajustado para dar o "respiro" correto
+  // CONTEÚDO COM SCROLL - Ajustado para o respiro perfeito abaixo do Header
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 25,        // Espaço entre o Header e o primeiro Card
-    paddingBottom: 120,    // Espaço para não cobrir o botão "Salvar" com a TabBar
+    paddingTop: 20,        
+    paddingBottom: 120,    
   },
-  // CARD PRINCIPAL DO PET (FOTO E NOME)
+  // CARD PRINCIPAL DO PET
   profileCard: {
     backgroundColor: '#FFF',
     borderRadius: 35,
     padding: 20,
     alignItems: 'center',
     marginBottom: 20,
-    // Sombras suaves
     elevation: 4,
     shadowColor: '#000',
     shadowOpacity: 0.05,
@@ -81,7 +80,6 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    // Sombra roxa mais forte
     elevation: 8,
     shadowColor: '#9127E1',
     shadowOpacity: 0.3,
@@ -96,14 +94,13 @@ export const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 28,
     fontWeight: 'bold',
-    marginVertical: 2,
   },
   appointmentType: {
     color: '#FFF',
     fontSize: 15,
     opacity: 0.9,
   },
-  // ABA DE CONTEÚDO (SOBRE / SAÚDE)
+  // SEÇÃO DE CONTEÚDO (SOBRE / SAÚDE / MEDICAMENTOS)
   contentCard: {
     backgroundColor: '#FFF',
     borderRadius: 35,
@@ -111,7 +108,6 @@ export const styles = StyleSheet.create({
     elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.03,
-    shadowRadius: 10,
   },
   tabRow: {
     flexDirection: 'row',
@@ -137,7 +133,7 @@ export const styles = StyleSheet.create({
   tabTextActive: {
     color: '#FFF',
   },
-  // FORMULÁRIO
+  // ESTILOS DE FORMULÁRIO
   inputGroup: {
     marginBottom: 20,
   },
@@ -172,7 +168,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  // VACINAÇÃO
+  // VACINAÇÃO (ABA SAÚDE)
   vaccineItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -203,14 +199,85 @@ export const styles = StyleSheet.create({
   nextDoseBox: {
     alignItems: 'flex-end',
   },
-  // BOTÃO SALVAR
+  // CRONOGRAMA (ABA MEDICAMENTOS)
+  periodRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+    marginTop: 10,
+    gap: 10,
+  },
+  periodTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0D214F',
+  },
+  countBadge: {
+    backgroundColor: '#F3F5F9',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 8,
+    fontSize: 10,
+    color: '#7E869E',
+    fontWeight: 'bold',
+  },
+  medicCard: {
+    backgroundColor: '#FFF',
+    borderRadius: 22,
+    padding: 18,
+    borderLeftWidth: 6,
+    marginBottom: 20,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+  },
+  medicHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  medicTime: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#0D214F',
+  },
+  petBadgeMedic: {
+    backgroundColor: '#F5E6FF',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  petBadgeMedicText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#9127E1',
+    textTransform: 'uppercase',
+  },
+  medicName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#4A5568',
+  },
+  instructionBox: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 12,
+    marginTop: 10,
+  },
+  instructionText: {
+    fontSize: 13,
+    color: '#7E869E',
+  },
+  // BOTÃO SALVAR GERAL
   btnSave: {
     backgroundColor: '#9127E1',
     height: 60,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 15,
     elevation: 4,
   },
   btnSaveText: {

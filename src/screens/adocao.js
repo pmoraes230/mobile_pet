@@ -5,10 +5,11 @@ import {
   Text, 
   TouchableOpacity, 
   Image, 
-  SafeAreaView 
+  SafeAreaView,
+  TextInput 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Search, Megaphone, User } from 'lucide-react-native';
+import { Search, Megaphone, User, ChevronDown } from 'lucide-react-native';
 import { styles } from '../style/adocaostyle';
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
@@ -16,6 +17,7 @@ import TabBar from '../components/TabBar/TabBar';
 export default function TelaAdocao() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('home');
+  const [busca, setBusca] = useState('');
 
   const handleLogout = () => {
     navigation.reset({
@@ -56,14 +58,17 @@ export default function TelaAdocao() {
           </View>
 
           {/* BOTÃO ANUNCIAR */}
-          <TouchableOpacity style={styles.btnAnnounce}>
+          <TouchableOpacity 
+            style={styles.btnAnnounce}
+            onPress={() => navigation.navigate('anunciarpet')} 
+          >
             <Text style={{color: '#9127E1', fontWeight: 'bold', fontSize: 18}}>+</Text>
             <Text style={styles.btnAnnounceText}>Anunciar pet meu</Text>
           </TouchableOpacity>
 
           {/* SEUS PETS EM ANÚNCIO */}
           <View style={{flexDirection: 'row', alignItems: 'center'}}>
-            <Megaphone size={16} color="#333" />
+            <Megaphone size={16} color="#0D214F" />
             <Text style={styles.sectionLabel}> Seus Pets em Anúncio</Text>
           </View>
           <View style={styles.emptyBox}>
@@ -77,8 +82,37 @@ export default function TelaAdocao() {
             <View style={styles.line} />
           </View>
 
+          {/* ÁREA DE FILTROS E BUSCA DO FEED */}
+          <View style={styles.searchSection}>
+            
+            {/* Campo de Pesquisa */}
+            <View style={styles.searchInputWrapper}>
+              <Search size={18} color="#A0A7BA" />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Pesquisar por nome ou raça..."
+                placeholderTextColor="#A0A7BA"
+                value={busca}
+                onChangeText={setBusca}
+              />
+            </View>
+
+            {/* Filtros de Estado e Cidade */}
+            <View style={styles.filterRow}>
+              <TouchableOpacity style={styles.filterBox}>
+                <Text style={styles.filterText}>Estado</Text>
+                <ChevronDown size={14} color="#A0A7BA" />
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.filterBox}>
+                <Text style={styles.filterText}>Cidade</Text>
+                <ChevronDown size={14} color="#A0A7BA" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
           <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 20}}>
-            <Search size={16} color="#333" />
+            <Megaphone size={16} color="#0D214F" />
             <Text style={styles.sectionLabel}> Pets esperando por um lar</Text>
           </View>
 

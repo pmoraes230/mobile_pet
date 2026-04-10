@@ -4,114 +4,100 @@ import {
   ScrollView, 
   TouchableOpacity, 
   Text, 
-  SafeAreaView, 
-  TextInput 
+  SafeAreaView 
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { Plus, ChevronLeft, ChevronRight, CalendarX } from 'lucide-react-native';
 import { styles } from '../style/agendamentoStyle';
 import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
 
 export default function TelaAgendamento() {
   const navigation = useNavigation();
-  const [selectedDay, setSelectedDay] = useState(2); // Quarta-feira
-  const [activeTab, setActiveTab] = useState('home');
-
-  const handleLogout = () => {
-    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-  };
+  const [selectedDay, setSelectedDay] = useState(4); // Sexta, dia 10
 
   const dias = [
-    { id: 0, label: 'SEG', num: '30' },
-    { id: 1, label: 'TER', num: '31' },
-    { id: 2, label: 'QUA', num: '1' },
-    { id: 3, label: 'QUI', num: '2' },
-    { id: 4, label: 'SEX', num: '3' },
-    { id: 5, label: 'SÁB', num: '4' },
+    { id: 0, label: 'SEG', num: '6' },
+    { id: 1, label: 'TER', num: '7' },
+    { id: 2, label: 'QUA', num: '8' },
+    { id: 3, label: 'QUI', num: '9' },
+    { id: 4, label: 'SEX', num: '10' },
+    { id: 5, label: 'SÁB', num: '11' },
+    { id: 6, label: 'DOM', num: '12' },
   ];
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* HEADER */}
-      <HeaderHome userName="Pedro" showSearch={false} showBackButton={true} showGreeting={false} onBackPress={() => navigation.goBack()} />
+      
+      {/* HEADER AJUSTADO PARA NÃO PARECER A TELA INICIAL */}
+      <HeaderHome 
+        userName="Pedro" 
+        showSearch={false}      // DESATIVA A BUSCA
+        showGreeting={false}    // DESATIVA O "BOA TARDE"
+        showBackButton={true}   // ATIVA O BOTÃO VOLTAR
+        onBackPress={() => navigation.goBack()} 
+      />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
-        {/* TÍTULO DO MODAL */}
-        <View style={styles.modalHeader}>
-          <Text style={styles.modalTitle}>Novo Agendamento</Text>
-          <Text style={styles.modalSubtitle}>Escolha o veterinário, dia e horário</Text>
+        {/* TÍTULO DA PÁGINA COM ESPAÇAMENTO CORRETO */}
+        <View style={styles.headerPage}>
+          <Text style={styles.titlePage}>Agendamentos</Text>
+          <Text style={styles.subtitlePage}>Próximos compromissos e histórico</Text>
         </View>
 
-        {/* CAMPO: QUAL PET? */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>QUAL PET?</Text>
-          <TouchableOpacity style={styles.selectField}>
-            <Text style={styles.selectText}>Selecione seu pet...</Text>
-            <Text style={{color: '#A0A7BA'}}>▼</Text>
-          </TouchableOpacity>
-        </View>
+        {/* BOTÃO NOVO AGENDAMENTO */}
+        <TouchableOpacity 
+          style={styles.btnNovoAgendamento}
+          onPress={() => navigation.navigate('novoagendamento')} 
+        >
+          <Plus size={20} color="#FFF" strokeWidth={3} />
+          <Text style={styles.btnTextNovo}>Novo Agendamento</Text>
+        </TouchableOpacity>
 
-        {/* CAMPO: VETERINÁRIO */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>VETERINÁRIO</Text>
-          <TouchableOpacity style={styles.selectField}>
-            <Text style={styles.selectText}>Escolha o médico...</Text>
-            <Text style={{color: '#A0A7BA'}}>▼</Text>
-          </TouchableOpacity>
-        </View>
+        {/* CARD DE CALENDÁRIO */}
+        <View style={styles.calendarCard}>
+          <View style={styles.monthRow}>
+            <Text style={styles.monthTitle}>Março 2026</Text>
+            <View style={styles.arrows}>
+              <ChevronLeft size={22} color="#A0A7BA" />
+              <ChevronRight size={22} color="#A0A7BA" />
+            </View>
+          </View>
 
-        {/* CAMPO: TIPO DE SERVIÇO */}
-        <View style={styles.inputWrapper}>
-          <Text style={styles.label}>TIPO DE SERVIÇO</Text>
-          <TouchableOpacity style={styles.selectField}>
-            <Text style={styles.selectText}>Consulta Geral</Text>
-            <Text style={{color: '#A0A7BA'}}>▼</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* CALENDÁRIO HORIZONTAL (IGUAL DASHBOARD WEB) */}
-        <View style={styles.calendarSection}>
-          <Text style={styles.label}>DATA DA CONSULTA (MARÇO 2026)</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginTop: 10}}>
+          <View style={styles.daysGrid}>
             {dias.map((item) => (
               <TouchableOpacity 
                 key={item.id}
                 onPress={() => setSelectedDay(item.id)}
-                style={[styles.dayCard, selectedDay === item.id && styles.dayCardActive]}
+                style={[
+                  styles.dayBox, 
+                  selectedDay === item.id && styles.dayBoxActive
+                ]}
               >
-                <Text style={[styles.dayLabel, selectedDay === item.id && styles.textWhite]}>{item.label}</Text>
-                <Text style={[styles.dayNum, selectedDay === item.id && styles.textWhite]}>{item.num}</Text>
+                <Text style={[styles.dayLabel, selectedDay === item.id && styles.textWhite]}>
+                  {item.label}
+                </Text>
+                <Text style={[styles.dayNum, selectedDay === item.id && styles.textWhite]}>
+                  {item.num}
+                </Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
         </View>
 
-        {/* CAMPO: OBSERVAÇÕES */}
-        <View style={[styles.inputWrapper, {marginTop: 25}]}>
-          <Text style={styles.label}>OBSERVAÇÕES</Text>
-          <TextInput 
-            style={styles.textArea}
-            placeholder="Descreva brevemente..."
-            multiline
-            placeholderTextColor="#A0A7BA"
-          />
-        </View>
+        <Text style={styles.sectionTitle}>Esta semana</Text>
 
-        {/* BOTÕES DE AÇÃO IGUAL AO MODAL */}
-        <View style={styles.rowButtons}>
-          <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.goBack()}>
-            <Text style={styles.btnTextSecondary}>Cancelar</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.btnPrimary}>
-            <Text style={styles.btnTextPrimary}>Agendar Agora</Text>
-          </TouchableOpacity>
+        <View style={styles.emptyContainer}>
+          <CalendarX size={45} color="#CBD5E0" strokeWidth={1.5} />
+          <Text style={styles.emptyText}>
+            Nenhum agendamento para esta semana.
+          </Text>
         </View>
 
       </ScrollView>
 
-      <TabBar activeTab={activeTab} onTabPress={setActiveTab} onLogout={handleLogout} />
+      <TabBar onLogout={() => navigation.navigate('Login')} />
     </SafeAreaView>
   );
 }

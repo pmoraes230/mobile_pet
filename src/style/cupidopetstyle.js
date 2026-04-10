@@ -1,82 +1,64 @@
-import { StyleSheet, Dimensions } from 'react-native';
+import { StyleSheet, Dimensions, Platform } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
+const { height, width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
   safeArea: {
-    paddingTop: 35,
     flex: 1,
-    backgroundColor: '#F0F5F9', // Fundo levemente azulado como no print
-  },
-  container: {
-    flex: 1,
+    backgroundColor: '#F8F9FD',
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingBottom: 120,
+    paddingTop: 10,
+    paddingBottom: 150, // Aumentado para garantir o scroll final
   },
-  // HEADER: SEU PET ATIVO (Compactado para mobile)
-  activePetHeader: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 12,
+
+  // FILTROS DE LOCALIZAÇÃO
+  filterRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+    gap: 10,
+  },
+  filterButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 15,
+    backgroundColor: '#FFF',
+    height: 42,
+    borderRadius: 12,
+    paddingHorizontal: 12,
     elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.05,
-    shadowRadius: 10,
-  },
-  activePetImg: {
-    width: 50,
-    height: 50,
-    borderRadius: 12,
-  },
-  activePetInfo: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  activePetName: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#0D214F',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 2,
-  },
-  statBadge: {
-    fontSize: 10,
-    color: '#7E869E',
-    fontWeight: '600',
-  },
-  btnTrocar: {
-    backgroundColor: '#F8F9FD',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
+    shadowRadius: 5,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#F0F0F5',
+  },
+  filterText: {
+    flex: 1,
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#7E869E',
+    marginLeft: 6,
   },
 
-  // CARD DE SWIPE (O CENTRO)
+  // --- CARD PRINCIPAL (AUMENTADO) ---
   mainCard: {
-    height: height * 0.5,
-    backgroundColor: '#FFF',
+    width: '100%',
+    height: height * 0.58, // AUMENTADO: Ocupa 58% da tela agora
     borderRadius: 35,
+    backgroundColor: '#FFF',
     overflow: 'hidden',
-    elevation: 5,
+    elevation: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.15,
     shadowRadius: 15,
-    marginVertical: 15,
   },
   cardImg: {
     width: '100%',
     height: '100%',
+    resizeMode: 'cover',
   },
   infoOverlay: {
     position: 'absolute',
@@ -84,66 +66,140 @@ export const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 25,
-    backgroundColor: 'rgba(0,0,0,0.3)', // Gradiente escuro para ler o texto
+    backgroundColor: 'rgba(0,0,0,0.55)', // Um pouco mais escuro para ler a bio
   },
   cardName: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#FFF',
   },
-  cardAge: {
-    fontSize: 18,
-    fontWeight: '400',
+  cardBio: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 6,
+    lineHeight: 20,
+    fontWeight: '500',
   },
   cardBreed: {
-    fontSize: 14,
-    color: '#EEE',
-    fontWeight: '600',
+    fontSize: 11,
+    color: '#00D7C4',
+    fontWeight: '900',
     textTransform: 'uppercase',
-    marginTop: 4,
+    letterSpacing: 1.5,
+    marginTop: 10,
   },
 
-  // BOTÕES DE AÇÃO (FOOTER)
+  // BOTÕES DE AÇÃO
   actionsRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 25,
-    gap: 20,
+    marginTop: 20,
+    gap: 15,
   },
-  btnCircle: {
-    width: 55,
-    height: 55,
-    borderRadius: 28,
+  btnSmall: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
   },
   btnMain: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#FF7A2F', // Laranja do print
+    width: 85,
+    height: 85,
+    borderRadius: 45,
+    backgroundColor: '#FF7A2F',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 6,
+    elevation: 8,
     shadowColor: '#FF7A2F',
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    shadowOpacity: 0.3,
   },
-  iconX: { color: '#A0A7BA', fontSize: 24 },
-  iconI: { color: '#4A90E2', fontSize: 24 },
 
-  // AMIGOS RECENTES (Horizontal no topo ou embaixo)
-  recentSection: {
-    marginBottom: 10,
+  // WIDGET PET ATIVO
+  activePetWidget: {
+    backgroundColor: '#FFF',
+    borderRadius: 25,
+    padding: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 35,
+    borderWidth: 1,
+    borderColor: '#F1F1F1',
   },
-  recentTitle: {
-    fontSize: 11,
+  activePetImg: {
+    width: 55,
+    height: 55,
+    borderRadius: 15,
+  },
+  activePetInfo: {
+    flex: 1,
+    marginLeft: 15,
+  },
+  activePetName: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: '#0D214F',
+  },
+  badgeRow: {
+    flexDirection: 'row',
+    marginTop: 6,
+    gap: 8,
+  },
+  miniBadge: {
+    backgroundColor: '#F5E6FF',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  miniBadgeText: {
+    fontSize: 10,
     fontWeight: '800',
-    color: '#A0A7BA',
-    letterSpacing: 1,
-    marginBottom: 10,
+    color: '#9127E1',
   },
+
+  // STORIES AMIGOS
+  friendsHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 30,
+    marginBottom: 15,
+    gap: 8,
+  },
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#A0A7BA',
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
+  },
+  friendBubble: {
+    alignItems: 'center',
+    marginRight: 15,
+  },
+  haloEffect: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    borderWidth: 2,
+    borderColor: '#FF7A2F',
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  friendImg: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
+  },
+  friendName: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#0D214F',
+    marginTop: 6,
+  }
 });

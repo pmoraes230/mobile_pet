@@ -2,31 +2,32 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
+    backgroundColor: '#FFFFFF',
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F0F0F0',
+    // Sombras para dar o efeito de flutuação
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 20,
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    paddingBottom: 20,
-    paddingTop: 8,
   },
-
   tab: {
     flex: 1,
     alignItems: 'center',
-    paddingVertical: 8,
+    justifyContent: 'center',
   },
-
-  icon: {
-    fontSize: 20,
-    marginBottom: 4,
-  },
-
   label: {
     fontSize: 10,
-    fontWeight: '500',
+    fontWeight: '700',
+    marginTop: 4,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });

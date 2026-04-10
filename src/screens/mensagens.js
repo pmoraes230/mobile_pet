@@ -12,7 +12,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Send } from 'lucide-react-native';
+import { Send, ChevronLeft } from 'lucide-react-native';
 
 import { styles } from '../style/mensagensstyle';
 import HeaderHome from '../components/Header/HeaderHome';
@@ -32,7 +32,6 @@ export default function Mensagens() {
 
   const enviarMensagem = () => {
     if (!mensagem.trim()) return;
-    // Lógica de envio aqui (futuramente conectando ao banco)
     setMensagem('');
   };
 
@@ -44,12 +43,10 @@ export default function Mensagens() {
       onPress={() => setChatAtivo(item)} 
     >
       <Image source={item.avatar} style={styles.avatar} />
-      
       <View style={styles.conversaInfo}>
         <Text style={styles.conversaNome}>{item.name}</Text>
         <Text style={styles.conversaSubtitulo} numberOfLines={1}>{item.subtitle}</Text>
       </View>
-
       <View style={styles.verPerfilBtn}>
         <Text style={styles.verPerfilText}>CHAT</Text>
       </View>
@@ -58,60 +55,47 @@ export default function Mensagens() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        
-        {/* HEADER DINÂMICO */}
-        <HeaderHome 
-          userName={chatAtivo ? chatAtivo.name : "Asafe"} 
-          showSearch={false} 
-          showBackButton={true} 
-          showGreeting={false} 
-          onBackPress={chatAtivo ? () => setChatAtivo(null) : () => navigation.goBack()} 
-        />
+      
+      {/* HEADER FIXO - Fora do Scroll para não bugar o espaçamento */}
+      <HeaderHome 
+        userName={chatAtivo ? chatAtivo.name : "Pedro"} 
+        showSearch={false} 
+        showBackButton={true} 
+        showGreeting={false} 
+        onBackPress={chatAtivo ? () => setChatAtivo(null) : () => navigation.goBack()} 
+      />
 
+      <View style={styles.container}>
         {!chatAtivo ? (
           /* --- VISÃO 1: LISTA DE CONVERSAS --- */
-          <View style={{ flex: 1 }}>
-            <View style={styles.sectionHeader}>
-              <Text style={styles.title}>Mensagens</Text>
-              <Text style={styles.subtitle}>Fale com nossos profissionais</Text>
-            </View>
-
-            <FlatList
-              data={INITIAL_CONVERSAS}
-              keyExtractor={(item) => item.id}
-              renderItem={renderConversas}
-              contentContainerStyle={styles.listaContent}
-              showsVerticalScrollIndicator={false}
-            />
-          </View>
+          <FlatList
+            data={INITIAL_CONVERSAS}
+            keyExtractor={(item) => item.id}
+            renderItem={renderConversas}
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+            ListHeaderComponent={
+              <View style={styles.sectionHeader}>
+                <Text style={styles.title}>Mensagens</Text>
+                <Text style={styles.subtitle}>Fale com nossos profissionais</Text>
+              </View>
+            }
+          />
         ) : (
           /* --- VISÃO 2: CHAT ABERTO --- */
-          <View style={{ flex: 1 }}>
+          <>
             <ScrollView 
-              contentContainerStyle={{ padding: 20, paddingBottom: 100 }}
+              contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
             >
-              {/* Balão de exemplo */}
-              <View style={{ 
-                alignSelf: 'flex-start', 
-                backgroundColor: '#FFF', 
-                padding: 15, 
-                borderRadius: 20, 
-                borderBottomLeftRadius: 5,
-                elevation: 2,
-                shadowColor: '#000',
-                shadowOpacity: 0.05,
-                shadowRadius: 5,
-                maxWidth: '85%' 
-              }}>
+              <View style={styles.messageReceived}>
                 <Text style={{ color: '#4A5568', fontSize: 15 }}>
                   Olá! Como posso ajudar você e seu pet hoje?
                 </Text>
               </View>
             </ScrollView>
 
-            {/* BARRA DE INPUT */}
+            {/* BARRA DE INPUT FLUTUANTE */}
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
               keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
@@ -130,17 +114,13 @@ export default function Mensagens() {
                 </TouchableOpacity>
               </View>
             </KeyboardAvoidingView>
-          </View>
-        )}
-
-        {/* TAB BAR (SÓ APARECE NA LISTA) */}
-        {!chatAtivo && (
-          <TabBar 
-            activeTab="mensagens" 
-            onTabPress={(id) => navigation.navigate(id === 'home' ? 'Home' : id)} 
-          />
+          </>
         )}
       </View>
+
+      {/* TAB BAR (SUMIR NO CHAT PARA DAR MAIS ESPAÇO) */}
+      {!chatAtivo && <TabBar activeTab="mensagens" />}
+      
     </SafeAreaView>
   );
 }

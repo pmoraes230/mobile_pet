@@ -15,7 +15,9 @@ import TelaAdocao from "./src/screens/adocao";
 import Configuracoes from "./src/screens/configuracoes";
 import PetDetail from "./src/screens/petDetail";
 import detalhespet from "./src/screens/detalhespet";
-import ChatPrivado from "./src/screens/chatprivado"; // Crie este arquivo
+import ChatPrivado from "./src/screens/chatprivado";
+import novoagendamento from "./src/screens/novoagendamento";
+import anunciarpet from "./src/screens/anunciarpet";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -37,6 +39,9 @@ export default function App() {
         <Stack.Screen name="Mensagens" component={Mensagens} />
         <Stack.Screen name="Configuracoes" component={Configuracoes} />
         <Stack.Screen name="ChatPrivado" component={ChatPrivado} />
+        <Stack.Screen name="novoagendamento" component={novoagendamento} />
+        <Stack.Screen name="anunciarpet" component={anunciarpet} />
+        
         
       </Stack.Navigator>
     </NavigationContainer>
