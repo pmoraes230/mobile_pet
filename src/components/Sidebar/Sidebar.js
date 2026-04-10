@@ -8,7 +8,7 @@ export default function Sidebar({ visible, onClose, onLogout }) {
   const navigation = useNavigation();
 
   const menuItems = [
-    { id: 1, label: 'Meu Perfil', icon: User, color: '#4A90E2', route: 'Configuracoes' },
+    { id: 1, label: 'Meu Perfil', icon: User, color: '#4A90E2', route: 'Perfil' },
     { id: 2, label: 'Configurações', icon: Settings, color: '#7E869E', route: 'Configuracoes' },
     { id: 3, label: 'Sair', icon: LogOut, color: '#EF4444', isLogout: true },
   ];

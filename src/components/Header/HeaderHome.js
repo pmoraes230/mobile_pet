@@ -85,7 +85,7 @@ export default function HeaderHome({
               
               <TouchableOpacity 
                 style={styles.profileBtn}
-                onPress={() => navigation.navigate('Configuracoes')}
+                onPress={() => navigation.navigate('Perfil')}
               >
                 {userProfileImage ? (
                   <Image 
