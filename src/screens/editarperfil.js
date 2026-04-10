@@ -8,9 +8,11 @@ import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
 import { styles } from '../style/editarperfilstyle';
 
+const TUTOR_IMAGE = require('../assets/rayan_lindo.webp');
+
 export default function EditarPerfil() {
   const navigation = useNavigation();
-  const [name, setName] = useState('Luiza Ferreira');
+  const [name, setName] = useState('Rayan Rodrigues');
   const [cpf] = useState('803.863.360-16');
   const [address, setAddress] = useState('WE 33 - 1021');
   const [phoneDdd, setPhoneDdd] = useState('91');
@@ -39,7 +41,7 @@ export default function EditarPerfil() {
         <View style={styles.photoCard}>
           <TouchableOpacity style={styles.avatarWrapper} activeOpacity={0.9}>
             <Image
-              source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80' }}
+              source={TUTOR_IMAGE}
               style={styles.avatar}
             />
             <View style={styles.cameraBadge}>

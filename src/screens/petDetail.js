@@ -13,6 +13,8 @@ import { ChevronLeft, Share2, Heart } from 'lucide-react-native';
 import { styles } from '../style/petDetailStyle';
 import TabBar from '../components/TabBar/TabBar';
 
+const TUTOR_IMAGE = require('../assets/rayan_lindo.webp');
+
 export default function PetDetail() {
   const navigation = useNavigation();
   const route = useRoute();
@@ -31,7 +33,7 @@ export default function PetDetail() {
     description: 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
     personality: 'Nenhuma característica informada.',
     tutor: 'Rayan Rodrigues',
-    tutorImage: 'https://placekitten.com/80/80',
+    tutorImage: TUTOR_IMAGE,
     image: 'https://placekitten.com/400/600'
   };
 
@@ -139,7 +141,7 @@ export default function PetDetail() {
             <Text style={styles.tutorLabel}>TUTOR RESPONSÁVEL</Text>
             <View style={styles.tutorContent}>
               <Image 
-                source={{ uri: pet.tutorImage }} 
+                source={pet.tutorImage} 
                 style={styles.tutorImage} 
               />
               <View style={styles.tutorInfo}>

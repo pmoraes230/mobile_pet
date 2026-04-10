@@ -4,6 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { styles } from './headerHomeStyle';
 import { Bell, Check, Pill, Star } from 'lucide-react-native';
 
+const TUTOR_IMAGE = require('../../assets/rayan_lindo.webp');
+
 export default function HeaderHome({ 
   userName = 'Pedro', 
   showSearch = true,
@@ -87,18 +89,10 @@ export default function HeaderHome({
                 style={styles.profileBtn}
                 onPress={() => navigation.navigate('Perfil')}
               >
-                {userProfileImage ? (
-                  <Image 
-                    source={{ uri: userProfileImage }} 
-                    style={styles.profileImage}
-                  />
-                ) : (
-                  <View style={styles.profilePlaceholder}>
-                    <Text style={styles.profileInitial}>
-                      {userName.charAt(0).toUpperCase()}
-                    </Text>
-                  </View>
-                )}
+                <Image 
+                  source={userProfileImage ? { uri: userProfileImage } : TUTOR_IMAGE} 
+                  style={styles.profileImage}
+                />
               </TouchableOpacity>
             </View>
           )}

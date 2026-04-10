@@ -8,6 +8,8 @@ import HeaderHome from '../components/Header/HeaderHome';
 import TabBar from '../components/TabBar/TabBar';
 import { styles } from '../style/perfilstyle';
 
+const TUTOR_IMAGE = require('../assets/rayan_lindo.webp');
+
 export default function Perfil() {
   const navigation = useNavigation();
 
@@ -37,21 +39,21 @@ export default function Perfil() {
           <View style={styles.profileRow}>
             <View style={styles.avatarWrapper}>
               <Image
-                source={{ uri: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=200&q=80' }}
+                source={TUTOR_IMAGE}
                 style={styles.avatar}
               />
             </View>
 
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>Luiza Ferreira</Text>
+              <Text style={styles.profileName}>Rayan Rodrigues</Text>
               <View style={styles.tagRow}>
-                <Text style={styles.profileTag}>TUTOR PRIME</Text>
+                <Text style={styles.profileTag}>Responsavel</Text>
               </View>
               <Text style={styles.memberText}>Membro Ativo</Text>
               <View style={styles.contactRow}>
                 <View style={styles.contactItem}>
                   <Mail size={14} color="#9127E1" />
-                  <Text style={styles.contactText}>luiza@gmail.com</Text>
+                  <Text style={styles.contactText}>Rayan@gmail.com</Text>
                 </View>
                 <View style={styles.contactItem}>
                   <Phone size={14} color="#9127E1" />
