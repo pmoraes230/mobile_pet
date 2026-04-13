@@ -58,7 +58,7 @@ export default function Mensagens() {
       
       {/* HEADER FIXO - Fora do Scroll para não bugar o espaçamento */}
       <HeaderHome 
-        userName={chatAtivo ? chatAtivo.name : "Pedro"} 
+        userName={chatAtivo ? chatAtivo.name : "Rayan"} 
         showSearch={false} 
         showBackButton={true} 
         showGreeting={false} 

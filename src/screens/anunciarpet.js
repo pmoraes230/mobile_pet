@@ -18,7 +18,7 @@ export default function AnunciarPet() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <HeaderHome 
-        userName="Pedro" 
+        userName="Rayan" 
         showBackButton={true} 
         onBackPress={() => navigation.goBack()} 
       />

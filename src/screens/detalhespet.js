@@ -25,7 +25,7 @@ export default function TelaDetalhesPet() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <HeaderHome 
-        userName="Pedro" 
+        userName="Rayan" 
         showSearch={false} 
         showBackButton={true} 
         showGreeting={false} 

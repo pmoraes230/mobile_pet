@@ -14,7 +14,7 @@ export default function TinderPet() {
       <View style={styles.container}>
         
         <HeaderHome 
-          userName="Pedro" 
+          userName="Rayan" 
           showSearch={false} 
           showBackButton={true} 
           showGreeting={false} 
