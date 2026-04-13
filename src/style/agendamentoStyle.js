@@ -2,6 +2,7 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 export const styles = StyleSheet.create({
   safeArea: {
+    paddingTop: 35,
     flex: 1,
     backgroundColor: '#F8F9FD',
   },
