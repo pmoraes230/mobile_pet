@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, TouchableOpacity, Text } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { styles } from './tabBarStyle';
+import { styles } from './styles';
 import Sidebar from '../Sidebar/Sidebar';
 
 // Ícones Lucide

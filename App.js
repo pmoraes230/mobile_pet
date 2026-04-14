@@ -1,25 +1,25 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import ResponsavelLogin from "./src/screens/responsavellogin";
-import ResponsavelCadastro from "./src/screens/responsavelcadastro";
-import SplashApp from "./src/screens/spleshApp";
-import TelaInicial from "./src/screens/telainicial";
-import Mensagens from "./src/screens/mensagens";
-import TelaAgendamento from "./src/screens/agendamento";
-import TelaDiario from "./src/screens/diario";
-import TelaMeusPets from "./src/screens/meuspets";
-import TelaProntuario from "./src/screens/prontuario";
-import TinderPet from "./src/screens/cupidopet";
-import TelaAdocao from "./src/screens/adocao";
-import Configuracoes from "./src/screens/configuracoes";
-import Perfil from "./src/screens/perfil";
-import EditarPerfil from "./src/screens/editarperfil";
-import PetDetail from "./src/screens/petDetail";
-import detalhespet from "./src/screens/detalhespet";
-import ChatPrivado from "./src/screens/chatprivado";
-import novoagendamento from "./src/screens/novoagendamento";
-import anunciarpet from "./src/screens/anunciarpet";
+import ResponsavelLogin from "./src/pages/ResponsavelLogin/ResponsavelLogin";
+import ResponsavelCadastro from "./src/pages/ResponsavelCadastro/ResponsavelCadastro";
+import SplashApp from "./src/pages/SplashApp/SplashApp";
+import TelaInicial from "./src/pages/TelaInicial/TelaInicial";
+import Mensagens from "./src/pages/Mensagens/Mensagens";
+import TelaAgendamento from "./src/pages/Agendamento/Agendamento";
+import TelaDiario from "./src/pages/Diario/Diario";
+import TelaMeusPets from "./src/pages/MeusPets/MeusPets";
+import TelaProntuario from "./src/pages/Prontuario/Prontuario";
+import TinderPet from "./src/pages/CupidoPet/CupidoPet";
+import TelaAdocao from "./src/pages/Adocao/Adocao";
+import Configuracoes from "./src/pages/Configuracoes/Configuracoes";
+import Perfil from "./src/pages/Perfil/Perfil";
+import EditarPerfil from "./src/pages/EditarPerfil/EditarPerfil";
+import PetDetail from "./src/pages/PetDetail/PetDetail";
+import detalhespet from "./src/pages/DetalhesPet/DetalhesPet";
+import ChatPrivado from "./src/pages/ChatPrivado/ChatPrivado";
+import novoagendamento from "./src/pages/NovoAgendamento/NovoAgendamento";
+import anunciarpet from "./src/pages/AnunciarPet/AnunciarPet";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
