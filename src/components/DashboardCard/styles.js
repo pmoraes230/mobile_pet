@@ -30,8 +30,7 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: '#E8D5F7',
     justifyContent: 'center',
-    alignItems: 'flex-start',
-    paddingLeft: 10,
+    alignItems: 'center',
     marginBottom: 16,
   },
   cardTitle: {
