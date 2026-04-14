@@ -1,0 +1,81 @@
+﻿import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  screenContainer: {
+    flex: 1,
+    backgroundColor: '#F3F1FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  card: {
+    width: '100%',
+    backgroundColor: '#FFF',
+    borderRadius: 32,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+    alignItems: 'center',
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 18,
+  },
+  titulo: {
+    color: '#0D214F',
+    fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  subtitulo: {
+    color: '#7E869E',
+    textAlign: 'center',
+    marginBottom: 24,
+    fontSize: 14,
+    lineHeight: 22,
+  },
+  input: {
+    width: '100%',
+    backgroundColor: '#F8F8FF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E8E8F3',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 16,
+    color: '#18264B',
+    fontSize: 15,
+  },
+  esqueci: {
+    color: '#7E869E',
+    alignSelf: 'flex-end',
+    marginBottom: 24,
+    fontSize: 13,
+  },
+  botao: {
+    width: '100%',
+    backgroundColor: '#9127E1',
+    paddingVertical: 16,
+    borderRadius: 18,
+    alignItems: 'center',
+    marginBottom: 18,
+  },
+  textoBotao: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  footerText: {
+    color: '#7E869E',
+    textAlign: 'center',
+    fontSize: 13,
+  },
+  footerLink: {
+    color: '#9127E1',
+    fontWeight: '700',
+  },
+});

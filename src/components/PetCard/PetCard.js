@@ -2,9 +2,9 @@ import React from 'react';
 import { TouchableOpacity, View, Text, Image } from 'react-native';
 import { styles } from './styles';
 
-export default function PetCard({ pet, onPress, onMenuPress, actionLabel, onActionPress }) {
+export default function PetCard({ pet, onPress, onMenuPress, actionLabel, onActionPress, cardStyle }) {
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={onPress}>
+    <TouchableOpacity style={[styles.card, cardStyle]} activeOpacity={0.85} onPress={onPress}>
       <View style={styles.imageContainer}>
         <Image source={{ uri: pet.foto || pet.imagem }} style={styles.petImage} />
         {onMenuPress ? (

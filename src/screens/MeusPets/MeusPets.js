@@ -52,7 +52,7 @@ export default function TelaMeusPets() {
           </View>
 
           {/* BOTÃO ADICIONAR PET */}
-          <TouchableOpacity style={styles.btnAddPet}>
+          <TouchableOpacity style={styles.btnAddPet} onPress={() => navigation.navigate('anunciarpet')}>
             <Text style={{fontSize: 20, color: '#9127E1', fontWeight: 'bold'}}>+</Text>
             <Text style={styles.btnAddText}>Adicionar pet</Text>
           </TouchableOpacity>

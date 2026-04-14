@@ -133,6 +133,9 @@ export const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
+  smallCard: {
+    width: '47%',
+  },
   adoptionCard: {
     backgroundColor: '#FFF',
     width: '48%', 

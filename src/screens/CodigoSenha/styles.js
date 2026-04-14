@@ -1,0 +1,93 @@
+import { StyleSheet } from 'react-native';
+
+export const styles = StyleSheet.create({
+  screenContainer: {
+    flex: 1,
+    backgroundColor: '#F3F1FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  card: {
+    width: '100%',
+    backgroundColor: '#FFF',
+    borderRadius: 32,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+    alignItems: 'center',
+  },
+  backButton: {
+    width: 44,
+    height: 44,
+    backgroundColor: '#F5F3FF',
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  backIcon: {
+    fontSize: 18,
+    color: '#6B7280',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#0D214F',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#7E869E',
+    lineHeight: 21,
+    marginBottom: 28,
+    textAlign: 'center',
+  },
+  codeRow: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  codeBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: '#F8F8FF',
+    borderWidth: 1,
+    borderColor: '#E8E8F3',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  codeText: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#0D214F',
+  },
+  hiddenInput: {
+    width: 0,
+    height: 0,
+    opacity: 0,
+  },
+  button: {
+    width: '100%',
+    backgroundColor: '#9127E1',
+    borderRadius: 18,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  buttonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  resendText: {
+    color: '#9127E1',
+    fontWeight: '700',
+    fontSize: 14,
+  },
+});

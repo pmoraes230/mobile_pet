@@ -7,7 +7,7 @@ export default function DashboardCard({ icon: Icon, title, description, badge, o
     <TouchableOpacity style={styles.card} activeOpacity={0.75} onPress={onPress}>
       {badge && <View style={styles.badge} />}
       <View style={styles.iconContainer}>
-        <Icon size={24} color="#333" />
+        <Icon size={32} color="#333" />
       </View>
       <Text style={styles.cardTitle}>{title}</Text>
       <Text style={styles.cardDescription}>{description}</Text>

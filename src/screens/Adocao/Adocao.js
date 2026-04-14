@@ -126,6 +126,7 @@ export default function TelaAdocao() {
                 onPress={() => {}}
                 actionLabel="Quero Adotar"
                 onActionPress={() => {}}
+                cardStyle={styles.smallCard}
               />
             ))}
           </View>

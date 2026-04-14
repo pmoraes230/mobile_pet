@@ -42,9 +42,9 @@ export const styles = StyleSheet.create({
   card: {
     width: '48%', // Ajustado para que 2 cards + o espaço entre eles ocupem 100%
     backgroundColor: 'white',
-    borderRadius: 18,
-    padding: 18,
-    marginBottom: 15, // Espaço entre as linhas da grade
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 20, // Espaço entre as linhas da grade
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.08,
