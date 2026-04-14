@@ -65,7 +65,7 @@ export default function TinderPet() {
 
             <TouchableOpacity 
               style={styles.btnSmall}
-              onPress={() => navigation.navigate('detalhespet')}
+              onPress={() => navigation.navigate('PetDetail')}
             >
               <Info size={28} color="#4A90E2" strokeWidth={3} />
             </TouchableOpacity>
