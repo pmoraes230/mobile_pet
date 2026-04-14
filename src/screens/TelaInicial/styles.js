@@ -43,7 +43,7 @@ export const styles = StyleSheet.create({
     width: '48%', // Ajustado para que 2 cards + o espaço entre eles ocupem 100%
     backgroundColor: 'white',
     borderRadius: 24,
-    padding: 24,
+    padding: 20,
     marginBottom: 20, // Espaço entre as linhas da grade
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },

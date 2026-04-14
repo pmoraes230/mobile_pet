@@ -30,18 +30,21 @@ export const styles = StyleSheet.create({
     borderRadius: 18,
     backgroundColor: '#E8D5F7',
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 24,
+    alignItems: 'flex-start',
+    paddingLeft: 10,
+    marginBottom: 16,
   },
   cardTitle: {
     fontSize: 16,
     fontWeight: '700',
     color: '#0D214F',
     marginBottom: 8,
+    textAlign: 'left',
   },
   cardDescription: {
     fontSize: 13,
     color: '#6B7280',
     lineHeight: 18,
+    textAlign: 'left',
   },
 });
