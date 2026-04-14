@@ -33,7 +33,7 @@ export default function Configuracoes() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <HeaderHome
-          userName="Pedro"
+          userName="Rayan"
           showSearch={false}
           showBackButton={true}
           onBackPress={() => navigation.goBack()}

@@ -7,7 +7,7 @@ import { Bell, Check, Pill, Star } from 'lucide-react-native';
 const TUTOR_IMAGE = require('../../assets/rayan_lindo.webp');
 
 export default function HeaderHome({ 
-  userName = 'Pedro', 
+  userName = 'Rayan', 
   showSearch = true,
   showBackButton = false,
   onBackPress,

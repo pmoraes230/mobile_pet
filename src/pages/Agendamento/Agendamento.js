@@ -31,7 +31,7 @@ export default function TelaAgendamento() {
       
       {/* HEADER AJUSTADO PARA NÃO PARECER A TELA INICIAL */}
       <HeaderHome 
-        userName="Pedro" 
+        userName="Rayan" 
         showSearch={false}      // DESATIVA A BUSCA
         showGreeting={false}    // DESATIVA O "BOA TARDE"
         showBackButton={true}   // ATIVA O BOTÃO VOLTAR

@@ -114,7 +114,7 @@ export default function TelaInicial() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {/* HEADER */}
-        <HeaderHome userName="Pedro" />
+        <HeaderHome userName="Rayan" />
 
         {/* SCROLL CARDS */}
         <ScrollView 

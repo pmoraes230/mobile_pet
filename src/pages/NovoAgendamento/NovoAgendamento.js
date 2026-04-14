@@ -33,7 +33,7 @@ export default function TelaNovoAgendamento() {
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* HEADER */}
-      <HeaderHome userName="Pedro" showSearch={false} showBackButton={true} showGreeting={false} onBackPress={() => navigation.goBack()} />
+      <HeaderHome userName="Rayan" showSearch={false} showBackButton={true} showGreeting={false} onBackPress={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         
