@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Modal } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { styles } from './sidebarStyle';
+import { styles } from './styles';
 import { User, Settings, LogOut } from 'lucide-react-native';
 
 export default function Sidebar({ visible, onClose, onLogout }) {
