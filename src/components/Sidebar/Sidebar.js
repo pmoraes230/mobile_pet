@@ -1,11 +1,18 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Modal } from 'react-native';
+import React, { useState } from 'react';
+import { 
+  View, Text, TouchableOpacity, Modal 
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
 import { User, Settings, LogOut } from 'lucide-react-native';
 
-export default function Sidebar({ visible, onClose, onLogout }) {
+import { logout } from '../../services/auth';
+
+export default function Sidebar({ visible, onClose }) {
   const navigation = useNavigation();
+  
+  // Estados do Modal Customizado
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
   const menuItems = [
     { id: 1, label: 'Meu Perfil', icon: User, color: '#4A90E2', route: 'Perfil' },
@@ -13,14 +20,29 @@ export default function Sidebar({ visible, onClose, onLogout }) {
     { id: 3, label: 'Sair', icon: LogOut, color: '#EF4444', isLogout: true },
   ];
 
+  const handleLogoutConfirm = async () => {
+    try {
+      await logout();
+      setConfirmModalVisible(false);
+      onClose();
+
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    } catch (error) {
+      console.error(error);
+      setConfirmModalVisible(false);
+    }
+  };
+
   const handlePress = (item) => {
     if (item.isLogout) {
-      onLogout();
+      setConfirmModalVisible(true);   // Abre o pop-up de confirmação
     } else if (item.route) {
       navigation.navigate(item.route);
+      onClose();
     }
-
-    onClose();
   };
 
   return (
@@ -31,11 +53,7 @@ export default function Sidebar({ visible, onClose, onLogout }) {
       onRequestClose={onClose}
     >
       <View style={styles.overlay}>
-        {/* Toca pra fechar */}
-        <TouchableOpacity 
-          style={styles.clickArea} 
-          onPress={onClose}
-        />
+        <TouchableOpacity style={styles.clickArea} onPress={onClose} />
 
         {/* SIDEBAR */}
         <View style={styles.sidebar}>
@@ -69,6 +87,41 @@ export default function Sidebar({ visible, onClose, onLogout }) {
           </View>
         </View>
       </View>
+
+      {/* ==================== POP-UP CUSTOMIZADO DE CONFIRMAÇÃO ==================== */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={confirmModalVisible}
+        onRequestClose={() => setConfirmModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <LogOut size={48} color="#EF4444" style={{ marginBottom: 16 }} />
+            
+            <Text style={styles.modalTitle}>Deseja realmente sair?</Text>
+            <Text style={styles.modalMessage}>
+              Você precisará fazer login novamente para acessar o app.
+            </Text>
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity 
+                style={styles.cancelButton}
+                onPress={() => setConfirmModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.confirmButton}
+                onPress={handleLogoutConfirm}
+              >
+                <Text style={styles.confirmButtonText}>Sair</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Modal>
   );
 }

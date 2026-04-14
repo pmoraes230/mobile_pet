@@ -1,54 +1,137 @@
-import React from 'react';
-import { View, Text, Image, TextInput, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import {
+  View, Text, StyleSheet, Image, TextInput, TouchableOpacity, Modal
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { styles } from './styles';
+
+import { styles } from './styles'
+import { login, setupAxiosInterceptors } from '../../services/auth';
 
 export default function ResponsavelLogin() {
   const navigation = useNavigation();
 
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  // Estados do Modal Customizado
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState('');
+  const [modalMessage, setModalMessage] = useState('');
+  const [modalType, setModalType] = useState('error'); // 'error' ou 'success'
+
+  const showCustomAlert = (title, message, type = 'error') => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalType(type);
+    setModalVisible(true);
+  };
+
+  const handleLogin = async () => {
+    if (!email || !senha) {
+      showCustomAlert('Erro', 'Por favor, preencha email e senha');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await login(email, senha);
+      setupAxiosInterceptors();
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+    } catch (err) {
+      // Agora a mensagem já vem bem amigável
+      showCustomAlert('Falha no Login', err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <View style={styles.screenContainer}>
-      <View style={styles.card}>
-        <Image
-          source={require('../../assets/pet.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
+    <View style={styles.container}>
 
-        <Text style={styles.titulo}>Bem vindo!</Text>
-        <Text style={styles.subtitulo}>Acesse sua conta e gerencie seus pets com facilidade.</Text>
+      {/* LOGO */}
+      <Image
+        source={require('../../assets/pet.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
 
-        <TextInput
-          placeholder="Email"
-          placeholderTextColor="#A0A7E6"
-          style={styles.input}
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
+      <Text style={styles.titulo}>BEM VINDO!</Text>
+      <Text style={styles.subtitulo}>
+        Insira o e-mail e a senha cadastrados.
+      </Text>
 
-        <TextInput
-          placeholder="Senha"
-          placeholderTextColor="#A0A7E6"
-          secureTextEntry
-          style={styles.input}
-        />
+      <TextInput
+        placeholder="Email"
+        placeholderTextColor="#999"
+        style={styles.input}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
+      />
 
-<TouchableOpacity onPress={() => navigation.navigate('EsqueciSenha')}> 
-          <Text style={styles.esqueci}>Esqueci minha senha</Text>
-        </TouchableOpacity>
+      <TextInput
+        placeholder="Senha"
+        placeholderTextColor="#999"
+        secureTextEntry
+        style={styles.input}
+        value={senha}
+        onChangeText={setSenha}
+      />
 
-        <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Home')}>
-          <Text style={styles.textoBotao}>Entrar</Text>
-        </TouchableOpacity>
+      <TouchableOpacity>
+        <Text style={styles.esqueci}>Esqueci minha senha</Text>
+      </TouchableOpacity>
 
-        <Text style={styles.footerText}>
-          Ainda não tem uma conta?{' '}
-          <Text style={styles.footerLink} onPress={() => navigation.navigate('Cadastro')}>
-            Criar conta
-          </Text>
+      <TouchableOpacity
+        style={styles.botao}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        <Text style={styles.textoBotao}>
+          {loading ? "Entrando..." : "Entrar"}
         </Text>
-      </View>
+      </TouchableOpacity>
+
+      <Text style={styles.footer}>
+        Ainda Não tem uma conta ?{' '}
+        <Text
+          style={{ color: '#F4C542' }}
+          onPress={() => navigation.navigate('Cadastro')}
+        >
+          Criar Conta
+        </Text>
+      </Text>
+
+      {/* ==================== MODAL CUSTOMIZADO ==================== */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>
+              {modalTitle}
+            </Text>
+
+            <Text style={styles.modalMessage}>
+              {modalMessage}
+            </Text>
+
+            <TouchableOpacity
+              style={styles.modalButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
-

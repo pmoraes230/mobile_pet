@@ -1,81 +1,140 @@
-﻿import { StyleSheet } from 'react-native';
+﻿import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  screenContainer: {
+  container: {
     flex: 1,
-    backgroundColor: '#F3F1FF',
+    backgroundColor: '#573F94',
+    alignItems: 'center',
+    paddingTop: 60,
+  },
+
+  voltarBtn: {
+    position: 'absolute',
+    top: 50,
+    left: 20,
+    backgroundColor: '#eee',
+    padding: 10,
+    borderRadius: 10,
+  },
+
+  logo: {
+    width: 140,
+    height: 140,
+    marginBottom: 10,
+  },
+
+  titulo: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 10,
+  },
+
+  subtitulo: {
+    color: 'white',
+    textAlign: 'center',
+    marginHorizontal: 30,
+    marginBottom: 20,
+  },
+
+  input: {
+    backgroundColor: '#eee',
+    width: '85%',
+    padding: 15,
+    borderRadius: 15,
+    marginBottom: 15,
+  },
+
+  esqueci: {
+    color: '#F4C542',
+    alignSelf: 'flex-end',
+    marginRight: '7.5%',
+    marginBottom: 20,
+    fontSize: 13,
+  },
+
+  botao: {
+    backgroundColor: '#F4C542',
+    width: '85%',
+    padding: 15,
+    borderRadius: 15,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+
+  textoBotao: {
+    fontWeight: 'bold',
+  },
+
+  ou: {
+    color: 'white',
+    marginBottom: 20,
+  },
+
+  socialContainer: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
+  socialBtn: {
+    backgroundColor: '#eee',
+    padding: 15,
+    borderRadius: 10,
+    width: 140,
+    alignItems: 'center',
+  },
+
+  footer: {
+    color: 'white',
+    marginTop: 20,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
-  card: {
-    width: '100%',
-    backgroundColor: '#FFF',
-    borderRadius: 32,
-    padding: 28,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 8,
+
+  modalContainer: {
+    width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 25,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 10,
   },
-  logo: {
-    width: 100,
-    height: 100,
-    marginBottom: 18,
-  },
-  titulo: {
-    color: '#0D214F',
-    fontSize: 26,
+
+  modalTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 8,
-  },
-  subtitulo: {
-    color: '#7E869E',
+    color: '#573F94',
+    marginBottom: 12,
     textAlign: 'center',
-    marginBottom: 24,
-    fontSize: 14,
+  },
+  modalMessage: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    marginBottom: 20,
     lineHeight: 22,
   },
-  input: {
-    width: '100%',
-    backgroundColor: '#F8F8FF',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#E8E8F3',
-    paddingVertical: 14,
-    paddingHorizontal: 18,
-    marginBottom: 16,
-    color: '#18264B',
-    fontSize: 15,
+
+  modalButton: {
+    backgroundColor: '#573F94',
+    paddingVertical: 12,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    marginTop: 10,
   },
-  esqueci: {
-    color: '#7E869E',
-    alignSelf: 'flex-end',
-    marginBottom: 24,
-    fontSize: 13,
-  },
-  botao: {
-    width: '100%',
-    backgroundColor: '#9127E1',
-    paddingVertical: 16,
-    borderRadius: 18,
-    alignItems: 'center',
-    marginBottom: 18,
-  },
-  textoBotao: {
-    color: '#FFF',
-    fontWeight: 'bold',
+  
+  modalButtonText: {
+    color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
   },
-  footerText: {
-    color: '#7E869E',
-    textAlign: 'center',
-    fontSize: 13,
-  },
-  footerLink: {
-    color: '#9127E1',
-    fontWeight: '700',
-  },
-});
+})
