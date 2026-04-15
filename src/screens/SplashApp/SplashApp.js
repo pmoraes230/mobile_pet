@@ -15,7 +15,7 @@ export default function SplashApp() {
     return (
         <View style={styles.container}>
             <Image source={
-                require("../../assets/pet.png")}
+                require("../../assets/pet_branco.png")}
                 style={styles.image}
                 resizeMode="contain"
             />

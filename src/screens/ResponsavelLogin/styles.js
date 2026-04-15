@@ -1,94 +1,84 @@
-﻿import { StyleSheet } from "react-native";
+﻿import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-  container: {
+  screenContainer: {
     flex: 1,
-    backgroundColor: '#573F94',
+    backgroundColor: '#F3F1FF',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 60,
+    paddingHorizontal: 20,
   },
-
-  voltarBtn: {
-    position: 'absolute',
-    top: 50,
-    left: 20,
-    backgroundColor: '#eee',
-    padding: 10,
-    borderRadius: 10,
+  card: {
+    width: '100%',
+    backgroundColor: '#FFF',
+    borderRadius: 32,
+    padding: 28,
+    shadowColor: '#000',
+    shadowOpacity: 0.06,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 8,
+    alignItems: 'center',
   },
-
   logo: {
-    width: 140,
-    height: 140,
+    width: 180,
+    height: 90,
     marginBottom: 10,
+    alignSelf: 'center',
   },
-
   titulo: {
-    color: 'white',
+    color: '#0D214F',
+    fontSize: 26,
     fontWeight: 'bold',
-    fontSize: 18,
-    marginBottom: 10,
+    marginBottom: 8,
   },
-
   subtitulo: {
-    color: 'white',
+    color: '#7E869E',
     textAlign: 'center',
-    marginHorizontal: 30,
-    marginBottom: 20,
+    marginBottom: 24,
+    fontSize: 14,
+    lineHeight: 22,
   },
-
   input: {
-    backgroundColor: '#eee',
-    width: '85%',
-    padding: 15,
-    borderRadius: 15,
-    marginBottom: 15,
+    width: '100%',
+    backgroundColor: '#F8F8FF',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#E8E8F3',
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+    marginBottom: 16,
+    color: '#18264B',
+    fontSize: 15,
   },
-
   esqueci: {
-    color: '#F4C542',
+    color: '#7E869E',
     alignSelf: 'flex-end',
-    marginRight: '7.5%',
-    marginBottom: 20,
+    marginBottom: 24,
     fontSize: 13,
   },
-
   botao: {
-    backgroundColor: '#F4C542',
-    width: '85%',
-    padding: 15,
-    borderRadius: 15,
+    width: '100%',
+    backgroundColor: '#9127E1',
+    paddingVertical: 16,
+    borderRadius: 18,
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 18,
   },
-
   textoBotao: {
+    color: '#FFF',
     fontWeight: 'bold',
+    fontSize: 16,
   },
-
-  ou: {
-    color: 'white',
-    marginBottom: 20,
+  footerText: {
+    color: '#7E869E',
+    textAlign: 'center',
+    fontSize: 13,
   },
-
-  socialContainer: {
-    flexDirection: 'row',
-    gap: 10,
+  footerLink: {
+    color: '#9127E1',
+    fontWeight: '700',
   },
-
-  socialBtn: {
-    backgroundColor: '#eee',
-    padding: 15,
-    borderRadius: 10,
-    width: 140,
-    alignItems: 'center',
-  },
-
-  footer: {
-    color: 'white',
-    marginTop: 20,
-  },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
@@ -131,10 +121,10 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     marginTop: 10,
   },
-  
+
   modalButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-})
+});
