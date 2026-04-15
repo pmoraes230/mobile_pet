@@ -30,7 +30,6 @@ export default function ResponsavelLogin() {
     }
     setLoading(true);
     try {
-      console.log(email);
       await login(email, senha);
       setupAxiosInterceptors();
       navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
