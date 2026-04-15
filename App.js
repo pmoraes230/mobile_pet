@@ -23,6 +23,7 @@ import anunciarpet from './src/screens/AnunciarPet/AnunciarPet';
 import EsqueciSenha from './src/screens/EsqueciSenha/EsqueciSenha';
 import CodigoSenha from './src/screens/CodigoSenha/CodigoSenha';
 import RedefinirSenha from './src/screens/RedefinirSenha/RedefinirSenha';
+import NotificacoesGerais from './src/screens/NotificacoesGerais/notificacoesgerais';
 const Stack = createNativeStackNavigator();
 
 export default function App() {
@@ -51,8 +52,9 @@ export default function App() {
         <Stack.Screen name="ChatPrivado" component={ChatPrivado} />
         <Stack.Screen name="novoagendamento" component={novoagendamento} />
         <Stack.Screen name="anunciarpet" component={anunciarpet} />
-        
-        
+        <Stack.Screen name="NotificacoesGerais" component={NotificacoesGerais} />
+
+
       </Stack.Navigator>
     </NavigationContainer>
   );

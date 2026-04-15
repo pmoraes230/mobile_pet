@@ -4,13 +4,14 @@ export const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
+    paddingTop: 35,
   },
   scrollContent: {
-    padding: 24,
-    paddingBottom: 60,
+    padding: 20,
+    paddingBottom: 100,
   },
   headerSection: {
-    marginBottom: 30,
+    marginBottom: 28,
   },
   title: {
     fontSize: 26,
@@ -20,17 +21,17 @@ export const styles = StyleSheet.create({
   subtitle: {
     fontSize: 14,
     color: '#7E869E',
-    marginTop: 5,
+    marginTop: 8,
   },
   // INPUTS
   inputGroup: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   label: {
     fontSize: 12,
     fontWeight: '800',
     color: '#A0A7BA',
-    marginBottom: 8,
+    marginBottom: 10,
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
@@ -59,7 +60,7 @@ export const styles = StyleSheet.create({
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 32,
   },
   uploadText: {
     color: '#A0A7BA',
@@ -72,7 +73,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: 12,
-    marginTop: 10,
+    marginTop: 20,
   },
   btnCancel: {
     flex: 1,
@@ -93,4 +94,53 @@ export const styles = StyleSheet.create({
   },
   btnTextCancel: { color: '#7E869E', fontWeight: 'bold' },
   btnTextSubmit: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+  // Estilos do Modal de Seleção
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    width: '100%',
+    maxHeight: '80%',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0D214F',
+    marginBottom: 15,
+  },
+  modalItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#4A5568',
+    fontWeight: '500',
+  },
+  modalCloseBtn: {
+    marginTop: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    backgroundColor: '#F3F5F9',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCloseBtnText: {
+    color: '#7E869E',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });

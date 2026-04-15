@@ -144,4 +144,48 @@ export const styles = StyleSheet.create({
   },
   btnTextSecondary: { color: '#7E869E', fontWeight: 'bold' },
   btnTextPrimary: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
+
+  // Estilos do Modal de Seleção
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    width: '100%',
+    maxHeight: '80%',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  modalItem: {
+    paddingVertical: 16,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  modalItemText: {
+    fontSize: 16,
+    color: '#4A5568',
+    fontWeight: '500',
+  },
+  modalCloseBtn: {
+    marginTop: 15,
+    paddingVertical: 12,
+    paddingHorizontal: 15,
+    backgroundColor: '#F3F5F9',
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalCloseBtnText: {
+    color: '#7E869E',
+    fontSize: 14,
+    fontWeight: '600',
+  },
 });

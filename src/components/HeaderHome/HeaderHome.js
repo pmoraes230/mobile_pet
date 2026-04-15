@@ -143,6 +143,16 @@ export default function HeaderHome({
                 </TouchableOpacity>
               ))}
             </ScrollView>
+
+            <TouchableOpacity
+              style={styles.seeAllBtn}
+              onPress={() => {
+                setShowNotifModal(false);
+                setTimeout(() => navigation.navigate('NotificacoesGerais'), 300);
+              }}
+            >
+              <Text style={styles.seeAllBtnText}>Ver Todas as Notificações →</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  ScrollView, 
-  TouchableOpacity, 
-  Text, 
-  SafeAreaView, 
-  TextInput 
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Text,
+  SafeAreaView,
+  TextInput,
+  Modal,
+  FlatList
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
@@ -17,9 +19,44 @@ export default function TelaNovoAgendamento() {
   const [selectedDay, setSelectedDay] = useState(2); // Quarta-feira
   const [activeTab, setActiveTab] = useState('home');
 
+  // Estados para os selects
+  const [selectedPet, setSelectedPet] = useState(null);
+  const [selectedVeterinario, setSelectedVeterinario] = useState(null);
+  const [selectedServico, setSelectedServico] = useState('Consulta Geral');
+
+  // Estados para controlar modais abertos
+  const [modalPetOpen, setModalPetOpen] = useState(false);
+  const [modalVeterOpen, setModalVeterOpen] = useState(false);
+  const [modalServicoOpen, setModalServicoOpen] = useState(false);
+
   const handleLogout = () => {
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
+
+  // Dados dos pets
+  const pets = [
+    { id: 1, name: 'Missy' },
+    { id: 2, name: 'Rex' },
+    { id: 3, name: 'Bella' },
+    { id: 4, name: 'Max' },
+    { id: 5, name: 'Luna' },
+  ];
+
+  // Dados dos veterinários
+  const veterinarios = [
+    { id: 1, name: 'Dr. Patrick Nascimento' },
+    { id: 2, name: 'Dr. Silva' },
+    { id: 3, name: 'Dra. Maria' },
+    { id: 4, name: 'Dr. João' },
+  ];
+
+  // Dados dos serviços
+  const servicos = [
+    { id: 1, name: 'Consulta Geral' },
+    { id: 2, name: 'Vacinação' },
+    { id: 3, name: 'Check-up' },
+    { id: 4, name: 'Retorno' },
+  ];
 
   const dias = [
     { id: 0, label: 'SEG', num: '30' },
@@ -30,13 +67,23 @@ export default function TelaNovoAgendamento() {
     { id: 5, label: 'SÁB', num: '4' },
   ];
 
+  // Função auxiliar para renderizar opções de modal
+  const renderModalItem = (item, onSelect) => (
+    <TouchableOpacity
+      style={styles.modalItem}
+      onPress={() => onSelect(item)}
+    >
+      <Text style={styles.modalItemText}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* HEADER */}
       <HeaderHome userName="Rayan" showSearch={false} showBackButton={true} showGreeting={false} onBackPress={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         {/* TÍTULO DO MODAL */}
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Novo Agendamento</Text>
@@ -46,8 +93,13 @@ export default function TelaNovoAgendamento() {
         {/* CAMPO: QUAL PET? */}
         <View style={styles.inputWrapper}>
           <Text style={styles.label}>QUAL PET?</Text>
-          <TouchableOpacity style={styles.selectField}>
-            <Text style={styles.selectText}>Selecione seu pet...</Text>
+          <TouchableOpacity
+            style={styles.selectField}
+            onPress={() => setModalPetOpen(true)}
+          >
+            <Text style={styles.selectText}>
+              {selectedPet ? selectedPet.name : 'Selecione seu pet...'}
+            </Text>
             <Text style={{color: '#A0A7BA'}}>▼</Text>
           </TouchableOpacity>
         </View>
@@ -55,8 +107,13 @@ export default function TelaNovoAgendamento() {
         {/* CAMPO: VETERINÁRIO */}
         <View style={styles.inputWrapper}>
           <Text style={styles.label}>VETERINÁRIO</Text>
-          <TouchableOpacity style={styles.selectField}>
-            <Text style={styles.selectText}>Escolha o médico...</Text>
+          <TouchableOpacity
+            style={styles.selectField}
+            onPress={() => setModalVeterOpen(true)}
+          >
+            <Text style={styles.selectText}>
+              {selectedVeterinario ? selectedVeterinario.name : 'Escolha o médico...'}
+            </Text>
             <Text style={{color: '#A0A7BA'}}>▼</Text>
           </TouchableOpacity>
         </View>
@@ -64,8 +121,11 @@ export default function TelaNovoAgendamento() {
         {/* CAMPO: TIPO DE SERVIÇO */}
         <View style={styles.inputWrapper}>
           <Text style={styles.label}>TIPO DE SERVIÇO</Text>
-          <TouchableOpacity style={styles.selectField}>
-            <Text style={styles.selectText}>Consulta Geral</Text>
+          <TouchableOpacity
+            style={styles.selectField}
+            onPress={() => setModalServicoOpen(true)}
+          >
+            <Text style={styles.selectText}>{selectedServico}</Text>
             <Text style={{color: '#A0A7BA'}}>▼</Text>
           </TouchableOpacity>
         </View>
@@ -75,7 +135,7 @@ export default function TelaNovoAgendamento() {
           <Text style={styles.label}>DATA DA CONSULTA (MARÇO 2026)</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{marginTop: 10}}>
             {dias.map((item) => (
-              <TouchableOpacity 
+              <TouchableOpacity
                 key={item.id}
                 onPress={() => setSelectedDay(item.id)}
                 style={[styles.dayCard, selectedDay === item.id && styles.dayCardActive]}
@@ -90,7 +150,7 @@ export default function TelaNovoAgendamento() {
         {/* CAMPO: OBSERVAÇÕES */}
         <View style={[styles.inputWrapper, {marginTop: 25}]}>
           <Text style={styles.label}>OBSERVAÇÕES</Text>
-          <TextInput 
+          <TextInput
             style={styles.textArea}
             placeholder="Descreva brevemente..."
             multiline
@@ -110,6 +170,93 @@ export default function TelaNovoAgendamento() {
         </View>
 
       </ScrollView>
+
+      {/* MODAL: SELECIONAR PET */}
+      <Modal
+        visible={modalPetOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalPetOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Selecione um Pet</Text>
+            <FlatList
+              data={pets}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => renderModalItem(item, (selected) => {
+                setSelectedPet(selected);
+                setModalPetOpen(false);
+              })}
+              scrollEnabled={true}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setModalPetOpen(false)}
+            >
+              <Text style={styles.modalCloseBtnText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL: SELECIONAR VETERINÁRIO */}
+      <Modal
+        visible={modalVeterOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalVeterOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Selecione um Veterinário</Text>
+            <FlatList
+              data={veterinarios}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => renderModalItem(item, (selected) => {
+                setSelectedVeterinario(selected);
+                setModalVeterOpen(false);
+              })}
+              scrollEnabled={true}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setModalVeterOpen(false)}
+            >
+              <Text style={styles.modalCloseBtnText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* MODAL: SELECIONAR SERVIÇO */}
+      <Modal
+        visible={modalServicoOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalServicoOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Selecione um Serviço</Text>
+            <FlatList
+              data={servicos}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => renderModalItem(item, (selected) => {
+                setSelectedServico(selected.name);
+                setModalServicoOpen(false);
+              })}
+              scrollEnabled={true}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setModalServicoOpen(false)}
+            >
+              <Text style={styles.modalCloseBtnText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <TabBar activeTab={activeTab} onTabPress={setActiveTab} onLogout={handleLogout} />
     </SafeAreaView>
