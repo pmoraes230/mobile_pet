@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  ScrollView, 
-  Text, 
-  TouchableOpacity, 
-  TextInput, 
-  SafeAreaView 
+import {
+  View,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  TextInput,
+  SafeAreaView,
+  Modal,
+  FlatList
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Frown, Meh, Smile } from 'lucide-react-native';
@@ -17,6 +19,15 @@ export default function TelaDiario() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('consultas');
   const [mood, setMood] = useState('happy');
+  const [selectedPet, setSelectedPet] = useState(null);
+  const [modalPetOpen, setModalPetOpen] = useState(false);
+
+  const pets = [
+    { id: 1, name: 'Missy' },
+    { id: 2, name: 'Rex' },
+    { id: 3, name: 'Bella' },
+    { id: 4, name: 'Max' },
+  ];
 
   const handleLogout = () => {
     navigation.reset({
@@ -24,6 +35,15 @@ export default function TelaDiario() {
       routes: [{ name: 'Login' }],
     });
   };
+
+  const renderModalItem = (item, onSelect) => (
+    <TouchableOpacity
+      style={styles.modalItem}
+      onPress={() => onSelect(item)}
+    >
+      <Text style={styles.modalItemText}>{item.name}</Text>
+    </TouchableOpacity>
+  );
 
   const registros = [
     { id: 1, pet: 'Missy', data: '12/03 • 17:21', relato: 'se sentiu sozinho', icon: Frown },
@@ -37,13 +57,15 @@ export default function TelaDiario() {
       <HeaderHome userName="Rayan" showSearch={false} showBackButton={true} showGreeting={false} onBackPress={() => navigation.goBack()} />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
+
         {/* GRÁFICO (Tendência Semanal) */}
         <View style={styles.chartCard}>
           <View style={styles.chartHeader}>
             <Text style={styles.chartTitle}>Tendência semanal</Text>
             <View style={styles.petBadge}>
-              <Text style={styles.petBadgeText}>MISSY</Text>
+              <Text style={styles.petBadgeText}>
+                {selectedPet ? selectedPet.name.toUpperCase() : 'MISSY'}
+              </Text>
             </View>
           </View>
           {/* Aqui você usaria uma lib como react-native-chart-kit, deixei o espaço */}
@@ -55,20 +77,20 @@ export default function TelaDiario() {
         {/* CARD DE REGISTRO RÁPIDO (ROXO) */}
         <View style={styles.inputCard}>
           <View style={styles.emojiRow}>
-            <TouchableOpacity 
-              style={[styles.emojiBtn, mood === 'sad' && styles.emojiSelected]} 
+            <TouchableOpacity
+              style={[styles.emojiBtn, mood === 'sad' && styles.emojiSelected]}
               onPress={() => setMood('sad')}
             >
               <Frown size={30} color={mood === 'sad' ? '#FFF' : '#A0A7BA'} />
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.emojiBtn, mood === 'neutral' && styles.emojiSelected]} 
+            <TouchableOpacity
+              style={[styles.emojiBtn, mood === 'neutral' && styles.emojiSelected]}
               onPress={() => setMood('neutral')}
             >
               <Meh size={30} color={mood === 'neutral' ? '#FFF' : '#A0A7BA'} />
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={[styles.emojiBtn, mood === 'happy' && styles.emojiSelected]} 
+            <TouchableOpacity
+              style={[styles.emojiBtn, mood === 'happy' && styles.emojiSelected]}
               onPress={() => setMood('happy')}
             >
               <Smile size={30} color={mood === 'happy' ? '#FFF' : '#A0A7BA'} />
@@ -76,12 +98,17 @@ export default function TelaDiario() {
           </View>
 
           <Text style={styles.labelWhite}>ESCOLHER PET</Text>
-          <TouchableOpacity style={styles.selectWhite}>
-            <Text style={{color: '#FFF'}}>Missy</Text>
+          <TouchableOpacity
+            style={styles.selectWhite}
+            onPress={() => setModalPetOpen(true)}
+          >
+            <Text style={{color: '#FFF'}}>
+              {selectedPet ? selectedPet.name : 'Missy'}
+            </Text>
           </TouchableOpacity>
 
           <Text style={styles.labelWhite}>RELATO DO DIA</Text>
-          <TextInput 
+          <TextInput
             style={styles.inputWhite}
             placeholder="Como foi o dia dele?"
             placeholderTextColor="#A0A7BA"
@@ -109,6 +136,35 @@ export default function TelaDiario() {
         ))}
 
       </ScrollView>
+
+      {/* MODAL: SELECIONAR PET */}
+      <Modal
+        visible={modalPetOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setModalPetOpen(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Selecione um Pet</Text>
+            <FlatList
+              data={pets}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => renderModalItem(item, (selected) => {
+                setSelectedPet(selected);
+                setModalPetOpen(false);
+              })}
+              scrollEnabled={true}
+            />
+            <TouchableOpacity
+              style={styles.modalCloseBtn}
+              onPress={() => setModalPetOpen(false)}
+            >
+              <Text style={styles.modalCloseBtnText}>Fechar</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       {/* TAB BAR */}
       <TabBar activeTab={activeTab} onTabPress={setActiveTab} onLogout={handleLogout} />

@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { 
-  View, ScrollView, Text, TouchableOpacity, 
-  Image, SafeAreaView, TextInput, Platform 
+import {
+  View, ScrollView, Text, TouchableOpacity,
+  Image, SafeAreaView, TextInput, Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { 
-  PencilLine, Scale, Venus, Calendar, Syringe, 
+import {
+  PencilLine, Scale, Venus, Calendar, Syringe,
   Plus, CircleDashed, Sun, CloudSun, Moon, Pill, ClipboardList
 } from 'lucide-react-native';
 
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { styles } from './styles';
+
+const MISSY_IMAGE = require('../../../assets/gatasafada.jpg');
 
 export default function TelaDetalhesPet() {
   const navigation = useNavigation();
@@ -36,7 +38,7 @@ export default function TelaDetalhesPet() {
         
         {/* CARD DO PERFIL */}
         <View style={styles.profileCard}>
-          <Image source={{ uri: 'https://placekitten.com/500/500' }} style={styles.petImg} />
+          <Image source={MISSY_IMAGE} style={styles.petImg} />
           <View style={styles.nameWrapper}>
             <Text style={styles.petName}>Missy</Text>
             <TouchableOpacity><PencilLine size={20} color="#9127E1" strokeWidth={2.5} /></TouchableOpacity>
