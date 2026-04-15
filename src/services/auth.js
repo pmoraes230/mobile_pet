@@ -2,7 +2,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import * as SecureStore from 'expo-secure-store';
 
-const API_URL = "https://api-pet-fmdo.onrender.com";
+const API_URL = "https://api-pet-fmdo.onrender.com" || "http://localhost:8080";
 const TOKEN_KEY = "auth_token";
 
 export const login = async (email, senha) => {
@@ -55,7 +55,7 @@ export const login = async (email, senha) => {
     }
 };
 
-// As demais funções permanecem iguais
+// verifica a validade do token e se o usuário está autenticado
 export const isAuthenticated = async () => {
     try {
         const token = await SecureStore.getItemAsync(TOKEN_KEY);
@@ -72,6 +72,7 @@ export const getToken = async () => {
     return await SecureStore.getItemAsync(TOKEN_KEY);
 };
 
+// Configura os interceptors do Axios para incluir o token em todas as requisições
 export const setupAxiosInterceptors = () => {
     axios.interceptors.request.use(
         async (config) => {
