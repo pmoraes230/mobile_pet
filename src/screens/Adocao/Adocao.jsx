@@ -4,14 +4,14 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  Image,
-  SafeAreaView,
   TextInput,
   Modal,
-  FlatList
+  FlatList,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { Search, Megaphone, User, ChevronDown } from 'lucide-react-native';
+import { Search, Megaphone, ChevronDown } from 'lucide-react-native';
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import PetCard from '../../components/PetCard';
@@ -63,9 +63,9 @@ export default function TelaAdocao() {
 
   const cidades = selectedEstado
     ? ESTADOS_CIDADES[selectedEstado.name].map((name, idx) => ({
-        id: idx + 1,
-        name
-      }))
+      id: idx + 1,
+      name
+    }))
     : [];
 
   const handleLogout = () => {
@@ -101,49 +101,57 @@ export default function TelaAdocao() {
     }
   ];
 
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <View style={styles.safeArea}>
 
-        {/* HEADER */}
-        <HeaderHome userName="Rayan" showSearch={false} showBackButton={true} showGreeting={false} onBackPress={() => navigation.goBack()} />
+        <HeaderHome
+          userName="Rayan"
+          showSearch={false}
+          showBackButton={true}
+          showGreeting={false}
+          onBackPress={() => navigation.goBack()}
+        />
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
 
           <View style={styles.headerSection}>
             <Text style={styles.title}>Adoção Responsável</Text>
             <Text style={styles.subtitle}>Gerencie seus anúncios e encontre novos amigos.</Text>
           </View>
 
-          {/* BOTÃO ANUNCIAR */}
           <TouchableOpacity
             style={styles.btnAnnounce}
             onPress={() => navigation.navigate('anunciarpet')}
           >
-            <Text style={{color: '#9127E1', fontWeight: 'bold', fontSize: 18}}>+</Text>
+            <Text style={{ color: '#9127E1', fontWeight: 'bold', fontSize: 18 }}>+</Text>
             <Text style={styles.btnAnnounceText}>Anunciar pet meu</Text>
           </TouchableOpacity>
 
-          {/* SEUS PETS EM ANÚNCIO */}
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Megaphone size={16} color="#0D214F" />
             <Text style={styles.sectionLabel}> Seus Pets em Anúncio</Text>
           </View>
+
           <View style={styles.emptyBox}>
             <Text style={styles.emptyText}>Você não tem nenhum pet anunciado no momento.</Text>
           </View>
 
-          {/* DIVISOR FEED GLOBAL */}
           <View style={styles.feedDivider}>
             <View style={styles.line} />
             <Text style={styles.feedDividerText}>FEED GLOBAL</Text>
             <View style={styles.line} />
           </View>
 
-          {/* ÁREA DE FILTROS E BUSCA DO FEED */}
           <View style={styles.searchSection}>
-
-            {/* Campo de Pesquisa */}
             <View style={styles.searchInputWrapper}>
               <Search size={18} color="#A0A7BA" />
               <TextInput
@@ -155,7 +163,6 @@ export default function TelaAdocao() {
               />
             </View>
 
-            {/* Filtros de Estado e Cidade */}
             <View style={styles.filterRow}>
               <TouchableOpacity
                 style={styles.filterBox}
@@ -179,20 +186,19 @@ export default function TelaAdocao() {
             </View>
           </View>
 
-          <View style={{flexDirection: 'row', alignItems: 'center', marginBottom: 20}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 20 }}>
             <Megaphone size={16} color="#0D214F" />
             <Text style={styles.sectionLabel}> Pets esperando por um lar</Text>
           </View>
 
-          {/* GRID DE PETS PARA ADOÇÃO */}
           <View style={styles.grid}>
             {petsFeed.map((pet) => (
               <PetCard
                 key={pet.id}
                 pet={pet}
-                onPress={() => {}}
+                onPress={() => { }}
                 actionLabel="Quero Adotar"
-                onActionPress={() => {}}
+                onActionPress={() => { }}
                 cardStyle={styles.smallCard}
               />
             ))}
@@ -261,6 +267,6 @@ export default function TelaAdocao() {
         {/* TAB BAR */}
         <TabBar activeTab={activeTab} onTabPress={setActiveTab} onLogout={handleLogout} />
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

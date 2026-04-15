@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  SafeAreaView,
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
   FlatList,
-  Image,
+  ScrollView,
   KeyboardAvoidingView,
   Platform,
-  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Send, ChevronLeft } from 'lucide-react-native';
@@ -33,6 +31,7 @@ export default function Mensagens() {
 
   const enviarMensagem = () => {
     if (!mensagem.trim()) return;
+    // Aqui você pode adicionar a lógica de enviar mensagem real
     setMensagem('');
   };
 
@@ -46,26 +45,30 @@ export default function Mensagens() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      
-      {/* HEADER FIXO - Fora do Scroll para não bugar o espaçamento */}
-      <HeaderHome 
-        userName={chatAtivo ? chatAtivo.name : "Rayan"} 
-        showSearch={false} 
-        showBackButton={true} 
-        showGreeting={false} 
-        onBackPress={chatAtivo ? () => setChatAtivo(null) : () => navigation.goBack()} 
-      />
-
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.container}>
+        
+        {/* HEADER DINÂMICO */}
+        <HeaderHome 
+          userName={chatAtivo ? chatAtivo.name : "Rayan"} 
+          showSearch={false} 
+          showBackButton={true} 
+          showGreeting={false} 
+          onBackPress={chatAtivo ? () => setChatAtivo(null) : () => navigation.goBack()} 
+        />
+
         {!chatAtivo ? (
-          /* --- VISÃO 1: LISTA DE CONVERSAS --- */
+          /* --- LISTA DE CONVERSAS --- */
           <FlatList
             data={INITIAL_CONVERSAS}
             keyExtractor={(item) => item.id}
             renderItem={renderConversas}
             contentContainerStyle={styles.scrollContent}
             showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
             ListHeaderComponent={
               <View style={styles.sectionHeader}>
                 <Text style={styles.title}>Mensagens</Text>
@@ -74,11 +77,12 @@ export default function Mensagens() {
             }
           />
         ) : (
-          /* --- VISÃO 2: CHAT ABERTO --- */
-          <>
+          /* --- CHAT ABERTO --- */
+          <View style={{ flex: 1 }}>
             <ScrollView 
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
             >
               <View style={styles.messageReceived}>
                 <Text style={{ color: '#4A5568', fontSize: 15 }}>
@@ -87,10 +91,10 @@ export default function Mensagens() {
               </View>
             </ScrollView>
 
-            {/* BARRA DE INPUT FLUTUANTE */}
+            {/* BARRA DE INPUT */}
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-              keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+              keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
               style={styles.inputWrapper}
             >
               <View style={styles.inputBar}>
@@ -100,19 +104,23 @@ export default function Mensagens() {
                   placeholder="Digite sua mensagem..."
                   placeholderTextColor="#A0A7BA"
                   style={styles.input}
+                  multiline
                 />
-                <TouchableOpacity style={styles.botaoEnviar} onPress={enviarMensagem}>
+                <TouchableOpacity 
+                  style={styles.botaoEnviar} 
+                  onPress={enviarMensagem}
+                >
                   <Send size={20} color="#FFF" />
                 </TouchableOpacity>
               </View>
             </KeyboardAvoidingView>
-          </>
+          </View>
         )}
       </View>
 
-      {/* TAB BAR (SUMIR NO CHAT PARA DAR MAIS ESPAÇO) */}
+      {/* TAB BAR - Só aparece na lista de conversas */}
       {!chatAtivo && <TabBar activeTab="mensagens" />}
       
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

@@ -5,7 +5,8 @@ import {
   Text, 
   TouchableOpacity, 
   Image, 
-  SafeAreaView 
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
@@ -32,19 +33,32 @@ export default function TelaMeusPets() {
       tipo: 'GATO',
       cor: 'PRETA',
       idade: '2 anos',
-      foto: 'https://placekitten.com/500/300' // Substitua pela URI da imagem real
+      foto: 'https://placekitten.com/500/300'
     },
     // Adicione mais pets aqui para testar o scroll
   ];
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.container}>
         
         {/* HEADER */}
-        <HeaderHome userName="Rayan" showSearch={false} showBackButton={true} showGreeting={false} onBackPress={() => navigation.goBack()} />
+        <HeaderHome 
+          userName="Rayan" 
+          showSearch={false} 
+          showBackButton={true} 
+          showGreeting={false} 
+          onBackPress={() => navigation.goBack()} 
+        />
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           
           <View style={styles.headerSection}>
             <Text style={styles.title}>Meus pets</Text>
@@ -52,12 +66,15 @@ export default function TelaMeusPets() {
           </View>
 
           {/* BOTÃO ADICIONAR PET */}
-          <TouchableOpacity style={styles.btnAddPet} onPress={() => navigation.navigate('anunciarpet')}>
-            <Text style={{fontSize: 20, color: '#9127E1', fontWeight: 'bold'}}>+</Text>
+          <TouchableOpacity 
+            style={styles.btnAddPet} 
+            onPress={() => navigation.navigate('anunciarpet')}
+          >
+            <Text style={{ fontSize: 20, color: '#9127E1', fontWeight: 'bold' }}>+</Text>
             <Text style={styles.btnAddText}>Adicionar pet</Text>
           </TouchableOpacity>
 
-          {/* LISTA DE PETS - AQUI FOI LIGADO */}
+          {/* LISTA DE PETS */}
           {pets.map((pet) => (
             <PetCard
               key={pet.id}
@@ -70,8 +87,12 @@ export default function TelaMeusPets() {
         </ScrollView>
 
         {/* TAB BAR */}
-        <TabBar activeTab={activeTab} onTabPress={setActiveTab} onLogout={handleLogout} />
+        <TabBar 
+          activeTab={activeTab} 
+          onTabPress={setActiveTab} 
+          onLogout={handleLogout} 
+        />
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

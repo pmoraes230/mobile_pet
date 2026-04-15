@@ -127,4 +127,8 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  inputWrapper: {
+    position: 'relative',
+    width: '100%',
+  }
 });

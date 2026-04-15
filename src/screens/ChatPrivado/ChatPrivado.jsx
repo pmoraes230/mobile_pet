@@ -4,9 +4,8 @@ import {
   Text, 
   TextInput, 
   TouchableOpacity, 
-  SafeAreaView, 
-  ScrollView, 
-  KeyboardAvoidingView, 
+  ScrollView,
+  KeyboardAvoidingView,
   Platform 
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -17,22 +16,27 @@ export default function ChatPrivado() {
   const navigation = useNavigation();
   const route = useRoute();
   
-  // Pega os dados passados ou usa um padrão
   const { nome } = route.params || { nome: 'Veterinário' };
   const [msg, setMsg] = useState('');
 
   const enviarMensagem = () => {
     if (msg.trim().length > 0) {
+      // Aqui você pode adicionar a lógica de enviar mensagem real
       setMsg('');
     }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      
-      {/* HEADER DINÂMICO E PREMIUM */}
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      {/* HEADER PERSONALIZADO */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 5 }}>
+        <TouchableOpacity 
+          onPress={() => navigation.goBack()} 
+          style={{ padding: 5 }}
+        >
           <ChevronLeft size={28} color="#0D214F" strokeWidth={2.5} />
         </TouchableOpacity>
         
@@ -49,12 +53,13 @@ export default function ChatPrivado() {
         </TouchableOpacity>
       </View>
 
-      {/* ÁREA DE MENSAGENS COM SCROLL */}
+      {/* ÁREA DE MENSAGENS */}
       <ScrollView 
         contentContainerStyle={styles.chatContainer}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        {/* Balão Recebido (Veterinário) */}
+        {/* Balão Recebido */}
         <View style={styles.bubbleReceived}>
           <Text style={styles.textReceived}>
             Olá! Vi o histórico da Missy aqui. Ela tomou a medicação das 08:00 corretamente?
@@ -62,17 +67,16 @@ export default function ChatPrivado() {
           <Text style={styles.timeText}>14:30</Text>
         </View>
 
-        {/* Balão Enviado (Você) */}
+        {/* Balão Enviado */}
         <View style={styles.bubbleSent}>
           <Text style={styles.textSent}>
             Oi Dr! Tomou sim, ela está bem ativa agora à tarde.
           </Text>
           <Text style={styles.timeTextWhite}>14:32</Text>
         </View>
-
       </ScrollView>
 
-      {/* ÁREA DE INPUT FLUTUANTE */}
+      {/* INPUT FLUTUANTE */}
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
@@ -85,6 +89,7 @@ export default function ChatPrivado() {
             placeholder="Conversar..."
             placeholderTextColor="#A0A7BA"
             style={styles.input}
+            multiline
           />
           <TouchableOpacity 
             style={[styles.btnSend, { opacity: msg.length > 0 ? 1 : 0.6 }]}
@@ -95,7 +100,6 @@ export default function ChatPrivado() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
-
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

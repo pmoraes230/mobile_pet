@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import {
   View,
-  Text,
-  Image,
-  TouchableOpacity,
-  SafeAreaView,
   ScrollView,
+  Text,
+  TouchableOpacity,
+  Image,
   Modal,
-  FlatList
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PawPrint, RefreshCw, X, Info, MapPin, ChevronDown, Zap } from 'lucide-react-native';
@@ -76,7 +77,10 @@ export default function TinderPet() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.container}>
 
         <HeaderHome
@@ -87,9 +91,13 @@ export default function TinderPet() {
           onBackPress={() => navigation.goBack()}
         />
 
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
 
-          {/* 1. FILTROS NO TOPO */}
+          {/* FILTROS NO TOPO */}
           <View style={styles.filterRow}>
             <TouchableOpacity
               style={styles.filterButton}
@@ -104,7 +112,7 @@ export default function TinderPet() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.filterButton, !selectedEstado && {opacity: 0.5}]}
+              style={[styles.filterButton, !selectedEstado && { opacity: 0.5 }]}
               activeOpacity={0.7}
               onPress={() => selectedEstado && setModalCidadeOpen(true)}
               disabled={!selectedEstado}
@@ -117,14 +125,14 @@ export default function TinderPet() {
             </TouchableOpacity>
           </View>
 
-          {/* 2. CARD DA FOTO (MAIOR AGORA) */}
+          {/* CARD PRINCIPAL */}
           <View style={styles.mainCard}>
             <Image
               source={{ uri: 'https://placekitten.com/500/800' }}
               style={styles.cardImg}
             />
             <View style={styles.infoOverlay}>
-              <Text style={styles.cardName}>Niça, <Text style={{fontWeight: '300'}}>12a</Text></Text>
+              <Text style={styles.cardName}>Niça, <Text style={{ fontWeight: '300' }}>12a</Text></Text>
               <Text style={styles.cardBio} numberOfLines={2}>
                 Eu sou um gatinho muito bonito e educado esperando uma parceira para amar.
               </Text>
@@ -132,7 +140,7 @@ export default function TinderPet() {
             </View>
           </View>
 
-          {/* 3. BOTÕES DE INTERAÇÃO */}
+          {/* BOTÕES DE INTERAÇÃO */}
           <View style={styles.actionsRow}>
             <TouchableOpacity style={styles.btnSmall}>
               <X size={28} color="#A0A7BA" strokeWidth={3} />
@@ -150,7 +158,7 @@ export default function TinderPet() {
             </TouchableOpacity>
           </View>
 
-          {/* 4. STATUS DO MEU PET */}
+          {/* STATUS DO MEU PET */}
           <View style={styles.activePetWidget}>
             <Image
               source={MISSY_IMAGE}
@@ -160,13 +168,15 @@ export default function TinderPet() {
               <Text style={styles.activePetName}>Missy (Seu pet)</Text>
               <View style={styles.badgeRow}>
                 <View style={styles.miniBadge}><Text style={styles.miniBadgeText}>👃 6 Cheiradas</Text></View>
-                <View style={[styles.miniBadge, {backgroundColor: '#FFF4EE'}]}><Text style={[styles.miniBadgeText, {color: '#FF7A2F'}]}>🐾 1 Petch</Text></View>
+                <View style={[styles.miniBadge, { backgroundColor: '#FFF4EE' }]}>
+                  <Text style={[styles.miniBadgeText, { color: '#FF7A2F' }]}>🐾 1 Petch</Text>
+                </View>
               </View>
             </View>
             <TouchableOpacity><RefreshCw size={18} color="#9127E1" /></TouchableOpacity>
           </View>
 
-          {/* 5. AMIGOS RECENTES */}
+          {/* AMIGOS RECENTES */}
           <View style={styles.friendsHeader}>
             <Text style={styles.sectionTitle}>Amigos recentes</Text>
             <Zap size={14} color="#FF7A2F" fill="#FF7A2F" />
@@ -180,7 +190,7 @@ export default function TinderPet() {
               <Text style={styles.friendName}>Patrick</Text>
             </View>
             <View style={styles.friendBubble}>
-              <View style={[styles.haloEffect, {borderColor: '#E2E8F0'}]}>
+              <View style={[styles.haloEffect, { borderColor: '#E2E8F0' }]}>
                 <Image source={{ uri: 'https://placekitten.com/110/110' }} style={styles.friendImg} />
               </View>
               <Text style={styles.friendName}>Luna</Text>
@@ -189,7 +199,7 @@ export default function TinderPet() {
 
         </ScrollView>
 
-        {/* MODAL: SELECIONAR ESTADO */}
+        {/* MODAL ESTADO */}
         <Modal
           visible={modalEstadoOpen}
           transparent={true}
@@ -207,7 +217,6 @@ export default function TinderPet() {
                   setSelectedCidade(null);
                   setModalEstadoOpen(false);
                 })}
-                scrollEnabled={true}
               />
               <TouchableOpacity
                 style={styles.modalCloseBtn}
@@ -219,7 +228,7 @@ export default function TinderPet() {
           </View>
         </Modal>
 
-        {/* MODAL: SELECIONAR CIDADE */}
+        {/* MODAL CIDADE */}
         <Modal
           visible={modalCidadeOpen}
           transparent={true}
@@ -236,7 +245,6 @@ export default function TinderPet() {
                   setSelectedCidade(selected);
                   setModalCidadeOpen(false);
                 })}
-                scrollEnabled={true}
               />
               <TouchableOpacity
                 style={styles.modalCloseBtn}
@@ -250,6 +258,6 @@ export default function TinderPet() {
 
         <TabBar />
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

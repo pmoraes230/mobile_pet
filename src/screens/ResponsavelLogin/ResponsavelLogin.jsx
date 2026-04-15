@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
+import { Eye, EyeOff } from 'lucide-react-native';
 import { login, setupAxiosInterceptors } from '../../services/auth';
 
 export default function ResponsavelLogin() {
@@ -16,6 +17,7 @@ export default function ResponsavelLogin() {
   const [modalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState('');
   const [modalMessage, setModalMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const showCustomModal = (title, message) => {
     setModalTitle(title);
@@ -69,14 +71,33 @@ export default function ResponsavelLogin() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          <TextInput
-            placeholder="Senha"
-            placeholderTextColor="#A0A7E6"
-            secureTextEntry
-            style={styles.input}
-            value={senha}
-            onChangeText={setSenha}
-          />
+          <View style={styles.inputWrapper}>
+            <TextInput
+              placeholder="Senha"
+              placeholderTextColor="#A0A7E6"
+              secureTextEntry={!showPassword}
+              style={[styles.input, { paddingRight: 45 }]}
+              value={senha}
+              onChangeText={setSenha}
+            />
+
+            <TouchableOpacity
+              onPress={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: 15,
+                top: 5,
+                bottom: 20,
+                justifyContent: 'center'
+              }}
+            >
+              {showPassword ? (
+                <EyeOff size={22} color="#A0A7BA" />
+              ) : (
+                <Eye size={22} color="#A0A7BA" />
+              )}
+            </TouchableOpacity>
+          </View>
 
           <TouchableOpacity onPress={() => navigation.navigate('EsqueciSenha')}>
             <Text style={styles.esqueci}>Esqueci minha senha</Text>

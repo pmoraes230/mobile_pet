@@ -4,8 +4,9 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   Switch,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
@@ -30,8 +31,12 @@ export default function Configuracoes() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.container}>
+        
         <HeaderHome
           userName="Rayan"
           showSearch={false}
@@ -44,6 +49,7 @@ export default function Configuracoes() {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           <Text style={styles.pageTitle}>Configurações da Conta</Text>
           <Text style={styles.pageSubtitle}>
@@ -135,8 +141,12 @@ export default function Configuracoes() {
           </View>
         </ScrollView>
 
-        <TabBar activeTab={activeTab} onTabPress={handleTabPress} onLogout={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })} />
+        <TabBar 
+          activeTab={activeTab} 
+          onTabPress={handleTabPress} 
+          onLogout={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })} 
+        />
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }
