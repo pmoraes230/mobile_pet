@@ -41,13 +41,14 @@ export const styles = StyleSheet.create({
   },
 
   backIcon: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#0D214F',
-    textAlign: 'center',
-    // Remove paddings fantasmas do Android
-    includeFontPadding: false,
-    textAlignVertical: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#F5F3FF',
+    overflow: 'hidden',
+    marginRight: 8,
   },
 
   // Texto de Saudação

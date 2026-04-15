@@ -192,16 +192,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
     elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
-  },
-
-  voltarIcon: {
-    fontSize: 22,
-    fontWeight: '600',
-    color: '#000',
   },
 
   headerTitle: {

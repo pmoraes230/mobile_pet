@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { SafeAreaView, View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { ChevronLeft } from 'lucide-react-native';
 import { styles } from './styles';
 
 export default function CodigoSenha() {
@@ -13,7 +14,7 @@ export default function CodigoSenha() {
     <SafeAreaView style={styles.screenContainer}>
       <View style={styles.card}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backIcon}>←</Text>
+          <ChevronLeft size={20} color="#6B7280" strokeWidth={2.5} />
         </TouchableOpacity>
 
         <Text style={styles.title}>Insira o código</Text>
