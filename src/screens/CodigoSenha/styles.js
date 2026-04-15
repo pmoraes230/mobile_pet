@@ -27,11 +27,8 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
     marginBottom: 16,
-  },
-  backIcon: {
-    fontSize: 18,
-    color: '#6B7280',
   },
   title: {
     fontSize: 28,

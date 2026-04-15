@@ -101,11 +101,13 @@ export default function EditarPerfil() {
 
           <View style={styles.phoneRow}>
             <View style={styles.phoneSelect}>
-              <Text style={{fontSize: 12, fontWeight: 'bold', color: '#4A5568'}}>WhatsApp</Text>
+              <Text style={styles.phoneSelectText}>WhatsApp</Text>
             </View>
             <TextInput
               value={phoneDdd}
               onChangeText={setPhoneDdd}
+              placeholder="DDD"
+              placeholderTextColor="#cbd5e1"
               style={[styles.textInput, styles.dddInput]}
               keyboardType="numeric"
               maxLength={2}
@@ -113,11 +115,13 @@ export default function EditarPerfil() {
             <TextInput
               value={phoneNumber}
               onChangeText={setPhoneNumber}
+              placeholder="Número"
+              placeholderTextColor="#cbd5e1"
               style={[styles.textInput, styles.numInput]}
               keyboardType="numeric"
             />
-            <TouchableOpacity style={{marginLeft: 5}}>
-              <Trash2 size={20} color="#FF4D4D" />
+            <TouchableOpacity style={styles.trashButton}>
+              <Trash2 size={18} color="#FF4D4D" />
             </TouchableOpacity>
           </View>
         </View>

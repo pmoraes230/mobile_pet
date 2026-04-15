@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, ScrollView } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { ChevronLeft } from 'lucide-react-native';
 import { styles } from './styles';
 
 export default function ResponsavelCadastro() {
@@ -25,7 +26,7 @@ export default function ResponsavelCadastro() {
     >
       <View style={styles.card}>
         <TouchableOpacity style={styles.voltarBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.voltarIcon}>←</Text>
+          <ChevronLeft size={22} color="#0D214F" strokeWidth={2.5} />
         </TouchableOpacity>
 
         <Image

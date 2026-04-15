@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
-import { Bell, Check, Pill, Star } from 'lucide-react-native';
+import { Bell, Check, Pill, Star, ChevronLeft } from 'lucide-react-native';
 
 const TUTOR_IMAGE = require('../../assets/rayan_lindo.webp');
 
@@ -57,7 +57,7 @@ export default function HeaderHome({
                 style={styles.backBtn}
                 onPress={onBackPress}
               >
-                <Text style={styles.backIcon}>←</Text>
+                <ChevronLeft size={24} color="#0D214F" strokeWidth={2.5} />
               </TouchableOpacity>
             ) : null}
             {showGreeting && (
