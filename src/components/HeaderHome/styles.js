@@ -115,7 +115,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: '#9127E1',
+    backgroundColor: '#cccccc',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',

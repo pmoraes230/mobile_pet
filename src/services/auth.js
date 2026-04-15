@@ -68,6 +68,32 @@ export const isAuthenticated = async () => {
     }
 };
 
+export const getUserInfo = async () => {
+    const token = await SecureStore.getItemAsync(TOKEN_KEY);
+    if (!token) return null;
+
+    try {
+        const decoded = jwtDecode(token);
+        const S3_BASE = 'https://coracao-em-patas.s3.sa-east-1.amazonaws.com'
+
+        const imagem = decoded.imagem 
+            ? decoded.imagem.startsWith('http')
+                ? decoded.imagem
+                : `${S3_BASE}/${decoded.imagem}`
+            : null;
+
+        return {
+            id: decoded.id,
+            email: decoded.email,
+            nome: decoded.nome,
+            imagem
+        }
+    } catch (err) {
+        console.error("Erro ao decodificar token:", err);
+        return null;
+    }
+}
+
 export const getToken = async () => {
     return await SecureStore.getItemAsync(TOKEN_KEY);
 };
