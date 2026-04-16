@@ -2,7 +2,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import * as SecureStore from 'expo-secure-store';
 
-const API_URL = "http://10.0.60.156:3000";
+const API_URL = "https://api-pet-fmdo.onrender.com";
 const TOKEN_KEY = "auth_token";
 
 export const login = async (email, senha) => {
