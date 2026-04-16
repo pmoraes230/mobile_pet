@@ -9,7 +9,9 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F8F9FD',
   },
   container: {
+    paddingTop: 35,
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   // Header com botão de voltar
   headerContainer: {

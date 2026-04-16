@@ -10,7 +10,9 @@ export const styles = StyleSheet.create({
   },
 
   container: {
+    paddingTop: 35,
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
 
   header: {

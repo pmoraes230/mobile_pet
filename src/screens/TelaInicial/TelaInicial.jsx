@@ -61,7 +61,6 @@ export default function TelaInicial() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -105,6 +104,5 @@ export default function TelaInicial() {
           />
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
   );
 }
