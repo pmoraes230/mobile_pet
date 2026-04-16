@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -6,19 +6,46 @@ import {
   ScrollView,
   Image,
   KeyboardAvoidingView,
-  Platform 
+  Platform,
+  ActivityIndicator 
 } from 'react-native';
+
 import { useNavigation } from '@react-navigation/native';
-import { Mail, Phone, ShieldCheck, PawPrint, Edit3, Lock, LogOut } from 'lucide-react-native';
+import { Mail, Phone, ShieldCheck, PawPrint, Edit3, Lock } from 'lucide-react-native';
 
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { styles } from './styles';
+import { searchTutors } from '../../services/searchTutor';
 
-const TUTOR_IMAGE = require('../../assets/rayan_lindo.webp');
-
-export default function Perfil() {
+const Perfil = () => {
   const navigation = useNavigation();
+
+  const [userData, setUserData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Função para carregar os dados do tutor
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await searchTutors();
+      setUserData(data);
+
+    } catch (err) {
+      console.error("Erro ao carregar perfil:", err);
+      setError(err.message || "Não foi possível carregar os dados do perfil");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carrega os dados ao abrir a tela
+  useEffect(() => {
+    loadUserData();
+  }, []);
 
   const handleLogout = () => {
     navigation.reset({
@@ -27,6 +54,27 @@ export default function Perfil() {
     });
   };
 
+  // ==================== TELAS DE CARREGAMENTO E ERRO ====================
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#9127E1" />
+        <Text style={{ marginTop: 15, color: '#666' }}>Carregando perfil...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+        <TouchableOpacity onPress={loadUserData}>
+          <Text style={{ color: '#9127E1', fontWeight: 'bold' }}>Tentar novamente</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -34,9 +82,9 @@ export default function Perfil() {
     >
       <View style={styles.container}>
         
-        {/* HEADER FIXO */}
+        {/* HEADER */}
         <HeaderHome 
-          userName="Luiza Ferreira" 
+          userName={false} 
           showSearch={false} 
           showBackButton={true} 
           showGreeting={false} 
@@ -54,21 +102,26 @@ export default function Perfil() {
             <View style={styles.profileRow}>
               <View style={styles.avatarWrapper}>
                 <Image
-                  source={TUTOR_IMAGE}
+                  source={
+                    userData?.imagem 
+                      ? { uri: userData.imagem } 
+                      : require('../../assets/rayan_lindo.webp')
+                  }
                   style={styles.avatar}
                 />
               </View>
 
               <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>Rayan Rodrigues</Text>
+                <Text style={styles.profileName}>{userData?.nome || 'Nome não encontrado'}</Text>
                 <View style={styles.tagRow}>
-                  <Text style={styles.profileTag}>Responsavel</Text>
+                  <Text style={styles.profileTag}>Responsável</Text>
                 </View>
                 <Text style={styles.memberText}>Membro Ativo</Text>
+                
                 <View style={styles.contactRow}>
                   <View style={styles.contactItem}>
                     <Mail size={14} color="#9127E1" />
-                    <Text style={styles.contactText}>Rayan@gmail.com</Text>
+                    <Text style={styles.contactText}>{userData?.email || 'Não informado'}</Text>
                   </View>
                   <View style={styles.contactItem}>
                     <Phone size={14} color="#9127E1" />
@@ -90,6 +143,7 @@ export default function Perfil() {
 
           {/* SEÇÕES DE DADOS */}
           <View style={styles.sectionRow}>
+            {/* Dados Pessoais */}
             <View style={styles.card}>
               <View style={styles.sectionHeader}>
                 <View style={styles.iconCircle}>
@@ -99,18 +153,19 @@ export default function Perfil() {
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Documento CPF</Text>
-                <Text style={styles.detailValue}>803.863.360-16</Text>
+                <Text style={styles.detailValue}>{userData?.cpf || 'Não informado'}</Text>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Nascimento</Text>
-                <Text style={styles.detailValue}>17/02/2000</Text>
+                <Text style={styles.detailValue}>{userData?.dataNascimento || 'Não informado'}</Text>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Endereço registrado</Text>
-                <Text style={styles.detailValue}>WE 33 - 1021</Text>
+                <Text style={styles.detailValue}>{userData?.endereco || 'Não informado'}</Text>
               </View>
             </View>
 
+            {/* Meus Pets */}
             <View style={styles.card}> 
               <View style={styles.sectionHeader}>
                 <View style={[styles.iconCircle, {backgroundColor: '#E6FFFA'}]}>
@@ -134,7 +189,7 @@ export default function Perfil() {
             </View>
           </View>
 
-          {/* PRIVACIDADE */}
+          {/* PRIVACIDADE E ACESSO */}
           <View style={styles.bottomCard}>
             <View style={styles.sectionHeader}>
               <View style={[styles.iconCircle, {backgroundColor: '#FFF4EE'}]}>
@@ -161,10 +216,12 @@ export default function Perfil() {
 
         </ScrollView>
 
-        {/* TAB BAR FIXA NA BASE */}
+        {/* TAB BAR */}
         <TabBar onLogout={handleLogout} />
 
       </View>
     </KeyboardAvoidingView>
   );
-}
+};
+
+export default Perfil;
