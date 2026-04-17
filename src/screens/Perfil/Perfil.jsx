@@ -17,11 +17,16 @@ import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { styles } from './styles';
 import { searchTutors } from '../../services/searchTutor';
+import { consumerCPF } from '../../services/consumerCPF';
+import { getUserInfo } from '../../services/auth';
+import { formateCPF, formateDate } from '../../utils/formatters';
 
 const Perfil = () => {
   const navigation = useNavigation();
 
   const [userData, setUserData] = useState(null);
+  const [imageUser, setImageUser] = useState(null);
+  const [cpfData, setCpfData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -42,10 +47,36 @@ const Perfil = () => {
     }
   };
 
+  const loadCpfUser = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await consumerCPF();
+      setCpfData(data)
+
+    } catch (err) {
+      console.error("Erro ao carregar cpf:", err);
+      setError(err.message || "Não foi possível carregar os dados do cpf");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   // Carrega os dados ao abrir a tela
   useEffect(() => {
     loadUserData();
   }, []);
+
+  useEffect(() => {
+    loadCpfUser();
+  }, [])
+
+  useEffect(() => {
+    getUserInfo().then(data => {
+      setImageUser(data)
+    })
+  }, [])
 
   const handleLogout = () => {
     navigation.reset({
@@ -103,8 +134,8 @@ const Perfil = () => {
               <View style={styles.avatarWrapper}>
                 <Image
                   source={
-                    userData?.imagem 
-                      ? { uri: userData.imagem } 
+                    imageUser?.imagem 
+                      ? { uri: imageUser.imagem } 
                       : require('../../assets/rayan_lindo.webp')
                   }
                   style={styles.avatar}
@@ -112,7 +143,7 @@ const Perfil = () => {
               </View>
 
               <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{userData?.nome || 'Nome não encontrado'}</Text>
+                <Text style={styles.profileName}>{userData?.nome_tutor || 'Nome não encontrado'}</Text>
                 <View style={styles.tagRow}>
                   <Text style={styles.profileTag}>Responsável</Text>
                 </View>
@@ -121,7 +152,7 @@ const Perfil = () => {
                 <View style={styles.contactRow}>
                   <View style={styles.contactItem}>
                     <Mail size={14} color="#9127E1" />
-                    <Text style={styles.contactText}>{userData?.email || 'Não informado'}</Text>
+                    <Text style={styles.contactText}>{userData?.EMAIL || 'Não informado'}</Text>
                   </View>
                   <View style={styles.contactItem}>
                     <Phone size={14} color="#9127E1" />
@@ -153,15 +184,15 @@ const Perfil = () => {
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Documento CPF</Text>
-                <Text style={styles.detailValue}>{userData?.cpf || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>{formateCPF(cpfData?.cpf) || 'Não informado'}</Text>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Nascimento</Text>
-                <Text style={styles.detailValue}>{userData?.dataNascimento || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>{formateDate(userData?.DATA_NASCIMENTO) || 'Não informado'}</Text>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Endereço registrado</Text>
-                <Text style={styles.detailValue}>{userData?.endereco || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>{userData?.ENDERECO || 'Não informado'}</Text>
               </View>
             </View>
 

@@ -1,9 +1,11 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import * as SecureStore from 'expo-secure-store';
+import { API_URL } from "../utils/endPoint_Url";
 
-const API_URL = "https://api-pet-fmdo.onrender.com";
 const TOKEN_KEY = "auth_token";
+const LAST_ACTIVE_KEY = "last_active";
+const SESSION_TIMEOUT = 30 * 60 * 1000;
 
 export const login = async (email, senha) => {
     try {
@@ -55,6 +57,21 @@ export const login = async (email, senha) => {
     }
 };
 
+export const updateLastActive = async () => {
+    await SecureStore.setItemAsync(LAST_ACTIVE_KEY, Date.now().toString());
+};
+
+export const isSessionValid = async () => {
+    const lastActive = await SecureStore.getItemAsync(LAST_ACTIVE_KEY);
+
+    if (!lastActive) return false;
+
+    const now = Date.now();
+    const diff = now - parseInt(lastActive);
+
+    return diff < SESSION_TIMEOUT;
+};
+
 // verifica a validade do token e se o usuário está autenticado
 export const isAuthenticated = async () => {
     try {
@@ -62,7 +79,12 @@ export const isAuthenticated = async () => {
         if (!token) return false;
 
         const decoded = jwtDecode(token);
-        return decoded.exp * 1000 > Date.now();
+        const isTokenValid = decoded.exp * 1000 > Date.now();
+
+        const isSessionStillActive = await isSessionValid();
+
+        return isTokenValid && isSessionStillActive;
+
     } catch {
         return false;
     }
@@ -101,14 +123,19 @@ export const getToken = async () => {
 // Configura os interceptors do Axios para incluir o token em todas as requisições
 export const setupAxiosInterceptors = () => {
     axios.interceptors.request.use(
-        async (config) => {
-            const token = await SecureStore.getItemAsync(TOKEN_KEY);
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-            return config;
+    async (config) => {
+        const token = await SecureStore.getItemAsync(TOKEN_KEY);
+
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+
+            // Atualiza atividade a cada request
+            await updateLastActive();
         }
-    );
+
+        return config;
+    }
+);
 };
 
 export const logout = async () => {

@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
   ScrollView,
   Image,
   KeyboardAvoidingView,
-  Platform 
+  Platform,
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Camera, Phone, Smile, Plus, Trash2 } from 'lucide-react-native';
@@ -15,17 +16,104 @@ import { Camera, Phone, Smile, Plus, Trash2 } from 'lucide-react-native';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { styles } from './styles';
+import { searchTutors } from '../../services/searchTutor';
+import { consumerCPF } from '../../services/consumerCPF';
+import { getUserInfo } from '../../services/auth';
+import { formateCPF, formateDate } from '../../utils/formatters';
 
-const TUTOR_IMAGE = require('../../assets/rayan_lindo.webp');
+const TUTOR_IMAGE = require('../../assets/user_default.png');
 
 export default function EditarPerfil() {
   const navigation = useNavigation();
-  
-  const [name, setName] = useState('Rayan Rodrigues');
-  const [cpf] = useState('803.863.360-16');
-  const [address, setAddress] = useState('WE 33 - 1021');
-  const [phoneDdd, setPhoneDdd] = useState('91');
-  const [phoneNumber, setPhoneNumber] = useState('984242060');
+
+  const [name, setName] = useState(null);
+  const [cpf] = useState(null);
+  const [address, setAddress] = useState(null);
+  const [phoneDdd, setPhoneDdd] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [imageUser, setImageUser] = useState(null);
+  const [cpfData, setCpfData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Função para carregar os dados do tutor
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await searchTutors();
+      setUserData(data);
+
+      setName(data?.nome_tutor || '');
+      setAddress(data?.ENDERECO || '');
+      setPhoneNumber(data?.TELEFONE || '')
+
+    } catch (err) {
+      console.error("Erro ao carregar perfil:", err);
+      setError(err.message || "Não foi possível carregar os dados do perfil");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCpfUser = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const data = await consumerCPF();
+      setCpfData(data)
+
+      if (data?.cpf) {
+        setCpfData(formateCPF(data.cpf));
+      }
+
+
+    } catch (err) {
+      console.error("Erro ao carregar cpf:", err);
+      setError(err.message || "Não foi possível carregar os dados do cpf");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Carrega os dados ao abrir a tela
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  useEffect(() => {
+    loadCpfUser();
+  }, [])
+
+  useEffect(() => {
+    getUserInfo().then(data => {
+      setImageUser(data)
+    })
+  }, [])
+
+  // ==================== TELAS DE CARREGAMENTO E ERRO ====================
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
+        <ActivityIndicator size="large" color="#9127E1" />
+        <Text style={{ marginTop: 15, color: '#666' }}>Carregando perfil...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error}</Text>
+        <TouchableOpacity onPress={loadUserData}>
+          <Text style={{ color: '#9127E1', fontWeight: 'bold' }}>Tentar novamente</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -33,22 +121,22 @@ export default function EditarPerfil() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <View style={styles.container}>
-        
+
         {/* HEADER FIXO */}
-        <HeaderHome 
-          userName="Luiza Ferreira" 
-          showSearch={false} 
-          showBackButton={true} 
-          showGreeting={false} 
-          onBackPress={() => navigation.goBack()} 
+        <HeaderHome
+          userName={false}
+          showSearch={false}
+          showBackButton={true}
+          showGreeting={false}
+          onBackPress={() => navigation.goBack()}
         />
 
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent} 
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          
+
           <View style={styles.headerRow}>
             <Text style={styles.pageTitle}>Editar meu perfil</Text>
             <Text style={styles.pageSubtitle}>Mantenha seus dados e contatos atualizados</Text>
@@ -58,7 +146,11 @@ export default function EditarPerfil() {
           <View style={styles.photoCard}>
             <TouchableOpacity style={styles.avatarWrapper} activeOpacity={0.9}>
               <Image
-                source={TUTOR_IMAGE}
+                source={
+                  imageUser?.imagem
+                    ? { uri: imageUser.imagem }
+                    : require('../../assets/user_default.png')
+                }
                 style={styles.avatar}
               />
               <View style={styles.cameraBadge}>
@@ -109,12 +201,12 @@ export default function EditarPerfil() {
           {/* SEÇÃO TELEFONES */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.iconBadge, {backgroundColor: '#E6FFFA'}]}>
+              <View style={[styles.iconBadge, { backgroundColor: '#E6FFFA' }]}>
                 <Phone size={20} color="#00D7C4" />
               </View>
               <Text style={styles.sectionTitle}>Meus Telefones</Text>
             </View>
-            
+
             <TouchableOpacity style={styles.newContactButton}>
               <Plus size={14} color="#9127E1" />
               <Text style={styles.newContactText}>NOVO CONTATO</Text>
@@ -149,14 +241,14 @@ export default function EditarPerfil() {
 
           {/* BOTÕES DE AÇÃO */}
           <View style={styles.actionRow}>
-            <TouchableOpacity 
-              style={styles.cancelButton} 
+            <TouchableOpacity
+              style={styles.cancelButton}
               onPress={() => navigation.goBack()}
             >
               <Text style={styles.cancelText}>CANCELAR</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.saveButton} 
+            <TouchableOpacity
+              style={styles.saveButton}
               onPress={() => alert('Perfil atualizado!')}
             >
               <Text style={styles.saveText}>SALVAR ALTERAÇÕES</Text>

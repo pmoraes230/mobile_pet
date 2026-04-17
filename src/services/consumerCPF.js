@@ -1,16 +1,14 @@
-import axios from "axios"
-import { jwtDecode } from "jwt-decode";
-import * as SecureStore from 'expo-secure-store';
-import { isAuthenticated, getUserInfo, getToken } from "./auth";
+import axios from "axios";
+import { jwtDecode } from "jwt-decode"
+import * as SecureStore from 'expo-secure-store'
+import { isAuthenticated, getToken, getUserInfo } from "./auth";
 import { API_URL } from "../utils/endPoint_Url";
 
-const TOKEN_KEY = "auth_token";
-
-export const searchTutors = async (query) => {
+export const consumerCPF = async (query) => {
     try {
         const token = await getToken();
 
-        if (!token) {
+        if(!token) {
             throw new Error("Usuário não autenticado. Faça login para continuar.");
         }
 
@@ -20,13 +18,11 @@ export const searchTutors = async (query) => {
             throw new Error("Informações do usuário inválidas. Faça login novamente.")
         }
 
-        const response = await axios.get(`${API_URL}/api/tutors/${userInfo.id}`, {
+        const response = await axios.get(`${API_URL}/api/tutors/${userInfo.id}/cpf`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         })
-
-        console.log(response.data);
 
         return response.data;
 
