@@ -83,7 +83,7 @@ export const styles = StyleSheet.create({
   },
   contactText: {
     color: '#4b5563',
-    fontSize: 14,
+    fontSize: 10,
   },
   editButton: {
     marginTop: 18,

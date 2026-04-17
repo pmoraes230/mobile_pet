@@ -2,8 +2,10 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import * as SecureStore from 'expo-secure-store';
 
-const API_URL = "http://10.0.60.156:3000";
+const API_URL = "http://192.168.18.11:3000";
 const TOKEN_KEY = "auth_token";
+const LAST_ACTIVE_KEY = "last_activate"
+const SESSION_TIMEOUT = 30 * 60 * 1000
 
 export const login = async (email, senha) => {
     try {
@@ -55,6 +57,21 @@ export const login = async (email, senha) => {
     }
 };
 
+export const updateLastActivate = async () => {
+    await SecureStore.setItemAsync(LAST_ACTIVE_KEY, Date.now().toString());
+}
+
+export const isSessionValid = async () => {
+    const lastActive = await SecureStore.getItemAsync(LAST_ACTIVE_KEY);
+
+    if (!lastActive) return false;
+
+    const now = Date.now();
+    const diff = now - parseInt(lastActive);
+
+    return diff < SESSION_TIMEOUT;
+}
+
 // verifica a validade do token e se o usuário está autenticado
 export const isAuthenticated = async () => {
     try {
@@ -62,7 +79,11 @@ export const isAuthenticated = async () => {
         if (!token) return false;
 
         const decoded = jwtDecode(token);
-        return decoded.exp * 1000 > Date.now();
+        const isValidToken = decoded.exp * 1000 > Date.now();
+
+        const isSessionStillActivate = await isSessionValid();
+
+        return isValidToken && isSessionStillActivate;
     } catch {
         return false;
     }
@@ -105,6 +126,9 @@ export const setupAxiosInterceptors = () => {
             const token = await SecureStore.getItemAsync(TOKEN_KEY);
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
+
+                // Atualiza atividade a cada request
+                await updateLastActivate;
             }
             return config;
         }

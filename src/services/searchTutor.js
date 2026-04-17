@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 import { isAuthenticated, getUserInfo, getToken } from "./auth";
 
 
-const API_URL = "http://10.0.60.156:3000";
+const API_URL = "http://192.168.18.11:3000";
 const TOKEN_KEY = "auth_token";
 
 export const searchTutors = async (query) => {

@@ -17,11 +17,13 @@ import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { styles } from './styles';
 import { searchTutors } from '../../services/searchTutor';
+import { getUserInfo } from '../../services/auth';
 
 const Perfil = () => {
   const navigation = useNavigation();
 
   const [userData, setUserData] = useState(null);
+  const [imageUser, setImageUser] = useState(null)
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -32,6 +34,7 @@ const Perfil = () => {
       setError(null);
 
       const data = await searchTutors();
+      console.log(data)
       setUserData(data);
 
     } catch (err) {
@@ -46,6 +49,12 @@ const Perfil = () => {
   useEffect(() => {
     loadUserData();
   }, []);
+
+  useEffect(() => {
+    getUserInfo().then(info => {
+      setImageUser(info)
+    })
+  })
 
   const handleLogout = () => {
     navigation.reset({
@@ -103,8 +112,8 @@ const Perfil = () => {
               <View style={styles.avatarWrapper}>
                 <Image
                   source={
-                    userData?.imagem 
-                      ? { uri: userData.imagem } 
+                    imageUser?.imagem 
+                      ? { uri: imageUser.imagem } 
                       : require('../../assets/rayan_lindo.webp')
                   }
                   style={styles.avatar}
@@ -112,7 +121,7 @@ const Perfil = () => {
               </View>
 
               <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{userData?.nome || 'Nome não encontrado'}</Text>
+                <Text style={styles.profileName}>{userData?.nome_tutor || 'Nome não encontrado'}</Text>
                 <View style={styles.tagRow}>
                   <Text style={styles.profileTag}>Responsável</Text>
                 </View>
@@ -121,7 +130,7 @@ const Perfil = () => {
                 <View style={styles.contactRow}>
                   <View style={styles.contactItem}>
                     <Mail size={14} color="#9127E1" />
-                    <Text style={styles.contactText}>{userData?.email || 'Não informado'}</Text>
+                    <Text style={styles.contactText}>{userData?.EMAIL || 'Não informado'}</Text>
                   </View>
                   <View style={styles.contactItem}>
                     <Phone size={14} color="#9127E1" />
@@ -153,15 +162,15 @@ const Perfil = () => {
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Documento CPF</Text>
-                <Text style={styles.detailValue}>{userData?.cpf || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>{userData?.CPF || 'Não informado'}</Text>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Nascimento</Text>
-                <Text style={styles.detailValue}>{userData?.dataNascimento || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>{userData?.DATA_NASCIMENTO || 'Não informado'}</Text>
               </View>
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Endereço registrado</Text>
-                <Text style={styles.detailValue}>{userData?.endereco || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>{userData?.ENDERECO || 'Não informado'}</Text>
               </View>
             </View>
 
