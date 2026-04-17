@@ -37,6 +37,7 @@ const Perfil = () => {
       setError(null);
 
       const data = await searchTutors();
+      console.log(data)
       setUserData(data);
 
     } catch (err) {
