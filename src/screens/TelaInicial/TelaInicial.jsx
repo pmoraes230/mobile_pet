@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  ScrollView, 
-  TouchableOpacity, 
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
   Text,
   SafeAreaView,
   KeyboardAvoidingView,
@@ -33,7 +33,7 @@ export default function TelaInicial() {
   };
 
   const handleCardPress = (cardId) => {
-    switch(cardId) {
+    switch (cardId) {
       case 1: navigation.navigate('Agendamento'); break;
       case 2: navigation.navigate('Prontuario'); break;
       case 3: navigation.navigate('Diario'); break;
@@ -61,48 +61,48 @@ export default function TelaInicial() {
   };
 
   return (
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={styles.container}>
-          {/* HEADER */}
-          <HeaderHome userName="Rayan" />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.container}>
+        {/* HEADER */}
+        <HeaderHome userName="Rayan" />
 
-          {/* SCROLL CARDS */}
-          <ScrollView 
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* PRÓXIMO COMPROMISSO CARD */}
-            <View style={styles.appointmentCard}>
-              <Text style={styles.appointmentTitle}>Próximo Compromisso</Text>
-              <Text style={styles.appointmentMain}>Sem agendamentos</Text>
-              <Text style={styles.appointmentSubtitle}>Tudo tranquilo por enquanto.</Text>
-            </View>
+        {/* SCROLL CARDS */}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ ...styles.screenContainer, paddingBottom: 100 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* PRÓXIMO COMPROMISSO CARD */}
+          <View style={styles.appointmentCard}>
+            <Text style={styles.appointmentTitle}>Próximo Compromisso</Text>
+            <Text style={styles.appointmentMain}>Sem agendamentos</Text>
+            <Text style={styles.appointmentSubtitle}>Tudo tranquilo por enquanto.</Text>
+          </View>
 
-            <View style={styles.gridContainer}>
-              {cards.map((card) => (
-                <DashboardCard
-                  key={card.id}
-                  icon={card.icon}
-                  title={card.title}
-                  description={card.description}
-                  badge={card.badge}
-                  onPress={() => handleCardPress(card.id)}
-                />
-              ))}
-            </View>
-          </ScrollView>
+          <View style={styles.gridContainer}>
+            {cards.map((card) => (
+              <DashboardCard
+                key={card.id}
+                icon={card.icon}
+                title={card.title}
+                description={card.description}
+                badge={card.badge}
+                onPress={() => handleCardPress(card.id)}
+              />
+            ))}
+          </View>
+        </ScrollView>
 
-          {/* TAB BAR */}
-          <TabBar 
-            activeTab={activeTab} 
-            onTabPress={handleTabPress} 
-            onLogout={handleLogout} 
-          />
-        </View>
-      </KeyboardAvoidingView>
+        {/* TAB BAR */}
+        <TabBar
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+          onLogout={handleLogout}
+        />
+      </View>
+    </KeyboardAvoidingView>
   );
 }

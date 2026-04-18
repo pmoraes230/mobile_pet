@@ -2,7 +2,7 @@ import axios from "axios"
 import { jwtDecode } from "jwt-decode";
 import * as SecureStore from 'expo-secure-store';
 import { isAuthenticated, getUserInfo, getToken } from "./auth";
-import { API_URL } from "../utils/endPoint_Url";
+import { API_URL, _API_URL_PROD } from "../utils/endPoint_Url";
 
 const TOKEN_KEY = "auth_token";
 
@@ -20,13 +20,11 @@ export const searchTutors = async (query) => {
             throw new Error("Informações do usuário inválidas. Faça login novamente.")
         }
 
-        const response = await axios.get(`${API_URL}/api/tutors/${userInfo.id}`, {
+        const response = await axios.get(`${API_URL || _API_URL_PROD}/api/tutors/${userInfo.id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
         })
-
-        console.log(response.data);
 
         return response.data;
 

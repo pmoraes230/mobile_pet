@@ -27,72 +27,43 @@ export default function EditarPerfil() {
   const navigation = useNavigation();
 
   const [name, setName] = useState(null);
-  const [cpf] = useState(null);
   const [address, setAddress] = useState(null);
   const [phoneDdd, setPhoneDdd] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState(null);
   const [userData, setUserData] = useState(null);
   const [imageUser, setImageUser] = useState(null);
-  const [cpfData, setCpfData] = useState(null);
+  const [cpfData, setCpfData] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   // Função para carregar os dados do tutor
-  const loadUserData = async () => {
-    try {
-      setLoading(true);
-      setError(null);
+  const loadAll = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const data = await searchTutors();
-      setUserData(data);
+        const user = await searchTutors();
+        const cpfResponse = await consumerCPF();
+        const image = await getUserInfo();
 
-      setName(data?.nome_tutor || '');
-      setAddress(data?.ENDERECO || '');
-      setPhoneNumber(data?.TELEFONE || '')
+        setUserData(user);
+        setCpfData(cpfResponse);
+        setImageUser(image);
 
-    } catch (err) {
-      console.error("Erro ao carregar perfil:", err);
-      setError(err.message || "Não foi possível carregar os dados do perfil");
-    } finally {
-      setLoading(false);
-    }
-  };
+        setName(user?.nome_tutor || '');
+        setAddress(user?.ENDERECO || '');
 
-  const loadCpfUser = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await consumerCPF();
-      setCpfData(data)
-
-      if (data?.cpf) {
-        setCpfData(formateCPF(data.cpf));
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
+    };
 
-
-    } catch (err) {
-      console.error("Erro ao carregar cpf:", err);
-      setError(err.message || "Não foi possível carregar os dados do cpf");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Carrega os dados ao abrir a tela
   useEffect(() => {
-    loadUserData();
+    loadAll()
   }, []);
 
-  useEffect(() => {
-    loadCpfUser();
-  }, [])
-
-  useEffect(() => {
-    getUserInfo().then(data => {
-      setImageUser(data)
-    })
-  }, [])
 
   // ==================== TELAS DE CARREGAMENTO E ERRO ====================
   if (loading) {
@@ -108,7 +79,7 @@ export default function EditarPerfil() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
         <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error}</Text>
-        <TouchableOpacity onPress={loadUserData}>
+        <TouchableOpacity onPress={loadAll}>
           <Text style={{ color: '#9127E1', fontWeight: 'bold' }}>Tentar novamente</Text>
         </TouchableOpacity>
       </View>
@@ -182,7 +153,7 @@ export default function EditarPerfil() {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>CPF (não editável)</Text>
               <TextInput
-                value={cpf}
+                value={formateCPF(cpfData?.cpf)}
                 editable={false}
                 style={[styles.textInput, styles.disabledInput]}
               />

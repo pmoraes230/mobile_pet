@@ -2,7 +2,7 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode"
 import * as SecureStore from 'expo-secure-store'
 import { isAuthenticated, getToken, getUserInfo } from "./auth";
-import { API_URL } from "../utils/endPoint_Url";
+import { API_URL, _API_URL_PROD } from "../utils/endPoint_Url";
 
 export const consumerCPF = async (query) => {
     try {
@@ -18,7 +18,7 @@ export const consumerCPF = async (query) => {
             throw new Error("Informações do usuário inválidas. Faça login novamente.")
         }
 
-        const response = await axios.get(`${API_URL}/api/tutors/${userInfo.id}/cpf`, {
+        const response = await axios.get(`${API_URL || _API_URL_PROD}/api/tutors/${userInfo.id}/cpf`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

@@ -25,7 +25,7 @@ export default function RedefinirSenha() {
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.screenContainer}
+        contentContainerStyle={{...styles.screenContainer, paddingBottom: 100}}
         keyboardShouldPersistTaps="handled"
       >
         <View style={styles.card}>
