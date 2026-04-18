@@ -30,11 +30,8 @@ export const styles = StyleSheet.create({
     borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
     zIndex: 10,
-  },
-  voltarIcon: {
-    fontSize: 18,
-    color: '#6B7280',
   },
   logo: {
     width: 90,

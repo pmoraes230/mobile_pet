@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
-import { Bell, Check, Pill, Star } from 'lucide-react-native';
+import { Bell, Check, Pill, Star, ChevronLeft } from 'lucide-react-native';
+import { getUserInfo } from '../../services/auth';
 
-const TUTOR_IMAGE = require('../../assets/rayan_lindo.webp');
+const TUTOR_IMAGE = require('../../assets/user_default.png');
 
 export default function HeaderHome({ 
-  userName = 'Rayan', 
+  userName = 'Tutor', 
   showSearch = true,
   showBackButton = false,
   onBackPress,
@@ -18,6 +19,13 @@ export default function HeaderHome({
   const navigation = useNavigation();
   const [showNotifModal, setShowNotifModal] = useState(false);
   const [notificationCount] = useState(3);
+  const [userData, setUserData] = useState(null);
+
+  useEffect(() => {
+  getUserInfo().then(info => {
+    setUserData(info);
+  });
+}, []);
 
   const notifications = [
     {
@@ -57,16 +65,16 @@ export default function HeaderHome({
                 style={styles.backBtn}
                 onPress={onBackPress}
               >
-                <Text style={styles.backIcon}>←</Text>
+                <ChevronLeft size={24} color="#0D214F" strokeWidth={2.5} />
               </TouchableOpacity>
             ) : null}
             {showGreeting && (
               <View>
                 <Text style={styles.greeting}>
-                  {showBackButton ? 'Bem-vindo!' : `Olá ${userName}`}
+                  {showBackButton ? 'Bem-vindo!' : `Olá ${userData?.nome || userName}`}
                 </Text>
                 <Text style={styles.subGreeting}>
-                  {showBackButton ? `Olá, ${userName}` : 'Que você tenha um excelente atendimento!'}
+                  {showBackButton ? `Olá, ${userData?.nome || userName}` : 'Que você tenha um excelente atendimento!'}
                 </Text>
               </View>
             )}
@@ -90,7 +98,13 @@ export default function HeaderHome({
                 onPress={() => navigation.navigate('Perfil')}
               >
                 <Image 
-                  source={userProfileImage ? { uri: userProfileImage } : TUTOR_IMAGE} 
+                  source={
+                    userData?.imagem
+                    ? { uri: userData.imagem}
+                    : userProfileImage
+                      ? { uri: userProfileImage }
+                      : TUTOR_IMAGE  
+                  } 
                   style={styles.profileImage}
                 />
               </TouchableOpacity>
@@ -143,6 +157,16 @@ export default function HeaderHome({
                 </TouchableOpacity>
               ))}
             </ScrollView>
+
+            <TouchableOpacity
+              style={styles.seeAllBtn}
+              onPress={() => {
+                setShowNotifModal(false);
+                setTimeout(() => navigation.navigate('NotificacoesGerais'), 300);
+              }}
+            >
+              <Text style={styles.seeAllBtnText}>Ver Todas as Notificações →</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>

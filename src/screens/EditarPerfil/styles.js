@@ -6,6 +6,11 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  container: {
+    paddingTop: 35,
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
   // AJUSTE DE ESPAÇAMENTO DO HEADER E TABBAR
   scrollContent: {
     paddingHorizontal: 20,

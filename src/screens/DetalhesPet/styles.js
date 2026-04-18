@@ -7,6 +7,11 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F8F9FD',
   },
+  container: {
+    paddingTop: 35,
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
   // CONTEÚDO COM SCROLL - Ajustado para o respiro perfeito abaixo do Header
   scrollContent: {
     paddingHorizontal: 20,

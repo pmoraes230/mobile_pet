@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  ScrollView, 
-  TouchableOpacity, 
+import {
+  View,
+  ScrollView,
+  TouchableOpacity,
   Text,
   SafeAreaView,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { styles } from './styles';
@@ -31,95 +33,47 @@ export default function TelaInicial() {
   };
 
   const handleCardPress = (cardId) => {
-    switch(cardId) {
-      case 1:
-        navigation.navigate('Agendamento');
-        break;
-      case 2:
-        navigation.navigate('Prontuario');
-        break;
-      case 3:
-        navigation.navigate('Diario');
-        break;
-      case 4:
-        navigation.navigate('MeusPets');
-        break;
-      case 5:
-        navigation.navigate('Cupidopet');
-        break;
-      case 6:
-        navigation.navigate('Adocao');
-        break;
-      default:
-        break;
+    switch (cardId) {
+      case 1: navigation.navigate('Agendamento'); break;
+      case 2: navigation.navigate('Prontuario'); break;
+      case 3: navigation.navigate('Diario'); break;
+      case 4: navigation.navigate('MeusPets'); break;
+      case 5: navigation.navigate('Cupidopet'); break;
+      case 6: navigation.navigate('Adocao'); break;
+      default: break;
     }
   };
 
   const cards = [
-    {
-      id: 1,
-      title: 'Agendamento',
-      description: 'Acesse o Agendamento de Consultas.',
-      icon: Calendar,
-      color: '#E8D5F7',
-    },
-    {
-      id: 2,
-      title: 'Prontuário',
-      description: 'Acesse o prontuário de seus pets.',
-      icon: Clipboard,
-      color: '#E8D5F7',
-    },
-    {
-      id: 3,
-      title: 'Diário emocional',
-      description: 'Registre o diário.',
-      icon: BookOpen,
-      color: '#E8D5F7',
-    },
-    {
-      id: 4,
-      title: 'Meus pets',
-      description: 'Acesse seus pets.',
-      icon: PawPrint,
-      color: '#E8D5F7',
-    },
-    {
-      id: 5,
-      title: 'cupidopet',
-      description: 'Faça o seu pet encontrar um novo parceiro.',
-      icon: Heart,
-      color: '#E8D5F7',
-      badge: true,
-    },
-    {
-      id: 6,
-      title: 'Adoção',
-      description: 'Adote um pet e dê uma nova chance.',
-      icon: Dog,
-      color: '#E8D5F7',
-    },
+    { id: 1, title: 'Agendamento', description: 'Acesse o Agendamento de Consultas.', icon: Calendar, color: '#E8D5F7' },
+    { id: 2, title: 'Prontuário', description: 'Acesse o prontuário de seus pets.', icon: Clipboard, color: '#E8D5F7' },
+    { id: 3, title: 'Diário emocional', description: 'Registre o diário.', icon: BookOpen, color: '#E8D5F7' },
+    { id: 4, title: 'Meus pets', description: 'Acesse seus pets.', icon: PawPrint, color: '#E8D5F7' },
+    { id: 5, title: 'cupidopet', description: 'Faça o seu pet encontrar um novo parceiro.', icon: Heart, color: '#E8D5F7', badge: true },
+    { id: 6, title: 'Adoção', description: 'Adote um pet e dê uma nova chance.', icon: Dog, color: '#E8D5F7' },
   ];
-
-  const navigate = useNavigation();
 
   const handleTabPress = (tabId) => {
     setActiveTab(tabId);
     if (tabId === 'mensagens') {
-      navigate.navigate('Mensagens');
+      navigation.navigate('Mensagens');
     }
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <View style={styles.container}>
         {/* HEADER */}
         <HeaderHome userName="Rayan" />
 
         {/* SCROLL CARDS */}
-        <ScrollView 
+        <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={{ ...styles.screenContainer, paddingBottom: 100 }}
+          keyboardShouldPersistTaps="handled"
         >
           {/* PRÓXIMO COMPROMISSO CARD */}
           <View style={styles.appointmentCard}>
@@ -143,8 +97,12 @@ export default function TelaInicial() {
         </ScrollView>
 
         {/* TAB BAR */}
-        <TabBar activeTab={activeTab} onTabPress={setActiveTab} onLogout={handleLogout} />
+        <TabBar
+          activeTab={activeTab}
+          onTabPress={handleTabPress}
+          onLogout={handleLogout}
+        />
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

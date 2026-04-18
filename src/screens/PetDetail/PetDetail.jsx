@@ -4,12 +4,14 @@ import {
   Text, 
   Image, 
   TouchableOpacity, 
-  SafeAreaView, 
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { ChevronLeft, Share2, Heart } from 'lucide-react-native';
+import { Share2, Heart } from 'lucide-react-native';
+import { ChevronLeft } from 'lucide-react-native/icons';
 import { styles } from './styles';
 import TabBar from '../../components/TabBar';
 
@@ -53,10 +55,13 @@ export default function PetDetail() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
       <View style={styles.container}>
         
-        {/* HEADER */}
+        {/* HEADER PERSONALIZADO */}
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
@@ -84,6 +89,7 @@ export default function PetDetail() {
         <ScrollView 
           contentContainerStyle={styles.scrollContent} 
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
           
           {/* PET IMAGE */}
@@ -114,7 +120,7 @@ export default function PetDetail() {
             </View>
           </View>
 
-          {/* CONHEÇA A NIÇA */}
+          {/* CONHEÇA O PET */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <View style={styles.sectionBorder} />
@@ -178,8 +184,12 @@ export default function PetDetail() {
         </ScrollView>
 
         {/* TAB BAR */}
-        <TabBar activeTab={activeTab} onTabPress={setActiveTab} onLogout={handleLogout} />
+        <TabBar 
+          activeTab={activeTab} 
+          onTabPress={setActiveTab} 
+          onLogout={handleLogout} 
+        />
       </View>
-    </SafeAreaView>
+    </KeyboardAvoidingView>
   );
 }

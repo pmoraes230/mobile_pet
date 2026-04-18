@@ -9,7 +9,9 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F8F9FD',
   },
   container: {
+    paddingTop: 35,
     flex: 1,
+    backgroundColor: '#f5f5f5',
   },
   // Header com botão de voltar
   headerContainer: {
@@ -25,15 +27,11 @@ export const styles = StyleSheet.create({
     backgroundColor: '#FFF',
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
     elevation: 2,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
-  },
-  voltarIcon: {
-    fontSize: 22,
-    color: '#0D214F',
-    fontWeight: 'bold',
   },
   scrollContent: {
     padding: 20,

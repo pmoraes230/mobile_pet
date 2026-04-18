@@ -6,6 +6,11 @@ export const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  container: {
+    paddingTop: 35,
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
   // AJUSTE DE ESPAÇAMENTO:
   scrollContent: {
     paddingHorizontal: 20,
@@ -78,7 +83,7 @@ export const styles = StyleSheet.create({
   },
   contactText: {
     color: '#4b5563',
-    fontSize: 14,
+    fontSize: 10,
   },
   editButton: {
     marginTop: 18,

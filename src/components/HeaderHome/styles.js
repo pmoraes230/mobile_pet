@@ -4,8 +4,8 @@ export const styles = StyleSheet.create({
   container: {
     backgroundColor: '#F8F9FD',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 10 : 15,
-    paddingBottom: 20,
+    paddingTop: Platform.OS === 'ios' ? 16 : 20,
+    paddingBottom: 10,
   },
 
   // Alinhamento principal do topo
@@ -13,8 +13,8 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center', // ISSO centraliza tudo verticalmente
-    marginBottom: 20,
-    height: 50, // Altura fixa para garantir simetria
+    marginBottom: 10,
+    height: 44, // Altura fixa para garantir simetria
   },
 
   greetingLeft: {
@@ -41,13 +41,14 @@ export const styles = StyleSheet.create({
   },
 
   backIcon: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#0D214F',
-    textAlign: 'center',
-    // Remove paddings fantasmas do Android
-    includeFontPadding: false,
-    textAlignVertical: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#F5F3FF',
+    overflow: 'hidden',
+    marginRight: 8,
   },
 
   // Texto de Saudação
@@ -115,7 +116,7 @@ export const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 12,
-    backgroundColor: '#9127E1',
+    backgroundColor: '#cccccc',
     justifyContent: 'center',
     alignItems: 'center',
     overflow: 'hidden',
@@ -209,5 +210,49 @@ export const styles = StyleSheet.create({
   notifMessage: {
     fontSize: 12,
     color: '#7E869E',
-  }
+    marginTop: 4,
+  },
+
+  notifTime: {
+    fontSize: 11,
+    color: '#B0B8C5',
+    marginTop: 4,
+  },
+
+  notificationsList: {
+    paddingVertical: 10,
+  },
+
+  notifIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+
+  notifContent: {
+    flex: 1,
+  },
+
+  seeAllBtn: {
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F5F9',
+    alignItems: 'center',
+  },
+
+  seeAllBtnText: {
+    color: '#9127E1',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+
+  closeIcon: {
+    fontSize: 24,
+    color: '#7E869E',
+    fontWeight: 'bold',
+  },
 });
