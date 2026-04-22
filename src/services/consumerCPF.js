@@ -18,7 +18,7 @@ export const consumerCPF = async (query) => {
             throw new Error("Informações do usuário inválidas. Faça login novamente.")
         }
 
-        const response = await axios.get(`${API_URL || _API_URL_PROD}/api/tutors/${userInfo.id}/cpf`, {
+        const response = await axios.get(`${_API_URL_PROD}/api/tutors/${userInfo.id}/cpf`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

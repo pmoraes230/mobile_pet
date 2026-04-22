@@ -20,7 +20,7 @@ export const searchTutors = async (query) => {
             throw new Error("Informações do usuário inválidas. Faça login novamente.")
         }
 
-        const response = await axios.get(`${API_URL || _API_URL_PROD}/api/tutors/${userInfo.id}`, {
+        const response = await axios.get(`${_API_URL_PROD}/api/tutors/${userInfo.id}`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }

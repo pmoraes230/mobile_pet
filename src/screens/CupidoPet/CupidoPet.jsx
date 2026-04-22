@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   ScrollView,
@@ -9,6 +9,10 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
+  Animated,
+  Easing,
+  Vibration,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PawPrint, RefreshCw, X, Info, MapPin, ChevronDown, Zap } from 'lucide-react-native';
@@ -75,6 +79,45 @@ export default function TinderPet() {
       <Text style={styles.modalItemText}>{item.name}</Text>
     </TouchableOpacity>
   );
+
+  const btnScale = useRef(new Animated.Value(1)).current;
+  const [hearts, setHearts] = useState([]);
+
+  const spawnHearts = (count = 8) => {
+    Vibration.vibrate(40);
+    const newHearts = Array.from({ length: count }).map((_, i) => {
+      const id = Date.now() + Math.random() + i;
+      const x = new Animated.Value((Math.random() * 60) - 30);
+      const y = new Animated.Value(0);
+      const opacity = new Animated.Value(1);
+      const scale = new Animated.Value(1);
+      const delay = Math.random() * 200;
+      return { id, x, y, opacity, scale, delay };
+    });
+
+    setHearts((prev) => [...prev, ...newHearts]);
+
+    newHearts.forEach((h) => {
+      const toY = -80 - Math.random() * 80;
+      const dur = 900 + Math.random() * 600;
+      Animated.parallel([
+        Animated.timing(h.y, { toValue: toY, duration: dur, easing: Easing.out(Easing.cubic), useNativeDriver: true, delay: h.delay }),
+        Animated.timing(h.opacity, { toValue: 0, duration: dur, useNativeDriver: true, delay: h.delay }),
+        Animated.timing(h.scale, { toValue: 0.9, duration: dur, useNativeDriver: true, delay: h.delay }),
+      ]).start(() => {
+        setHearts((prev) => prev.filter((x) => x.id !== h.id));
+      });
+    });
+  };
+
+  const onPetch = () => {
+    // micro-pop
+    Animated.sequence([
+      Animated.timing(btnScale, { toValue: 1.12, duration: 110, easing: Easing.out(Easing.ease), useNativeDriver: true }),
+      Animated.spring(btnScale, { toValue: 1, friction: 6, useNativeDriver: true }),
+    ]).start();
+    spawnHearts(8);
+  };
 
   return (
     <KeyboardAvoidingView
@@ -143,12 +186,35 @@ export default function TinderPet() {
           {/* BOTÕES DE INTERAÇÃO */}
           <View style={styles.actionsRow}>
             <TouchableOpacity style={styles.btnSmall}>
-              <X size={28} color="#A0A7BA" strokeWidth={3} />
+              <X size={28} color="#FF7A2F" strokeWidth={3} />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnMain}>
-              <PawPrint size={40} color="#FFF" />
-            </TouchableOpacity>
+            <View style={{ width: 85, height: 85, justifyContent: 'center', alignItems: 'center' }}>
+              <Animated.View style={{ transform: [{ scale: btnScale }] }}>
+                <TouchableOpacity style={styles.btnMain} onPress={onPetch} activeOpacity={0.8}>
+                  <PawPrint size={40} color="#FFF" />
+                </TouchableOpacity>
+              </Animated.View>
+              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' }}>
+                {hearts.map((h) => (
+                  <Animated.View
+                    key={h.id}
+                    style={{
+                      position: 'absolute',
+                      left: 42,
+                      transform: [
+                        { translateX: h.x },
+                        { translateY: h.y },
+                        { scale: h.scale },
+                      ],
+                      opacity: h.opacity,
+                    }}
+                  >
+                    <Text style={{ fontSize: 18, lineHeight: 18, color: '#FF3B30', textAlign: 'center' }}>❤️</Text>
+                  </Animated.View>
+                ))}
+              </View>
+            </View>
 
             <TouchableOpacity
               style={styles.btnSmall}
@@ -167,7 +233,7 @@ export default function TinderPet() {
             <View style={styles.activePetInfo}>
               <Text style={styles.activePetName}>Missy (Seu pet)</Text>
               <View style={styles.badgeRow}>
-                <View style={styles.miniBadge}><Text style={styles.miniBadgeText}>👃 6 Cheiradas</Text></View>
+                <View style={styles.miniBadge}><Text style={styles.miniBadgeText}>🐱 6 Cheiradas</Text></View>
                 <View style={[styles.miniBadge, { backgroundColor: '#FFF4EE' }]}>
                   <Text style={[styles.miniBadgeText, { color: '#FF7A2F' }]}>🐾 1 Petch</Text>
                 </View>
@@ -255,6 +321,7 @@ export default function TinderPet() {
             </View>
           </View>
         </Modal>
+        {/* Particle animation removed as requested */}
 
         <TabBar />
       </View>

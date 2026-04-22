@@ -1,7 +1,7 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import * as SecureStore from 'expo-secure-store';
-import { API_URL } from "../utils/endPoint_Url";
+import { API_URL, _API_URL_PROD } from "../utils/endPoint_Url";
 
 const TOKEN_KEY = "auth_token";
 const LAST_ACTIVE_KEY = "last_active";
@@ -9,7 +9,7 @@ const SESSION_TIMEOUT = 30 * 60 * 1000;
 
 export const login = async (email, senha) => {
     try {
-        const response = await axios.post(`${API_URL}/api/tutors/login`, {
+        const response = await axios.post(`${_API_URL_PROD}/api/tutors/login`, {
             email,
             senha,
         });
