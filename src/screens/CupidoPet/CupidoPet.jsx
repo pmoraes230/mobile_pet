@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -16,11 +16,14 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PawPrint, RefreshCw, X, Info, MapPin, ChevronDown, Zap } from 'lucide-react-native';
+import { Audio } from 'expo-av'; // Instale com: npx expo install expo-av
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 
-const MISSY_IMAGE = require('../../../assets/gatasafada.jpg');
+// CAMINHOS CORRIGIDOS BASEADOS NA SUA IMAGEM
+const MISSY_IMAGE = require('../../assets/gatasafada.jpg'); 
+const MIAU_SOUND = require('../../assets/miau.mp3');
 
 const ESTADOS_CIDADES = {
   'Acre': ['Rio Branco', 'Cruzeiro do Sul', 'Sena Madureira'],
@@ -58,6 +61,29 @@ export default function TinderPet() {
   const [selectedCidade, setSelectedCidade] = useState(null);
   const [modalEstadoOpen, setModalEstadoOpen] = useState(false);
   const [modalCidadeOpen, setModalCidadeOpen] = useState(false);
+  const [sound, setSound] = useState();
+
+  // FUNÇÃO PARA TOCAR O MIADO
+  async function playMiau() {
+    try {
+      const { sound: playbackObject } = await Audio.Sound.createAsync(
+        MIAU_SOUND,
+        { shouldPlay: true }
+      );
+      setSound(playbackObject);
+      playbackObject.setOnPlaybackStatusUpdate(async (status) => {
+        if (status.didJustFinish) {
+          await playbackObject.unloadAsync();
+        }
+      });
+    } catch (error) {
+      console.log("Erro ao carregar som:", error);
+    }
+  }
+
+  useEffect(() => {
+    return sound ? () => { sound.unloadAsync(); } : undefined;
+  }, [sound]);
 
   const estados = Object.keys(ESTADOS_CIDADES).map((name, idx) => ({
     id: idx + 1,
@@ -83,37 +109,30 @@ export default function TinderPet() {
   const btnScale = useRef(new Animated.Value(1)).current;
   const [hearts, setHearts] = useState([]);
 
-  // MELHORIA NA ANIMAÇÃO DOS CORAÇÕES
   const spawnHearts = (count = 10) => {
     Vibration.vibrate(Platform.OS === 'ios' ? 10 : 40);
     const newHearts = Array.from({ length: count }).map((_, i) => {
       const id = Date.now() + Math.random() + i;
-      const x = new Animated.Value(0); // Começa no centro
+      const x = new Animated.Value(0);
       const y = new Animated.Value(0);
       const opacity = new Animated.Value(1);
-      const scale = new Animated.Value(0); // Começa pequeno
-      const rotate = new Animated.Value(0); // Valor para rotação
-      const delay = i * 40; // Delay sequencial para brotar um por um
+      const scale = new Animated.Value(0);
+      const rotate = new Animated.Value(0);
+      const delay = i * 40;
       
       return { id, x, y, opacity, scale, rotate, delay, 
-               targetX: (Math.random() * 120) - 60, // Para onde ele vai no eixo X
-               targetRotate: (Math.random() * 60) - 30 }; // Quanto ele vai girar
+               targetX: (Math.random() * 120) - 60, 
+               targetRotate: (Math.random() * 60) - 30 };
     });
 
     setHearts((prev) => [...prev, ...newHearts]);
 
     newHearts.forEach((h) => {
       const dur = 1000 + Math.random() * 500;
-      
       Animated.parallel([
-        // Sobe e abre para os lados (arco)
         Animated.timing(h.y, { toValue: -150 - Math.random() * 50, duration: dur, easing: Easing.out(Easing.back(1)), useNativeDriver: true, delay: h.delay }),
         Animated.timing(h.x, { toValue: h.targetX, duration: dur, easing: Easing.out(Easing.sin), useNativeDriver: true, delay: h.delay }),
-        
-        // Gira enquanto sobe
         Animated.timing(h.rotate, { toValue: 1, duration: dur, useNativeDriver: true, delay: h.delay }),
-        
-        // Aparece e some
         Animated.sequence([
           Animated.timing(h.scale, { toValue: 1.2, duration: 200, useNativeDriver: true, delay: h.delay }),
           Animated.timing(h.opacity, { toValue: 0, duration: dur - 400, useNativeDriver: true, delay: h.delay + 200 }),
@@ -125,7 +144,7 @@ export default function TinderPet() {
   };
 
   const onPetch = () => {
-    // Efeito de "apertar" o botão real (mais elástico)
+    playMiau(); // <--- TOCA O MIADO AQUI
     Animated.sequence([
       Animated.timing(btnScale, { toValue: 0.85, duration: 60, useNativeDriver: true }),
       Animated.spring(btnScale, { toValue: 1, friction: 3, tension: 100, useNativeDriver: true }),
@@ -154,7 +173,6 @@ export default function TinderPet() {
           keyboardShouldPersistTaps="handled"
         >
 
-          {/* FILTROS NO TOPO */}
           <View style={styles.filterRow}>
             <TouchableOpacity
               style={styles.filterButton}
@@ -182,7 +200,6 @@ export default function TinderPet() {
             </TouchableOpacity>
           </View>
 
-          {/* CARD PRINCIPAL */}
           <View style={styles.mainCard}>
             <Image
               source={{ uri: 'https://placekitten.com/500/800' }}
@@ -197,7 +214,6 @@ export default function TinderPet() {
             </View>
           </View>
 
-          {/* BOTÕES DE INTERAÇÃO */}
           <View style={styles.actionsRow}>
             <TouchableOpacity style={styles.btnSmall}>
               <X size={28} color="#FF7A2F" strokeWidth={3} />
@@ -209,8 +225,6 @@ export default function TinderPet() {
                   <PawPrint size={40} color="#FFF" />
                 </TouchableOpacity>
               </Animated.View>
-              
-              {/* ÁREA DOS CORAÇÕES MELHORADA */}
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' }}>
                 {hearts.map((h) => (
                   <Animated.View
@@ -243,7 +257,6 @@ export default function TinderPet() {
             </TouchableOpacity>
           </View>
 
-          {/* STATUS DO MEU PET */}
           <View style={styles.activePetWidget}>
             <Image
               source={MISSY_IMAGE}
@@ -261,7 +274,6 @@ export default function TinderPet() {
             <TouchableOpacity><RefreshCw size={18} color="#9127E1" /></TouchableOpacity>
           </View>
 
-          {/* AMIGOS RECENTES */}
           <View style={styles.friendsHeader}>
             <Text style={styles.sectionTitle}>Amigos recentes</Text>
             <Zap size={14} color="#FF7A2F" fill="#FF7A2F" />
@@ -284,7 +296,6 @@ export default function TinderPet() {
 
         </ScrollView>
 
-        {/* MODAL ESTADO */}
         <Modal
           visible={modalEstadoOpen}
           transparent={true}
@@ -313,7 +324,6 @@ export default function TinderPet() {
           </View>
         </Modal>
 
-        {/* MODAL CIDADE */}
         <Modal
           visible={modalCidadeOpen}
           transparent={true}
