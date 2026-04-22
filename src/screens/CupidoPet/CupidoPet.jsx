@@ -83,27 +83,41 @@ export default function TinderPet() {
   const btnScale = useRef(new Animated.Value(1)).current;
   const [hearts, setHearts] = useState([]);
 
-  const spawnHearts = (count = 8) => {
-    Vibration.vibrate(40);
+  // MELHORIA NA ANIMAÇÃO DOS CORAÇÕES
+  const spawnHearts = (count = 10) => {
+    Vibration.vibrate(Platform.OS === 'ios' ? 10 : 40);
     const newHearts = Array.from({ length: count }).map((_, i) => {
       const id = Date.now() + Math.random() + i;
-      const x = new Animated.Value((Math.random() * 60) - 30);
+      const x = new Animated.Value(0); // Começa no centro
       const y = new Animated.Value(0);
       const opacity = new Animated.Value(1);
-      const scale = new Animated.Value(1);
-      const delay = Math.random() * 200;
-      return { id, x, y, opacity, scale, delay };
+      const scale = new Animated.Value(0); // Começa pequeno
+      const rotate = new Animated.Value(0); // Valor para rotação
+      const delay = i * 40; // Delay sequencial para brotar um por um
+      
+      return { id, x, y, opacity, scale, rotate, delay, 
+               targetX: (Math.random() * 120) - 60, // Para onde ele vai no eixo X
+               targetRotate: (Math.random() * 60) - 30 }; // Quanto ele vai girar
     });
 
     setHearts((prev) => [...prev, ...newHearts]);
 
     newHearts.forEach((h) => {
-      const toY = -80 - Math.random() * 80;
-      const dur = 900 + Math.random() * 600;
+      const dur = 1000 + Math.random() * 500;
+      
       Animated.parallel([
-        Animated.timing(h.y, { toValue: toY, duration: dur, easing: Easing.out(Easing.cubic), useNativeDriver: true, delay: h.delay }),
-        Animated.timing(h.opacity, { toValue: 0, duration: dur, useNativeDriver: true, delay: h.delay }),
-        Animated.timing(h.scale, { toValue: 0.9, duration: dur, useNativeDriver: true, delay: h.delay }),
+        // Sobe e abre para os lados (arco)
+        Animated.timing(h.y, { toValue: -150 - Math.random() * 50, duration: dur, easing: Easing.out(Easing.back(1)), useNativeDriver: true, delay: h.delay }),
+        Animated.timing(h.x, { toValue: h.targetX, duration: dur, easing: Easing.out(Easing.sin), useNativeDriver: true, delay: h.delay }),
+        
+        // Gira enquanto sobe
+        Animated.timing(h.rotate, { toValue: 1, duration: dur, useNativeDriver: true, delay: h.delay }),
+        
+        // Aparece e some
+        Animated.sequence([
+          Animated.timing(h.scale, { toValue: 1.2, duration: 200, useNativeDriver: true, delay: h.delay }),
+          Animated.timing(h.opacity, { toValue: 0, duration: dur - 400, useNativeDriver: true, delay: h.delay + 200 }),
+        ]),
       ]).start(() => {
         setHearts((prev) => prev.filter((x) => x.id !== h.id));
       });
@@ -111,12 +125,12 @@ export default function TinderPet() {
   };
 
   const onPetch = () => {
-    // micro-pop
+    // Efeito de "apertar" o botão real (mais elástico)
     Animated.sequence([
-      Animated.timing(btnScale, { toValue: 1.12, duration: 110, easing: Easing.out(Easing.ease), useNativeDriver: true }),
-      Animated.spring(btnScale, { toValue: 1, friction: 6, useNativeDriver: true }),
+      Animated.timing(btnScale, { toValue: 0.85, duration: 60, useNativeDriver: true }),
+      Animated.spring(btnScale, { toValue: 1, friction: 3, tension: 100, useNativeDriver: true }),
     ]).start();
-    spawnHearts(8);
+    spawnHearts(10);
   };
 
   return (
@@ -190,27 +204,32 @@ export default function TinderPet() {
             </TouchableOpacity>
 
             <View style={{ width: 85, height: 85, justifyContent: 'center', alignItems: 'center' }}>
-              <Animated.View style={{ transform: [{ scale: btnScale }] }}>
+              <Animated.View style={{ transform: [{ scale: btnScale }], zIndex: 2 }}>
                 <TouchableOpacity style={styles.btnMain} onPress={onPetch} activeOpacity={0.8}>
                   <PawPrint size={40} color="#FFF" />
                 </TouchableOpacity>
               </Animated.View>
+              
+              {/* ÁREA DOS CORAÇÕES MELHORADA */}
               <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', pointerEvents: 'none' }}>
                 {hearts.map((h) => (
                   <Animated.View
                     key={h.id}
                     style={{
                       position: 'absolute',
-                      left: 42,
                       transform: [
                         { translateX: h.x },
                         { translateY: h.y },
                         { scale: h.scale },
+                        { rotate: h.rotate.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: ['0deg', `${h.targetRotate}deg`]
+                        }) }
                       ],
                       opacity: h.opacity,
                     }}
                   >
-                    <Text style={{ fontSize: 18, lineHeight: 18, color: '#FF3B30', textAlign: 'center' }}>❤️</Text>
+                    <Text style={{ fontSize: 24, color: '#FF3B30' }}>❤️</Text>
                   </Animated.View>
                 ))}
               </View>
@@ -321,7 +340,6 @@ export default function TinderPet() {
             </View>
           </View>
         </Modal>
-        {/* Particle animation removed as requested */}
 
         <TabBar />
       </View>
