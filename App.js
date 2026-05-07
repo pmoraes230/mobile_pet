@@ -1,5 +1,8 @@
+import React, { useEffect } from 'react';
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import { setupAxiosInterceptors } from './src/services/auth';
 
 import ResponsavelLogin from './src/screens/ResponsavelLogin/ResponsavelLogin';
 import ResponsavelCadastro from './src/screens/ResponsavelCadastro/ResponsavelCadastro';
@@ -24,9 +27,15 @@ import EsqueciSenha from './src/screens/EsqueciSenha/EsqueciSenha';
 import CodigoSenha from './src/screens/CodigoSenha/CodigoSenha';
 import RedefinirSenha from './src/screens/RedefinirSenha/RedefinirSenha';
 import NotificacoesGerais from './src/screens/NotificacoesGerais/notificacoesgerais';
+
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+
+  useEffect(() => {
+    setupAxiosInterceptors();
+  }, []);
+
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -52,9 +61,10 @@ export default function App() {
         <Stack.Screen name="ChatPrivado" component={ChatPrivado} />
         <Stack.Screen name="novoagendamento" component={novoagendamento} />
         <Stack.Screen name="anunciarpet" component={anunciarpet} />
-        <Stack.Screen name="NotificacoesGerais" component={NotificacoesGerais} />
-
-
+        <Stack.Screen
+          name="NotificacoesGerais"
+          component={NotificacoesGerais}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );

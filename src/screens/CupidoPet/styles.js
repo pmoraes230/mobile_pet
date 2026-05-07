@@ -16,7 +16,7 @@ export const styles = StyleSheet.create({
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 150, // Aumentado para garantir o scroll final
+    paddingBottom: 150, 
   },
 
   // FILTROS DE LOCALIZAÇÃO
@@ -49,10 +49,10 @@ export const styles = StyleSheet.create({
     marginLeft: 6,
   },
 
-  // --- CARD PRINCIPAL (AUMENTADO) ---
+  // --- CARD PRINCIPAL ---
   mainCard: {
     width: '100%',
-    height: height * 0.58, // AUMENTADO: Ocupa 58% da tela agora
+    height: height * 0.58, 
     borderRadius: 35,
     backgroundColor: '#FFF',
     overflow: 'hidden',
@@ -72,7 +72,7 @@ export const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 25,
-    backgroundColor: 'rgba(0,0,0,0.55)', // Um pouco mais escuro para ler a bio
+    backgroundColor: 'rgba(0,0,0,0.55)', 
   },
   cardName: {
     fontSize: 30,
@@ -136,11 +136,16 @@ export const styles = StyleSheet.create({
     marginTop: 35,
     borderWidth: 1,
     borderColor: '#F1F1F1',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
   },
   activePetImg: {
     width: 55,
     height: 55,
     borderRadius: 15,
+    backgroundColor: '#EEE',
   },
   activePetInfo: {
     flex: 1,
@@ -208,53 +213,69 @@ export const styles = StyleSheet.create({
     color: '#0D214F',
     marginTop: 6,
   },
-  // Estilos do Modal de Seleção
+
+  // --- ESTILOS DO MODAL DE SELEÇÃO (MELHORADO) ---
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: 'rgba(13, 33, 79, 0.7)', // Overlay azulado profundo para dar destaque
+    justifyContent: 'flex-end', // Agora ele sobe como um "Bottom Sheet"
   },
   modalContent: {
     backgroundColor: '#FFFFFF',
-    borderRadius: 20,
-    padding: 20,
+    borderTopLeftRadius: 35,
+    borderTopRightRadius: 35,
+    padding: 25,
     width: '100%',
-    maxHeight: '80%',
-    elevation: 10,
+    maxHeight: '75%',
     shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 20,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '900',
     color: '#0D214F',
-    marginBottom: 15,
+    marginBottom: 20,
+    textAlign: 'center',
   },
   modalItem: {
-    paddingVertical: 16,
-    paddingHorizontal: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E2E8F0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 18,
+    marginBottom: 12,
+    borderWidth: 1.5,
+    borderColor: '#F1F1F5',
+    backgroundColor: '#FFF',
+  },
+  // Classe que você vai usar no JS: styles.modalItemSelected
+  modalItemSelected: {
+    borderColor: '#9127E1',
+    backgroundColor: '#F9F5FF',
+  },
+  modalPetImg: {
+    width: 50,
+    height: 50,
+    borderRadius: 15,
+    marginRight: 15,
   },
   modalItemText: {
     fontSize: 16,
-    color: '#4A5568',
-    fontWeight: '500',
+    color: '#0D214F',
+    fontWeight: '700',
   },
   modalCloseBtn: {
-    marginTop: 15,
-    paddingVertical: 12,
-    paddingHorizontal: 15,
+    marginTop: 10,
+    marginBottom: Platform.OS === 'ios' ? 25 : 10,
+    paddingVertical: 16,
     backgroundColor: '#F3F5F9',
-    borderRadius: 12,
+    borderRadius: 18,
     alignItems: 'center',
   },
   modalCloseBtnText: {
     color: '#7E869E',
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
 });
