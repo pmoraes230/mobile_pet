@@ -22,6 +22,12 @@ export default function TelaMeusPets() {
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Função para tratar imagem do S3 (Mantendo o padrão do Coração em Patas)
+  const getImageUri = (img) => {
+    if (!img) return 'https://via.placeholder.com/150';
+    return img.startsWith('http') ? img : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${img}`;
+  };
+
   const handleLogout = () => {
     navigation.reset({
       index: 0,
@@ -103,14 +109,14 @@ export default function TelaMeusPets() {
           ) : (
             pets.map((pet) => (
               <PetCard
-                key={pet.id}
+                key={pet.id || pet.ID}
                 pet={{
-                  id: pet.id,
-                  nome: pet.NOME,
-                  tipo: pet.ESPECIE,
-                  cor: pet.RACA,
-                  idade: formateDate(pet.DATA_NASCIMENTO),
-                  foto: pet.IMAGEM,
+                  id: pet.id || pet.ID,
+                  nome: pet.nome || pet.NOME,
+                  tipo: pet.especie || pet.ESPECIE,
+                  cor: pet.raca || pet.RACA,
+                  idade: formateDate(pet.dataNascimento || pet.DATA_NASCIMENTO),
+                  foto: getImageUri(pet.imagem || pet.IMAGEM),
                 }}
                 onPress={() => navigation.navigate('detalhespet', { pet })}
                 onMenuPress={() => {}}

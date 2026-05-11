@@ -99,7 +99,7 @@ export default function TinderPet() {
 
   // 2. Sempre que o Pet Logado mudar, recarrega Feed e Matches
   useEffect(() => {
-    if (petLogado?.id) {
+    if (petLogado?.id || petLogado?.ID) {
       carregarFeed();
       carregarMatchesReais();
     }
@@ -107,7 +107,7 @@ export default function TinderPet() {
 
   async function carregarMatchesReais() {
     try {
-      const response = await api.get(`/cupido/matches/${petLogado.id}`);
+      const response = await api.get(`/cupido/matches/${petLogado?.id || petLogado?.ID}`);
       setAmigosRecentes(response.data || []);
     } catch (error) {
       console.log('Erro ao buscar matches:', error.message);
@@ -118,7 +118,7 @@ export default function TinderPet() {
     try {
       setLoading(true);
       const response = await api.get('/cupido/feed', { 
-        params: { pet_id: petLogado.id } 
+        params: { pet_id: petLogado?.id || petLogado?.ID } 
       });
       const lista = response.data?.candidatos || [];
       setCandidatos(lista);
@@ -136,7 +136,7 @@ export default function TinderPet() {
 
   async function playLikeSound() {
     try {
-      const especie = petLogado?.ESPECIE?.toLowerCase() || '';
+      const especie = (petLogado?.especie || petLogado?.ESPECIE || '').toLowerCase();
       const somParaTocar = (especie === 'cachorro' || especie === 'cão' || especie === 'cao') 
         ? AUAU_SOUND 
         : MIAU_SOUND;
@@ -149,7 +149,7 @@ export default function TinderPet() {
 
   async function playDislikeSound() {
     try {
-      const especie = petLogado?.ESPECIE?.toLowerCase() || '';
+      const especie = (petLogado?.especie || petLogado?.ESPECIE || '').toLowerCase();
       const somParaTocar = (especie === 'cachorro' || especie === 'cão' || especie === 'cao') 
         ? CACHORRO_ROSNA 
         : GATO_ROSNA;
@@ -198,7 +198,11 @@ export default function TinderPet() {
     playDislikeSound(); // <--- TOCA O ROSNADO DINÂMICO
     proximoCard();
     try {
-      await api.post('/cupido/swipe', { meuPetId: petLogado.id, alvoId: petAtual.id, acao: 'dislike' });
+      await api.post('/cupido/swipe', { 
+        meuPetId: petLogado?.id || petLogado?.ID, 
+        alvoId: petAtual?.id || petAtual?.ID, 
+        acao: 'dislike' 
+      });
     } catch (e) { console.log(e.message); }
   };
 
@@ -213,12 +217,12 @@ export default function TinderPet() {
       Animated.spring(btnScale, { toValue: 1, friction: 3, useNativeDriver: true }),
     ]).start();
 
-    const alvoId = petAtual.id;
+    const alvoId = petAtual?.id || petAtual?.ID;
     setTimeout(proximoCard, 500); 
 
     try {
       const response = await api.post('/cupido/swipe', { 
-        meuPetId: petLogado.id, 
+        meuPetId: petLogado?.id || petLogado?.ID, 
         alvoId: alvoId, 
         acao: 'like' 
       });
@@ -275,16 +279,16 @@ export default function TinderPet() {
           ) : petAtual ? (
             <>
               <View style={styles.mainCard}>
-                <Image source={{ uri: getImageUri(petAtual.IMAGEM) }} style={styles.cardImg} />
+                <Image source={{ uri: getImageUri(petAtual?.imagem || petAtual?.IMAGEM) }} style={styles.cardImg} />
                 <View style={styles.infoOverlay}>
                   <Text style={styles.cardName}>
-                    {petAtual.NOME}, <Text style={{ fontWeight: '300' }}>{petAtual.IDADE || '?'}a</Text>
+                    {petAtual?.nome || petAtual?.NOME}, <Text style={{ fontWeight: '300' }}>{petAtual?.idade || petAtual?.IDADE || '?'}a</Text>
                   </Text>
                   <Text style={styles.cardBio} numberOfLines={2}>
-                    {petAtual.DESCRICAO || 'Olá! Vamos ser amigos?'}
+                    {petAtual?.descricao || petAtual?.DESCRICAO || 'Olá! Vamos ser amigos?'}
                   </Text>
                   <Text style={styles.cardBreed}>
-                    {getPetEmoji(petAtual.ESPECIE)} {(petAtual.ESPECIE || 'PET').toUpperCase()} • {(petAtual.RACA || 'SRD').toUpperCase()}
+                    {getPetEmoji(petAtual?.especie || petAtual?.ESPECIE)} {(petAtual?.especie || petAtual?.ESPECIE || 'PET').toUpperCase()} • {(petAtual?.raca || petAtual?.RACA || 'SRD').toUpperCase()}
                   </Text>
                 </View>
               </View>
@@ -323,12 +327,12 @@ export default function TinderPet() {
 
           {/* 4. SEU PET WIDGET */}
           <View style={styles.activePetWidget}>
-            <Image source={petLogado?.IMAGEM ? { uri: getImageUri(petLogado.IMAGEM) } : MISSY_IMAGE} style={styles.activePetImg} />
+            <Image source={(petLogado?.imagem || petLogado?.IMAGEM) ? { uri: getImageUri(petLogado?.imagem || petLogado?.IMAGEM) } : MISSY_IMAGE} style={styles.activePetImg} />
             <View style={styles.activePetInfo}>
-              <Text style={styles.activePetName}>{petLogado?.NOME || 'Seu Pet'} (Você)</Text>
+              <Text style={styles.activePetName}>{petLogado?.nome || petLogado?.NOME || 'Seu Pet'} (Você)</Text>
               <View style={styles.badgeRow}>
                 <View style={styles.miniBadge}>
-                  <Text style={styles.miniBadgeText}>{getPetEmoji(petLogado?.ESPECIE)} {petLogado?.ESPECIE || 'Pet'}</Text>
+                  <Text style={styles.miniBadgeText}>{getPetEmoji(petLogado?.especie || petLogado?.ESPECIE)} {petLogado?.especie || petLogado?.ESPECIE || 'Pet'}</Text>
                 </View>
                 <View style={[styles.miniBadge, { backgroundColor: '#FFF4EE' }]}>
                   <Text style={[styles.miniBadgeText, { color: '#FF7A2F' }]}>🐾 No Tinder</Text>
@@ -349,11 +353,11 @@ export default function TinderPet() {
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 20 }}>
             {amigosRecentes.length > 0 ? (
               amigosRecentes.map((amigo) => (
-                <View key={amigo.id} style={styles.friendBubble}>
+                <View key={amigo.id || amigo.ID} style={styles.friendBubble}>
                   <TouchableOpacity style={styles.haloEffect} onPress={() => navigation.navigate('Chat', { amigo })}>
-                    <Image source={{ uri: getImageUri(amigo.IMAGEM) }} style={styles.friendImg} />
+                    <Image source={{ uri: getImageUri(amigo.imagem || amigo.IMAGEM) }} style={styles.friendImg} />
                   </TouchableOpacity>
-                  <Text style={styles.friendName}>{amigo.NOME}</Text>
+                  <Text style={styles.friendName}>{amigo.nome || amigo.NOME}</Text>
                 </View>
               ))
             ) : (
@@ -369,14 +373,14 @@ export default function TinderPet() {
               <Text style={styles.modalTitle}>Seus Pets</Text>
               <FlatList
                 data={meusPets}
-                keyExtractor={item => item.id.toString()}
+                keyExtractor={item => (item.id || item.ID).toString()}
                 renderItem={({ item }) => (
                   <TouchableOpacity 
-                    style={[styles.modalItem, petLogado?.id === item.id && { backgroundColor: '#F0E6FF' }]} 
+                    style={[styles.modalItem, (petLogado?.id === item.id || petLogado?.ID === item.ID) && { backgroundColor: '#F0E6FF' }]} 
                     onPress={() => { setPetLogado(item); setModalTrocarPetOpen(false); }}
                   >
-                    <Image source={{ uri: getImageUri(item.IMAGEM) }} style={{width: 40, height: 40, borderRadius: 20, marginRight: 10}} />
-                    <Text style={styles.modalItemText}>{item.NOME}</Text>
+                    <Image source={{ uri: getImageUri(item.imagem || item.IMAGEM) }} style={{width: 40, height: 40, borderRadius: 20, marginRight: 10}} />
+                    <Text style={styles.modalItemText}>{item.nome || item.NOME}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -387,7 +391,7 @@ export default function TinderPet() {
           </View>
         </Modal>
 
-        {/* MODAIS ESTADO/CIDADE */}
+        {/* MODAIS ESTADO/CIDADE (Mantidos conforme original) */}
         <Modal visible={modalEstadoOpen} transparent animationType="fade">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
