@@ -24,6 +24,8 @@ import TabBar from '../../components/TabBar';
 import { styles } from './styles';
 import { updatePet } from '../../services/updatePet';
 import api from '../../services/api';
+// IMPORTADO O FORMATADOR DE DATA
+import { formateDate } from '../../utils/formatters';
 
 export default function TelaDetalhesPet({ route }) {
   const navigation = useNavigation();
@@ -31,12 +33,12 @@ export default function TelaDetalhesPet({ route }) {
 
   const [activeTab, setActiveTab] = useState('Sobre');
 
-  const [descricao, setDescricao] = useState(pet.DESCRICAO || '');
-  const [personalidade, setPersonalidade] = useState(pet.PERSONALIDADE || '');
-  const [especie, setEspecie] = useState(pet.ESPECIE || '');
-  const [raca, setRaca] = useState(pet.RACA || '');
-  const [peso, setPeso] = useState(pet.PESO ? String(pet.PESO) : '');
-  const [sexo, setSexo] = useState(pet.SEXO || '');
+  const [descricao, setDescricao] = useState(pet.descricao || pet.DESCRICAO || '');
+  const [personalidade, setPersonalidade] = useState(pet.personalidade || pet.PERSONALIDADE || '');
+  const [especie, setEspecie] = useState(pet.especie || pet.ESPECIE || '');
+  const [raca, setRaca] = useState(pet.raca || pet.RACA || '');
+  const [peso, setPeso] = useState(pet.peso || pet.PESO ? String(pet.peso || pet.PESO) : '');
+  const [sexo, setSexo] = useState(pet.sexo || pet.SEXO || '');
 
   const [vacinas, setVacinas] = useState([]);
   const [medicamentos, setMedicamentos] = useState([]);
@@ -47,20 +49,18 @@ export default function TelaDetalhesPet({ route }) {
   }, []);
 
   const carregarVacinas = async () => {
-  try {
-    const response = await api.get(`/api/vacinas/pet/${pet.id || pet.ID}`);
-    console.log('VACINAS:', response.data);
-    setVacinas(response.data);
-  } catch (error) {
-    console.log('Erro ao carregar vacinas:', error);
-  }
+    try {
+      const response = await api.get(`/vacinas/pet/${pet.id || pet.ID}`);
+      setVacinas(response.data || []);
+    } catch (error) {
+      console.log('Erro ao carregar vacinas:', error);
+    }
   };
 
   const carregarMedicamentos = async () => {
     try {
-      const response = await api.get(`/api/medicamentos/pet/${pet.id || pet.ID}`);
-      console.log('MEDICAMENTOS:', response.data);
-      setMedicamentos(response.data);
+      const response = await api.get(`/medicamentos/pet/${pet.id || pet.ID}`);
+      setMedicamentos(response.data || []);
     } catch (error) {
       console.log('Erro ao carregar medicamentos:', error);
     }
@@ -90,8 +90,7 @@ export default function TelaDetalhesPet({ route }) {
     }
   };
 
-  const rawImage = pet.IMAGEM;
-
+  const rawImage = pet.imagem || pet.IMAGEM;
   const imageUri = rawImage
     ? rawImage.startsWith('http')
       ? rawImage
@@ -128,7 +127,7 @@ export default function TelaDetalhesPet({ route }) {
             />
 
             <View style={styles.nameWrapper}>
-              <Text style={styles.petName}>{pet.NOME}</Text>
+              <Text style={styles.petName}>{pet.nome || pet.NOME}</Text>
               <TouchableOpacity>
                 <PencilLine size={20} color="#9127E1" strokeWidth={2.5} />
               </TouchableOpacity>
@@ -216,7 +215,7 @@ export default function TelaDetalhesPet({ route }) {
             {activeTab === 'Sobre' ? (
               <View>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Sobre o {pet.NOME}:</Text>
+                  <Text style={styles.label}>Sobre o {pet.nome || pet.NOME}:</Text>
                   <TextInput
                     style={[styles.textInput, styles.textArea]}
                     value={descricao}
@@ -300,10 +299,11 @@ export default function TelaDetalhesPet({ route }) {
                   </Text>
                 ) : (
                   vacinas.map((vacina) => (
-                    <View key={vacina.id} style={styles.treatmentSection}>
-                      <Text style={styles.label}>{vacina.nome}</Text>
-                      <Text>Aplicação: {vacina.dataAplicacao}</Text>
-                      <Text>Próxima Dose: {vacina.proximaDose}</Text>
+                    <View key={vacina.id || vacina.ID} style={styles.treatmentSection}>
+                      <Text style={styles.label}>{vacina.nome || vacina.NOME}</Text>
+                      {/* APLICADO O FORMATADOR DE DATA AQUI */}
+                      <Text>Aplicação: {formateDate(vacina.dataAplicacao || vacina.DATA_APLICACAO)}</Text>
+                      <Text>Próxima Dose: {formateDate(vacina.proximaDose || vacina.PROXIMA_DOSE)}</Text>
                     </View>
                   ))
                 )}
@@ -336,10 +336,10 @@ export default function TelaDetalhesPet({ route }) {
                   </View>
                 ) : (
                   medicamentos.map((med) => (
-                    <View key={med.id} style={styles.treatmentSection}>
-                      <Text style={styles.label}>{med.nome}</Text>
-                      <Text>Dosagem: {med.dosagem}</Text>
-                      <Text>Frequência: {med.frequencia}</Text>
+                    <View key={med.id || med.ID} style={styles.treatmentSection}>
+                      <Text style={styles.label}>{med.nome || med.NOME}</Text>
+                      <Text>Dosagem: {med.dosagem || med.DOSAGEM}</Text>
+                      <Text>Frequência: {med.frequencia || med.FREQUENCIA}</Text>
                     </View>
                   ))
                 )}
