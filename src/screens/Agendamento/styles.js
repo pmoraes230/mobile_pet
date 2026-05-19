@@ -101,14 +101,15 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 25,
   },
-  // GRID DE DIAS (Ajustado para caber igual ao print)
+  // GRID DE DIAS (Semana)
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   dayBox: {
-    width: '23%', // 4 por linha
+    width: '12.5%', // 7 por linha
+    minWidth: 42,
     height: 75,
     backgroundColor: '#F9FAFB',
     borderRadius: 16,
@@ -160,13 +161,13 @@ export const styles = StyleSheet.create({
   monthDaysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    justifyContent: 'flex-start',
     paddingHorizontal: 5,
   },
   emptyDayBox: {
     width: 40,
     height: 40,
-    margin: 1,
+    margin: 2,
   },
   monthDayBox: {
     width: 40,

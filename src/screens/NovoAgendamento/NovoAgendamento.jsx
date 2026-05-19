@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -9,11 +9,14 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
+import { getAgendaSemanal, criarAgendamento } from '../../services/agendamentoService';
 
 export default function TelaNovoAgendamento() {
   const navigation = useNavigation();
@@ -24,6 +27,11 @@ export default function TelaNovoAgendamento() {
   const [selectedPet, setSelectedPet] = useState(null);
   const [selectedVeterinario, setSelectedVeterinario] = useState(null);
   const [selectedServico, setSelectedServico] = useState('Consulta Geral');
+  const [obs, setObs] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [agendaCarregando, setAgendaCarregando] = useState(true);
+  const [agendaErro, setAgendaErro] = useState(null);
+  const [agendaDados, setAgendaDados] = useState({ pets: [], veterinarios: [] });
 
   // Estados para controlar modais
   const [modalPetOpen, setModalPetOpen] = useState(false);
@@ -34,7 +42,7 @@ export default function TelaNovoAgendamento() {
     navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
   };
 
-  // Dados
+  // Dados de fallback
   const pets = [
     { id: 1, name: 'Missy' },
     { id: 2, name: 'Rex' },
@@ -65,6 +73,60 @@ export default function TelaNovoAgendamento() {
     { id: 4, label: 'SEX', num: '3' },
     { id: 5, label: 'SÁB', num: '4' },
   ];
+
+  const petsOpcao = agendaDados.pets.length > 0 ? agendaDados.pets : pets;
+  const veterinariosOpcao = agendaDados.veterinarios.length > 0 ? agendaDados.veterinarios : veterinarios;
+
+  useEffect(() => {
+    const carregarAgenda = async () => {
+      setAgendaCarregando(true);
+      try {
+        const dados = await getAgendaSemanal(new Date());
+        setAgendaDados(dados);
+        setSelectedPet((prev) => prev || (dados.pets?.[0] ?? null));
+        setSelectedVeterinario((prev) => prev || (dados.veterinarios?.[0] ?? null));
+      } catch (error) {
+        setAgendaErro(error.message || 'Erro ao carregar agenda.');
+      } finally {
+        setAgendaCarregando(false);
+      }
+    };
+
+    carregarAgenda();
+  }, []);
+
+  const handleConfirmarAgendamento = async () => {
+    if (!selectedPet || !selectedVeterinario || !selectedServico) {
+      Alert.alert('Preencha os campos', 'Selecione pet, veterinário e tipo de serviço.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setAgendaErro(null);
+
+    try {
+      const diaSelecionado = dias.find((item) => item.id === selectedDay);
+      const agendaDisponivelId = diaSelecionado?.id ?? selectedDay;
+      const petId = selectedPet.id || selectedPet.petId || selectedPet._id;
+
+      const resultado = await criarAgendamento({
+        agendaDisponivelId,
+        petId,
+        tipo: selectedServico,
+        obs,
+      });
+
+      Alert.alert('Agendamento criado', resultado.mensagem, [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    } catch (error) {
+      const message = error.message || 'Erro ao criar o agendamento.';
+      setAgendaErro(message);
+      Alert.alert('Erro', message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const renderModalItem = (item, onSelect) => (
     <TouchableOpacity
@@ -171,17 +233,33 @@ export default function TelaNovoAgendamento() {
               placeholder="Descreva brevemente..."
               multiline
               placeholderTextColor="#A0A7BA"
+              value={obs}
+              onChangeText={setObs}
             />
           </View>
 
+          {agendaErro && (
+            <View style={{ marginBottom: 20 }}>
+              <Text style={{ color: '#DC143C', fontSize: 13 }}>{agendaErro}</Text>
+            </View>
+          )}
+
           {/* BOTÕES DE AÇÃO */}
           <View style={styles.rowButtons}>
-            <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.goBack()}>
+            <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.goBack()} disabled={isSubmitting}>
               <Text style={styles.btnTextSecondary}>Cancelar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.btnPrimary}>
-              <Text style={styles.btnTextPrimary}>Agendar Agora</Text>
+            <TouchableOpacity
+              style={[styles.btnPrimary, isSubmitting && { opacity: 0.7 }]}
+              onPress={handleConfirmarAgendamento}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color="#FFF" />
+              ) : (
+                <Text style={styles.btnTextPrimary}>Agendar Agora</Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -198,8 +276,8 @@ export default function TelaNovoAgendamento() {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Selecione um Pet</Text>
               <FlatList
-                data={pets}
-                keyExtractor={(item) => item.id.toString()}
+                data={petsOpcao}
+                keyExtractor={(item) => (item.id || item._id).toString()}
                 renderItem={({ item }) => renderModalItem(item, (selected) => {
                   setSelectedPet(selected);
                   setModalPetOpen(false);
@@ -226,8 +304,8 @@ export default function TelaNovoAgendamento() {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Selecione um Veterinário</Text>
               <FlatList
-                data={veterinarios}
-                keyExtractor={(item) => item.id.toString()}
+                data={veterinariosOpcao}
+                keyExtractor={(item) => (item.id || item._id).toString()}
                 renderItem={({ item }) => renderModalItem(item, (selected) => {
                   setSelectedVeterinario(selected);
                   setModalVeterOpen(false);

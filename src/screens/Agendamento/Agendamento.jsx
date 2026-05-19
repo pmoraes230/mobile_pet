@@ -1,41 +1,131 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   ScrollView, 
   TouchableOpacity, 
   Text, 
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  ActivityIndicator,
+  Alert
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Plus, ChevronLeft, ChevronRight, CalendarX } from 'lucide-react-native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { Plus, ChevronLeft, ChevronRight, CalendarX, Clock, User, AlertCircle } from 'lucide-react-native';
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
+import { getAgendaSemanal } from '../../services/agendamentoService';
 
 export default function TelaAgendamento() {
   const navigation = useNavigation();
   const [selectedDay, setSelectedDay] = useState(4);
   const [viewMode, setViewMode] = useState('week');
+  
+  // Estados para dados da API
+  const [agenda, setAgenda] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+  const [dataAtual, setDataAtual] = useState(new Date());
+  
+  // Buscar agenda ao carregar a tela e quando ela ganhar foco
+  useFocusEffect(
+    React.useCallback(() => {
+      buscarAgenda();
+    }, [dataAtual])
+  );
 
-  const diasSemana = [
-    { id: 0, label: 'SEG', num: '6' },
-    { id: 1, label: 'TER', num: '7' },
-    { id: 2, label: 'QUA', num: '8' },
-    { id: 3, label: 'QUI', num: '9' },
-    { id: 4, label: 'SEX', num: '10' },
-    { id: 5, label: 'SÁB', num: '11' },
-    { id: 6, label: 'DOM', num: '12' },
-  ];
+  const buscarAgenda = async () => {
+    setCarregando(true);
+    setErro(null);
+    try {
+      const dados = await getAgendaSemanal(dataAtual);
+      setAgenda(dados);
+    } catch (erro) {
+      setErro(erro.message);
+      console.error('Erro ao buscar agenda:', erro);
+    } finally {
+      setCarregando(false);
+    }
+  };
 
-  const diasMes = Array.from({ length: 31 }, (_, i) => ({
-    id: i + 1,
-    num: (i + 1).toString(),
-    isCurrentMonth: true,
-    hasAppointment: i === 9 || i === 15 || i === 22,
+  // Gerar dias da semana a partir do dataAtual
+  const gerarDiasSemana = () => {
+    const dias = [];
+    const hoje = new Date(dataAtual);
+    
+    // Encontrar o domingo da semana
+    const primeiro = hoje.getDate() - hoje.getDay();
+    const domingo = new Date(hoje.setDate(primeiro));
+    
+    const nomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    
+    for (let i = 0; i < 7; i++) {
+      const data = new Date(domingo);
+      data.setDate(data.getDate() + i);
+      
+      dias.push({
+        id: i,
+        label: nomes[i],
+        num: data.getDate().toString().padStart(2, '0'),
+        data: data,
+        temAgendamento: false
+      });
+    }
+    
+    return dias;
+  };
+
+  // Gerar dias do mês
+  const gerarDiasMes = () => {
+    const ano = dataAtual.getFullYear();
+    const mes = dataAtual.getMonth();
+    
+    const primeiro = new Date(ano, mes, 1);
+    const ultimo = new Date(ano, mes + 1, 0);
+    const diasVazios = primeiro.getDay();
+    const diasMes = ultimo.getDate();
+    
+    const dias = [];
+    
+    // Dias vazios no início
+    for (let i = 0; i < diasVazios; i++) {
+      dias.push({ id: `vazio-${i}`, vazio: true });
+    }
+    
+    // Dias do mês
+    for (let i = 1; i <= diasMes; i++) {
+      dias.push({
+        id: `dia-${i}`,
+        num: i.toString(),
+        data: new Date(ano, mes, i),
+        vazio: false
+      });
+    }
+    
+    return { dias, diasVazios };
+  };
+
+  // Filtrar consultas para a data selecionada
+  const buscarConsultasData = (data) => {
+    if (!agenda?.consultas) return [];
+    
+    return agenda.consultas.filter(consulta => {
+      const dataConsulta = new Date(consulta.data);
+      return dataConsulta.toDateString() === data.toDateString();
+    });
+  };
+
+  const diasSemana = gerarDiasSemana();
+  const { dias: diasMes, diasVazios } = gerarDiasMes();
+  const diasMesComAppt = diasMes.map((day) => ({
+    ...day,
+    hasAppointment: !day.vazio && buscarConsultasData(day.data).length > 0,
   }));
+  const emptyDays = Array(diasVazios).fill(null);
+  const dataAtualSelecionada = diasSemana[selectedDay]?.data || dataAtual;
+  const consultasAtual = buscarConsultasData(dataAtualSelecionada);
 
-  const emptyDays = Array(5).fill(null);
+  const mesAtualTexto = dataAtual.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
 
   return (
     <KeyboardAvoidingView
@@ -52,124 +142,212 @@ export default function TelaAgendamento() {
           onBackPress={() => navigation.goBack()} 
         />
 
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent} 
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          
-          <View style={styles.headerPage}>
-            <Text style={styles.titlePage}>Agendamentos</Text>
-            <Text style={styles.subtitlePage}>Próximos compromissos e histórico</Text>
+        {carregando ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#007AFF" />
+            <Text style={{ marginTop: 12, color: '#666', fontSize: 14 }}>
+              Carregando agenda...
+            </Text>
           </View>
-
-          <TouchableOpacity 
-            style={styles.btnNovoAgendamento}
-            onPress={() => navigation.navigate('novoagendamento')} 
+        ) : (
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent} 
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
-            <Plus size={20} color="#FFF" strokeWidth={3} />
-            <Text style={styles.btnTextNovo}>Novo Agendamento</Text>
-          </TouchableOpacity>
-
-          <View style={styles.toggleContainer}>
-            <TouchableOpacity
-              style={[styles.toggleButton, viewMode === 'week' && styles.toggleButtonActive]}
-              onPress={() => setViewMode('week')}
-            >
-              <Text style={[styles.toggleText, viewMode === 'week' && styles.toggleTextActive]}>
-                Semana
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.toggleButton, viewMode === 'month' && styles.toggleButtonActive]}
-              onPress={() => setViewMode('month')}
-            >
-              <Text style={[styles.toggleText, viewMode === 'month' && styles.toggleTextActive]}>
-                Mês
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.calendarCard}>
-            <View style={styles.monthRow}>
-              <Text style={styles.monthTitle}>Março 2026</Text>
-              <View style={styles.arrows}>
-                <TouchableOpacity>
-                  <ChevronLeft size={22} color="#A0A7BA" />
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <ChevronRight size={22} color="#A0A7BA" />
-                </TouchableOpacity>
-              </View>
+            
+            <View style={styles.headerPage}>
+              <Text style={styles.titlePage}>Agendamentos</Text>
+              <Text style={styles.subtitlePage}>Próximos compromissos e histórico</Text>
             </View>
 
-            {viewMode === 'week' ? (
-              <View style={styles.daysGrid}>
-                {diasSemana.map((item) => (
-                  <TouchableOpacity 
-                    key={item.id}
-                    onPress={() => setSelectedDay(item.id)}
-                    style={[
-                      styles.dayBox, 
-                      selectedDay === item.id && styles.dayBoxActive
-                    ]}
-                  >
-                    <Text style={[styles.dayLabel, selectedDay === item.id && styles.textWhite]}>
-                      {item.label}
-                    </Text>
-                    <Text style={[styles.dayNum, selectedDay === item.id && styles.textWhite]}>
-                      {item.num}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+            {erro && (
+              <View style={{ 
+                backgroundColor: '#FFE5E5', 
+                borderRadius: 8, 
+                padding: 12, 
+                marginHorizontal: 16,
+                marginBottom: 16,
+                flexDirection: 'row',
+                alignItems: 'center'
+              }}>
+                <AlertCircle size={20} color="#DC143C" />
+                <Text style={{ marginLeft: 8, color: '#DC143C', flex: 1, fontSize: 13 }}>
+                  {erro}
+                </Text>
               </View>
-            ) : (
-              <View style={styles.monthGrid}>
-                <View style={styles.weekDaysHeader}>
-                  {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
-                    <Text key={day} style={styles.weekDayHeader}>{day}</Text>
-                  ))}
-                </View>
+            )}
 
-                <View style={styles.monthDaysGrid}>
-                  {emptyDays.map((_, index) => (
-                    <View key={`empty-${index}`} style={styles.emptyDayBox} />
-                  ))}
-                  {diasMes.map((day) => (
+            <TouchableOpacity 
+              style={styles.btnNovoAgendamento}
+              onPress={() => navigation.navigate('novoagendamento')} 
+            >
+              <Plus size={20} color="#FFF" strokeWidth={3} />
+              <Text style={styles.btnTextNovo}>Novo Agendamento</Text>
+            </TouchableOpacity>
+
+            <View style={styles.toggleContainer}>
+              <TouchableOpacity
+                style={[styles.toggleButton, viewMode === 'week' && styles.toggleButtonActive]}
+                onPress={() => setViewMode('week')}
+              >
+                <Text style={[styles.toggleText, viewMode === 'week' && styles.toggleTextActive]}>
+                  Semana
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.toggleButton, viewMode === 'month' && styles.toggleButtonActive]}
+                onPress={() => setViewMode('month')}
+              >
+                <Text style={[styles.toggleText, viewMode === 'month' && styles.toggleTextActive]}>
+                  Mês
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.calendarCard}>
+              <View style={styles.monthRow}>
+                <Text style={styles.monthTitle}>
+                  {mesAtualTexto.charAt(0).toUpperCase() + mesAtualTexto.slice(1)}
+                </Text>
+                <View style={styles.arrows}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const novadata = new Date(dataAtual);
+                      novadata.setMonth(novadata.getMonth() - 1);
+                      setDataAtual(novadata);
+                    }}
+                  >
+                    <ChevronLeft size={22} color="#A0A7BA" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const novadata = new Date(dataAtual);
+                      novadata.setMonth(novadata.getMonth() + 1);
+                      setDataAtual(novadata);
+                    }}
+                  >
+                    <ChevronRight size={22} color="#A0A7BA" />
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              {viewMode === 'week' ? (
+                <View style={styles.daysGrid}>
+                  {diasSemana.map((item) => (
                     <TouchableOpacity 
-                      key={day.id}
+                      key={item.id}
+                      onPress={() => setSelectedDay(item.id)}
                       style={[
-                        styles.monthDayBox,
-                        day.hasAppointment && styles.dayWithAppointment
+                        styles.dayBox, 
+                        selectedDay === item.id && styles.dayBoxActive
                       ]}
                     >
-                      <Text style={[
-                        styles.monthDayNum,
-                        day.hasAppointment && styles.dayNumWithAppointment
-                      ]}>
-                        {day.num}
+                      <Text style={[styles.dayLabel, selectedDay === item.id && styles.textWhite]}>
+                        {item.label}
                       </Text>
-                      {day.hasAppointment && <View style={styles.appointmentDot} />}
+                      <Text style={[styles.dayNum, selectedDay === item.id && styles.textWhite]}>
+                        {item.num}
+                      </Text>
                     </TouchableOpacity>
                   ))}
                 </View>
+              ) : (
+                <View style={styles.monthGrid}>
+                  <View style={styles.weekDaysHeader}>
+                    {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((day) => (
+                      <Text key={day} style={styles.weekDayHeader}>{day}</Text>
+                    ))}
+                  </View>
+
+                  <View style={styles.monthDaysGrid}>
+                    {emptyDays.map((_, index) => (
+                      <View key={`empty-${index}`} style={styles.emptyDayBox} />
+                    ))}
+                    {diasMesComAppt.map((day) => (
+                      <TouchableOpacity 
+                        key={day.id}
+                        style={[
+                          styles.monthDayBox,
+                          day.hasAppointment && styles.dayWithAppointment
+                        ]}
+                      >
+                        <Text style={[
+                          styles.monthDayNum,
+                          day.hasAppointment && styles.dayNumWithAppointment
+                        ]}>
+                          {day.num}
+                        </Text>
+                        {day.hasAppointment && <View style={styles.appointmentDot} />}
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
+            </View>
+
+            <Text style={styles.sectionTitle}>
+              {viewMode === 'week' ? 'Esta semana' : 'Este mês'}
+            </Text>
+
+            {consultasAtual && consultasAtual.length > 0 ? (
+              <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+                {consultasAtual.map((consulta, index) => (
+                  <View
+                    key={index}
+                    style={{
+                      backgroundColor: '#F8F9FA',
+                      borderRadius: 8,
+                      padding: 12,
+                      marginBottom: 10,
+                      borderLeftWidth: 4,
+                      borderLeftColor: '#007AFF'
+                    }}
+                  >
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#000', marginBottom: 4 }}>
+                          {consulta.tipo || 'Consulta'}
+                        </Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                          <User size={14} color="#666" />
+                          <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
+                            {consulta.veterinario || 'Veterinário'}
+                          </Text>
+                        </View>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Clock size={14} color="#666" />
+                          <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
+                            {consulta.hora || 'Horário não informado'}
+                          </Text>
+                        </View>
+                      </View>
+                      <View style={{
+                        backgroundColor: '#E8F4FF',
+                        paddingHorizontal: 8,
+                        paddingVertical: 4,
+                        borderRadius: 4
+                      }}>
+                        <Text style={{ fontSize: 11, color: '#007AFF', fontWeight: '600' }}>
+                          {consulta.status || 'Agendada'}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyContainer}>
+                <CalendarX size={45} color="#CBD5E0" strokeWidth={1.5} />
+                <Text style={styles.emptyText}>
+                  Nenhum agendamento para {viewMode === 'week' ? 'esta semana' : 'este mês'}.
+                </Text>
               </View>
             )}
-          </View>
 
-          <Text style={styles.sectionTitle}>
-            {viewMode === 'week' ? 'Esta semana' : 'Este mês'}
-          </Text>
-
-          <View style={styles.emptyContainer}>
-            <CalendarX size={45} color="#CBD5E0" strokeWidth={1.5} />
-            <Text style={styles.emptyText}>
-              Nenhum agendamento para {viewMode === 'week' ? 'esta semana' : 'este mês'}.
-            </Text>
-          </View>
-
-        </ScrollView>
+          </ScrollView>
+        )}
 
         <TabBar onLogout={() => navigation.navigate('Login')} />
       </View>
