@@ -16,7 +16,6 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Camera, ChevronDown, X } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import api from '../../services/api';
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
@@ -83,7 +82,7 @@ export default function AnunciarPet() {
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
-        quality: 0.5,
+        quality: 0.2,
       });
       if (!result.canceled && result.assets[0]) {
         setPetImage(result.assets[0]);
@@ -99,9 +98,10 @@ export default function AnunciarPet() {
         Alert.alert('Erro', 'Preencha nome, espécie e foto.');
         return;
       }
-
+      
       setLoading(true);
-      const token = await AsyncStorage.getItem('@token');
+
+      const filename = `pet_${Date.now()}.jpg`;
 
       const formData = new FormData();
       formData.append('nome', petName);
@@ -111,31 +111,27 @@ export default function AnunciarPet() {
       formData.append('descricao', petDescricao || "");
       formData.append('dataNascimento', petData);
       formData.append('peso', petPeso ? petPeso.replace(',', '.') : "0");
-
-      const imageUri = Platform.OS === 'ios' ? petImage.uri.replace('file://', '') : petImage.uri;
-
       formData.append('imagem', {
-        uri: imageUri,
+        uri: petImage.uri,
         type: 'image/jpeg', 
-        name: `pet_${Date.now()}.jpg`,
+        name: filename,
       });
 
-      const response = await api.post('/pets', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        transformRequest: (data) => data,
-      });
+      console.log('📤 Enviando pet via axios:', { nome: petName, especie: selectedEspecie.name });
+      console.log('🖼️ URI:', petImage.uri);
+      console.log('🖼️ IMAGE:', petImage);
+      const response = await api.post('/pets', formData);
 
-      if (response.status === 200 || response.status === 201) {
-        Alert.alert('Sucesso', 'Pet cadastrado!', [
-          { text: 'OK', onPress: () => navigation.navigate('MeusPets') },
-        ]);
-      }
+      console.log('✅ Pet cadastrado com sucesso:', response.data);
+
+      Alert.alert('Sucesso', 'Pet cadastrado!', [
+        { text: 'OK', onPress: () => navigation.navigate('MeusPets') },
+      ]);
     } catch (error) {
-      console.log('Erro ao salvar:', error);
-      Alert.alert('Erro', 'Não foi possível salvar o pet.');
+      console.log('❌ Erro ao salvar:', error.message);
+      console.log('Response data:', error.response?.data);
+      console.log('Error code:', error.code);
+      Alert.alert('Erro', error.response?.data?.message || error.message || 'Não foi possível salvar o pet.');
     } finally {
       setLoading(false);
     }
