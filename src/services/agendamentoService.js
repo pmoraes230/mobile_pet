@@ -35,10 +35,10 @@ export const getAgendaSemanal = async (data = new Date()) => {
         });
 
         return {
-            pets: response.data.pets || [],
-            vacinas: response.data.vacinas || [],
-            consultas: response.data.consultas || [],
-            veterinarios: response.data.veterinarios || [],
+            pets: response.data.pets || response.data.pet || [],
+            vacinas: response.data.vacinas || response.data.vacina || [],
+            consultas: response.data.consultas || response.data.consulta || [],
+            veterinarios: response.data.veterinarios || response.data.veterinario || [],
             monday: response.data.monday,
             sunday: response.data.sunday
         };
@@ -141,3 +141,41 @@ export const criarAgendamento = async (dadosAgendamento) => {
         throw new Error("Ocorreu um erro inesperado. Tente novamente.");
     }
 }
+
+export const getVeterinarios = async () => {
+  const token = await getToken();
+  const response = await axios.get(`${API_URL}/api/consultas/veterinarios`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const getAgendaDisponivelDates = async (vetId) => {
+  const token = await getToken();
+  const response = await axios.get(`${API_URL}/api/consultas/horarios`, { // ← /horarios, não /agenda
+    params: { vet_id: vetId },
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const datas = response.data.datas || [];
+
+  return datas.map((dateStr, index) => ({
+    ID: index,
+    DATA: dateStr, // "YYYY-MM-DD"
+  }));
+};
+
+export const getAgendaDisponivelTimes = async (vetId, data) => {
+  const token = await getToken();
+  const response = await axios.get(`${API_URL}/api/consultas/horarios`, { // ← /horarios
+    params: { vet_id: vetId, data },
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const horarios = response.data.horarios || [];
+
+  return horarios.map(item => ({
+    ID: item.id,
+    HORA: item.texto, // "HH:MM"
+  }));
+};

@@ -20,6 +20,7 @@ export default function TelaAgendamento() {
   const navigation = useNavigation();
   const [selectedDay, setSelectedDay] = useState(4);
   const [viewMode, setViewMode] = useState('week');
+  const [appointmentView, setAppointmentView] = useState('proximas'); // 'proximas' ou 'historico'
   
   // Estados para dados da API
   const [agenda, setAgenda] = useState(null);
@@ -113,6 +114,24 @@ export default function TelaAgendamento() {
       const dataConsulta = new Date(consulta.data);
       return dataConsulta.toDateString() === data.toDateString();
     });
+  };
+
+  // Filtrar consultas futuras (próximas)
+  const obterConsultasProximas = () => {
+    if (!agenda?.consultas) return [];
+    const agora = new Date();
+    return agenda.consultas
+      .filter(consulta => new Date(consulta.data) >= agora)
+      .sort((a, b) => new Date(a.data) - new Date(b.data));
+  };
+
+  // Filtrar consultas passadas (histórico)
+  const obterHistoricoConsultas = () => {
+    if (!agenda?.consultas) return [];
+    const agora = new Date();
+    return agenda.consultas
+      .filter(consulta => new Date(consulta.data) < agora)
+      .sort((a, b) => new Date(b.data) - new Date(a.data)); // Mais recentes primeiro
   };
 
   const diasSemana = gerarDiasSemana();
@@ -287,64 +306,207 @@ export default function TelaAgendamento() {
               )}
             </View>
 
-            <Text style={styles.sectionTitle}>
-              {viewMode === 'week' ? 'Esta semana' : 'Este mês'}
-            </Text>
+            {/* Toggle entre Próximas e Histórico */}
+            <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
+              <View style={{ 
+                flexDirection: 'row', 
+                backgroundColor: '#F0F0F0', 
+                borderRadius: 8,
+                padding: 4
+              }}>
+                <TouchableOpacity
+                  style={[
+                    { 
+                      flex: 1, 
+                      paddingVertical: 10, 
+                      paddingHorizontal: 12,
+                      borderRadius: 6,
+                      alignItems: 'center'
+                    },
+                    appointmentView === 'proximas' && { backgroundColor: '#007AFF' }
+                  ]}
+                  onPress={() => setAppointmentView('proximas')}
+                >
+                  <Text style={[
+                    { fontSize: 14, fontWeight: '600', color: '#666' },
+                    appointmentView === 'proximas' && { color: '#FFF' }
+                  ]}>
+                    Próximas
+                  </Text>
+                </TouchableOpacity>
 
-            {consultasAtual && consultasAtual.length > 0 ? (
-              <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
-                {consultasAtual.map((consulta, index) => (
-                  <View
-                    key={index}
-                    style={{
-                      backgroundColor: '#F8F9FA',
-                      borderRadius: 8,
-                      padding: 12,
-                      marginBottom: 10,
-                      borderLeftWidth: 4,
-                      borderLeftColor: '#007AFF'
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <View style={{ flex: 1 }}>
-                        <Text style={{ fontSize: 14, fontWeight: '600', color: '#000', marginBottom: 4 }}>
-                          {consulta.tipo || 'Consulta'}
-                        </Text>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                          <User size={14} color="#666" />
-                          <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
-                            {consulta.veterinario || 'Veterinário'}
-                          </Text>
-                        </View>
-                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                          <Clock size={14} color="#666" />
-                          <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
-                            {consulta.hora || 'Horário não informado'}
-                          </Text>
-                        </View>
-                      </View>
-                      <View style={{
-                        backgroundColor: '#E8F4FF',
-                        paddingHorizontal: 8,
-                        paddingVertical: 4,
-                        borderRadius: 4
-                      }}>
-                        <Text style={{ fontSize: 11, color: '#007AFF', fontWeight: '600' }}>
-                          {consulta.status || 'Agendada'}
-                        </Text>
-                      </View>
-                    </View>
-                  </View>
-                ))}
+                <TouchableOpacity
+                  style={[
+                    { 
+                      flex: 1, 
+                      paddingVertical: 10, 
+                      paddingHorizontal: 12,
+                      borderRadius: 6,
+                      alignItems: 'center'
+                    },
+                    appointmentView === 'historico' && { backgroundColor: '#007AFF' }
+                  ]}
+                  onPress={() => setAppointmentView('historico')}
+                >
+                  <Text style={[
+                    { fontSize: 14, fontWeight: '600', color: '#666' },
+                    appointmentView === 'historico' && { color: '#FFF' }
+                  ]}>
+                    Histórico
+                  </Text>
+                </TouchableOpacity>
               </View>
-            ) : (
-              <View style={styles.emptyContainer}>
-                <CalendarX size={45} color="#CBD5E0" strokeWidth={1.5} />
-                <Text style={styles.emptyText}>
-                  Nenhum agendamento para {viewMode === 'week' ? 'esta semana' : 'este mês'}.
+            </View>
+
+            {/* Seção de Próximas Consultas */}
+            {appointmentView === 'proximas' && (
+              <>
+                <Text style={styles.sectionTitle}>
+                  Próximas Consultas
                 </Text>
-              </View>
+
+                {obterConsultasProximas().length > 0 ? (
+                  <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+                    {obterConsultasProximas().map((consulta, index) => {
+                      const dataConsulta = new Date(consulta.data).toLocaleDateString('pt-BR', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long'
+                      });
+                      return (
+                        <View
+                          key={index}
+                          style={{
+                            backgroundColor: '#F8F9FA',
+                            borderRadius: 8,
+                            padding: 12,
+                            marginBottom: 10,
+                            borderLeftWidth: 4,
+                            borderLeftColor: '#007AFF'
+                          }}
+                        >
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ fontSize: 14, fontWeight: '600', color: '#000', marginBottom: 4 }}>
+                                {consulta.tipo || 'Consulta'}
+                              </Text>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                <User size={14} color="#666" />
+                                <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
+                                  {consulta.veterinario || 'Veterinário não informado'}
+                                </Text>
+                              </View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                <Clock size={14} color="#666" />
+                                <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
+                                  {consulta.hora || 'Horário não informado'}
+                                </Text>
+                              </View>
+                              <Text style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+                                {dataConsulta}
+                              </Text>
+                            </View>
+                            <View style={{
+                              backgroundColor: '#E8F4FF',
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              borderRadius: 4
+                            }}>
+                              <Text style={{ fontSize: 11, color: '#007AFF', fontWeight: '600' }}>
+                                {consulta.status || 'Agendada'}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <View style={styles.emptyContainer}>
+                    <CalendarX size={45} color="#CBD5E0" strokeWidth={1.5} />
+                    <Text style={styles.emptyText}>
+                      Nenhuma consulta próxima agendada.
+                    </Text>
+                  </View>
+                )}
+              </>
             )}
+
+            {/* Seção de Histórico */}
+            {appointmentView === 'historico' && (
+              <>
+                <Text style={styles.sectionTitle}>
+                  Histórico de Consultas
+                </Text>
+
+                {obterHistoricoConsultas().length > 0 ? (
+                  <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
+                    {obterHistoricoConsultas().map((consulta, index) => {
+                      const dataConsulta = new Date(consulta.data).toLocaleDateString('pt-BR', {
+                        weekday: 'long',
+                        day: 'numeric',
+                        month: 'long'
+                      });
+                      return (
+                        <View
+                          key={index}
+                          style={{
+                            backgroundColor: '#F8F9FA',
+                            borderRadius: 8,
+                            padding: 12,
+                            marginBottom: 10,
+                            borderLeftWidth: 4,
+                            borderLeftColor: '#8B8B8B',
+                            opacity: 0.8
+                          }}
+                        >
+                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <View style={{ flex: 1 }}>
+                              <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 4 }}>
+                                {consulta.tipo || 'Consulta'}
+                              </Text>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                <User size={14} color="#666" />
+                                <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
+                                  {consulta.veterinario || 'Veterinário não informado'}
+                                </Text>
+                              </View>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                                <Clock size={14} color="#666" />
+                                <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
+                                  {consulta.hora || 'Horário não informado'}
+                                </Text>
+                              </View>
+                              <Text style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+                                {dataConsulta}
+                              </Text>
+                            </View>
+                            <View style={{
+                              backgroundColor: '#E8E8E8',
+                              paddingHorizontal: 8,
+                              paddingVertical: 4,
+                              borderRadius: 4
+                            }}>
+                              <Text style={{ fontSize: 11, color: '#666', fontWeight: '600' }}>
+                                {consulta.status || 'Realizada'}
+                              </Text>
+                            </View>
+                          </View>
+                        </View>
+                      );
+                    })}
+                  </View>
+                ) : (
+                  <View style={styles.emptyContainer}>
+                    <CalendarX size={45} color="#CBD5E0" strokeWidth={1.5} />
+                    <Text style={styles.emptyText}>
+                      Nenhuma consulta anterior registrada.
+                    </Text>
+                  </View>
+                )}
+              </>
+            )}
+
 
           </ScrollView>
         )}
