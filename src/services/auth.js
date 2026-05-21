@@ -1,6 +1,7 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import * as SecureStore from 'expo-secure-store';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_URL, _API_URL_PROD } from "../utils/endPoint_Url";
 
 const TOKEN_KEY = "auth_token";
@@ -18,6 +19,18 @@ export const login = async (email, senha) => {
 
         if (token) {
             await SecureStore.setItemAsync(TOKEN_KEY, token);
+            // Salvar também em AsyncStorage para compatibilidade
+            await AsyncStorage.setItem('@token', token);
+            
+            // Decodificar e salvar userId
+            try {
+                const decoded = jwtDecode(token);
+                if (decoded.id) {
+                    await AsyncStorage.setItem('userId', decoded.id.toString());
+                }
+            } catch (decodeErr) {
+                console.error("Erro ao decodificar token no login:", decodeErr);
+            }
         }
 
         return response.data;
@@ -140,4 +153,7 @@ export const setupAxiosInterceptors = () => {
 
 export const logout = async () => {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
+    // Limpar também do AsyncStorage
+    await AsyncStorage.removeItem('@token');
+    await AsyncStorage.removeItem('userId');
 };

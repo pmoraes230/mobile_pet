@@ -127,25 +127,36 @@ export default function TelaDiario() {
   async function loadRegistros(petId) {
   try {
     const token = await AsyncStorage.getItem('@token');
+    console.log('📊 Buscando registros para pet:', petId);
+    
     const response = await api.get(`/diario/pet/${petId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
 
-      const formatted = response.data.map((item) => ({
-        id: item.id || item.ID,
-        humor: Number(item.humor || item.HUMOR),
-        relato: item.relato || item.RELATO,
-        data:
-          item.dataRegistro ||
-          item.DATA_REGISTRO ||
-          item.createdAt,
-      }));
+    console.log('📊 Resposta bruta do servidor:', response.data);
 
-      setRegistros(formatted);
+    if (!Array.isArray(response.data)) {
+      console.error('❌ Resposta não é um array!');
+      setRegistros([]);
+      return;
+    }
+
+    const formatted = response.data.map((item) => ({
+      id: item.id || item.ID,
+      humor: Number(item.humor || item.HUMOR),
+      relato: item.relato || item.RELATO,
+      data:
+        item.dataRegistro ||
+        item.DATA_REGISTRO ||
+        item.createdAt,
+    }));
+
+    console.log('📊 Registros formatados:', formatted);
+    setRegistros(formatted);
 
     } catch (error) {
       console.log(
-        'Erro ao buscar registros:',
+        '❌ Erro ao buscar registros:',
         error.response?.data || error.message
       );
     }
@@ -154,11 +165,19 @@ export default function TelaDiario() {
   async function loadCompareRegistros(petId) {
     try {
       const token = await AsyncStorage.getItem('@token');
+      console.log('📊 Buscando registros de comparação para pet:', petId);
+      
       const response = await api.get(`/diario/pet/${petId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      // ... restante do código igual
+      console.log('📊 Resposta de comparação:', response.data);
+
+      if (!Array.isArray(response.data)) {
+        console.error('❌ Resposta de comparação não é um array!');
+        setCompareRegistros([]);
+        return;
+      }
 
       const formatted = response.data.map((item) => ({
         id: item.id || item.ID,
@@ -170,11 +189,12 @@ export default function TelaDiario() {
           item.createdAt,
       }));
 
+      console.log('📊 Registros de comparação formatados:', formatted);
       setCompareRegistros(formatted);
 
     } catch (error) {
       console.log(
-        'Erro ao buscar comparação:',
+        '❌ Erro ao buscar comparação:',
         error.response?.data || error.message
       );
     }
@@ -195,14 +215,19 @@ export default function TelaDiario() {
       // 1. Pega o token do armazenamento
       const token = await AsyncStorage.getItem('@token');
 
-      // 2. Envia o POST com o cabeçalho de autorização
-      await api.post('/diario', {
-        petId: selectedPet.id,
+      // Debug: log dos dados que serão enviados
+      const payload = {
         humor: humorMap[mood],
-        relato,
-      }, {
+        relato: relato,
+        idPet: selectedPet.id,
+      };
+      console.log('📤 Payload sendo enviado:', payload);
+
+      // 2. Envia o POST com o cabeçalho de autorização
+      await api.post('/diario', payload, {
         headers: {
-          Authorization: `Bearer ${token}` // Sem isso, o servidor não salva
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
@@ -226,51 +251,75 @@ export default function TelaDiario() {
   }
 
   const chartData = useMemo(() => {
+    console.log('📈 Gerando dados do gráfico. Registros:', registros);
+    
     const base = registros
       .slice(0, 7)
       .reverse();
 
+    console.log('📈 Base para gráfico (últimos 7, invertidos):', base);
+    console.log('📈 Tamanho da base:', base.length);
+
+    // Se não há dados, mostra gráfico vazio com placeholders
+    const labels = base.length > 0
+      ? base.map((item, index) => {
+          try {
+            const date = new Date(item.data);
+            const day = date.getUTCDate();
+            const month = date.getUTCMonth() + 1;
+            // Apenas data, sem quebra de linha
+            const formatted = `${day}/${month}`;
+            console.log('📈 Data formatada:', item.data, '→', formatted);
+            return formatted;
+          } catch (err) {
+            console.error('❌ Erro ao formatar data:', item.data, err);
+            return 'N/A';
+          }
+        })
+      : ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']; // Placeholder: Seg-Dom
+
+    const primaryData = base.length > 0
+      ? base.map((item) => item.humor)
+      : [2, 2, 2, 2, 2, 2, 2]; // Dados vazios mostram linha em neutro (valor 2)
+
+    // Garante no mínimo 2 pontos para LineChart renderizar
+    const primaryDataWithMinimum = primaryData.length === 1 
+      ? [...primaryData, primaryData[0]]
+      : primaryData;
+
+    const compareData = compareRegistros.length > 0
+      ? compareRegistros
+          .slice(0, 7)
+          .reverse()
+          .map((item) => item.humor)
+      : [2, 2, 2, 2, 2, 2, 2];
+
+    const compareDataWithMinimum = compareData.length === 1
+      ? [...compareData, compareData[0]]
+      : compareData;
+
+    console.log('📈 Labels:', labels);
+    console.log('📈 Primary Data:', primaryDataWithMinimum);
+    console.log('📈 Compare Mode:', compareMode, 'Compare Pet:', comparePet?.name);
+
     return {
-      labels:
-        base.length > 0
-          ? base.map((item) => {
-              const date = new Date(item.data);
-
-              return `${date.getDate()}/${date.getMonth() + 1}`;
-            })
-          : ['0'],
-
+      labels,
       datasets: [
         {
-          data:
-            base.length > 0
-              ? base.map((item) => item.humor)
-              : [0],
-
+          data: primaryDataWithMinimum,
           color: () => '#9333EA',
-
           strokeWidth: 4,
         },
-
         ...(compareMode && comparePet
           ? [
               {
-                data:
-                  compareRegistros.length > 0
-                    ? compareRegistros
-                        .slice(0, 7)
-                        .reverse()
-                        .map((item) => item.humor)
-                    : [0],
-
+                data: compareDataWithMinimum,
                 color: () => '#FF7A2F',
-
                 strokeWidth: 3,
               },
             ]
           : []),
       ],
-
       legend: compareMode && comparePet
         ? [
             selectedPet?.name,
@@ -375,65 +424,101 @@ export default function TelaDiario() {
                 </Text>
               </View>
 
-              <View
+              <TouchableOpacity
                 style={{
-                  backgroundColor: '#9333EA22',
+                  backgroundColor: '#9333EA',
                   paddingHorizontal: 14,
                   paddingVertical: 8,
                   borderRadius: 999,
+                  borderWidth: 2,
+                  borderColor: '#C084FC',
                 }}
+                onPress={() => setModalPetOpen(true)}
+                activeOpacity={0.7}
               >
                 <Text
                   style={{
-                    color: '#C084FC',
+                    color: '#FFF',
                     fontWeight: '700',
                     fontSize: 12,
                   }}
                 >
                   {selectedPet?.name?.toUpperCase()}
                 </Text>
-              </View>
+              </TouchableOpacity>
             </View>
 
-            <LineChart
-              data={chartData}
-              width={screenWidth - 80}
-              height={240}
-              withShadow={false}
-              withOuterLines={false}
-              withInnerLines={false}
-              withVerticalLines={false}
-              withHorizontalLines={false}
-              fromZero
-              yAxisInterval={1}
-              bezier
-              segments={3}
-              chartConfig={{
-                backgroundGradientFrom: '#151A24',
-                backgroundGradientTo: '#151A24',
+            {registros.length > 0 ? (
+              <LineChart
+                data={chartData}
+                width={screenWidth - 80}
+                height={240}
+                withShadow={false}
+                withOuterLines={false}
+                withInnerLines={false}
+                withVerticalLines={false}
+                withHorizontalLines={false}
+                fromZero
+                yAxisInterval={1}
+                bezier
+                segments={3}
+                chartConfig={{
+                  backgroundGradientFrom: '#151A24',
+                  backgroundGradientTo: '#151A24',
 
-                decimalPlaces: 0,
+                  decimalPlaces: 0,
 
-                color: () => '#9333EA',
+                  color: () => '#9333EA',
 
-                labelColor: () => '#8B93A7',
+                  labelColor: () => '#8B93A7',
 
-                propsForDots: {
-                  r: '6',
-                  strokeWidth: '3',
-                  stroke: '#151A24',
-                  fill: '#9333EA',
-                },
+                  propsForDots: {
+                    r: '6',
+                    strokeWidth: '3',
+                    stroke: '#151A24',
+                    fill: '#9333EA',
+                  },
 
-                propsForBackgroundLines: {
-                  stroke: 'transparent',
-                },
-              }}
-              style={{
-                borderRadius: 24,
-                marginLeft: -10,
-              }}
-            />
+                  propsForBackgroundLines: {
+                    stroke: 'transparent',
+                  },
+                }}
+                style={{
+                  borderRadius: 24,
+                  marginLeft: -10,
+                }}
+              />
+            ) : (
+              <View
+                style={{
+                  height: 240,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderRadius: 24,
+                }}
+              >
+                <Text
+                  style={{
+                    color: '#8B93A7',
+                    fontSize: 16,
+                    fontWeight: '600',
+                    textAlign: 'center',
+                  }}
+                >
+                  Nenhum registro de humor ainda
+                </Text>
+                <Text
+                  style={{
+                    color: '#5F6B7F',
+                    fontSize: 12,
+                    marginTop: 8,
+                    textAlign: 'center',
+                  }}
+                >
+                  Comece a registrar o humor do {selectedPet?.name}
+                </Text>
+              </View>
+            )}
 
             <View
               style={{
