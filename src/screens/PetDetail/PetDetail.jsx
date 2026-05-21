@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -7,25 +7,146 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  Alert
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { Share2, Heart } from 'lucide-react-native';
 import { ChevronLeft } from 'lucide-react-native/icons';
 import { styles } from './styles';
 import TabBar from '../../components/TabBar';
+import api from '../../services/api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const TUTOR_IMAGE = require('../../assets/rayan_lindo.webp');
+const TUTOR_DEFAULT = require('../../assets/user_default.png');
 
 export default function PetDetail() {
   const navigation = useNavigation();
   const route = useRoute();
   const [activeTab, setActiveTab] = useState('home');
   const [isFavorite, setIsFavorite] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [petData, setPetData] = useState(null);
 
-  // Dados do pet vindo dos params ou valores padrão
-  const { petData } = route.params || {};
-  
+  // Normaliza dados do pet para formato padrão
+  const normalizePetData = (rawData) => {
+    if (!rawData) return null;
+
+    console.log('🐕 RAW DATA RECEBIDO:', JSON.stringify(rawData, null, 2));
+
+    const getImageUri = (img) => {
+      if (!img) return 'https://via.placeholder.com/300';
+      return img.startsWith('http') ? img : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${img}`;
+    };
+
+    // Mapa de gênero/sexo para emojis
+    const sexoMap = {
+      'macho': '♂',
+      'fêmea': '♀',
+      'masculino': '♂',
+      'feminino': '♀',
+      'm': '♂',
+      'f': '♀'
+    };
+
+    const sexo = (rawData.sexo || rawData.SEXO || '♂').toLowerCase();
+    const genero = sexoMap[sexo] || '♂';
+
+    // Trata castrado (pode vir como string ou boolean)
+    let castrated = 'Não';
+    const castradoValue = rawData.castrado || rawData.CASTRADO;
+    if (castradoValue) {
+      if (typeof castradoValue === 'boolean') {
+        castrated = castradoValue ? 'Sim' : 'Não';
+      } else if (typeof castradoValue === 'string') {
+        castrated = castradoValue.toLowerCase().includes('sim') ? 'Sim' : 'Não';
+      }
+    }
+
+    const normalized = {
+      id: rawData.id || rawData.ID_PET,
+      name: rawData.nome || rawData.NOME || 'Pet',
+      especie: rawData.especie || rawData.ESPECIE || 'Não informado',
+      breed: rawData.raca || rawData.RACA || 'Não informado',
+      age: String(rawData.idade || rawData.IDADE || '0'),
+      weight: rawData.peso || rawData.PESO || '-- kg',
+      castrated: castrated,
+      description: rawData.descricao || rawData.DESCRICAO || rawData.biografiaAdocao || 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
+      personality: rawData.personalidade || rawData.PERSONALIDADE || 'Nenhuma característica informada.',
+      tutor: 'Carregando...',
+      tutorImage: TUTOR_DEFAULT,
+      image: getImageUri(rawData.imagem || rawData.IMAGEM),
+      genero: genero
+    };
+
+    console.log('✅ DADOS NORMALIZADOS:', JSON.stringify(normalized, null, 2));
+
+    return normalized;
+  };
+
+  // Carrega dados completos do pet da API
+  useEffect(() => {
+    const loadPetDetails = async () => {
+      try {
+        const params = route.params || {};
+        const incomingPet = params.petData || params.pet;
+
+        if (!incomingPet) {
+          console.log('Nenhum pet recebido nos params');
+          return;
+        }
+
+        // Normaliza os dados recebidos
+        let normalized = normalizePetData(incomingPet);
+        setPetData(normalized);
+
+        // Se temos o ID do tutor, busca os dados dele
+        const tutorId = incomingPet.idTutor || incomingPet.ID_TUTOR;
+        if (tutorId) {
+          try {
+            setLoading(true);
+            const token = await AsyncStorage.getItem('@token');
+            
+            const response = await api.get(`/tutors/${tutorId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+
+            if (response.data) {
+              console.log('🧑 DADOS DO TUTOR RECEBIDOS:', JSON.stringify(response.data, null, 2));
+              
+              // Atualiza os dados do tutor
+              normalized.tutor = response.data.nome || response.data.NOME || 'Tutor';
+              normalized.tutorImage = response.data.imagem || response.data.IMAGEM 
+                ? { uri: (response.data.imagem || response.data.IMAGEM).startsWith('http') 
+                    ? (response.data.imagem || response.data.IMAGEM)
+                    : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${response.data.imagem || response.data.IMAGEM}`
+                  }
+                : TUTOR_DEFAULT;
+              
+              setPetData(normalized);
+              console.log('✅ DADOS DO TUTOR ATUALIZADOS:', normalized.tutor, normalized.tutorImage);
+            }
+          } catch (error) {
+            console.log('Erro ao carregar tutor:', error.message);
+            // Continua com os dados que já temos
+          } finally {
+            setLoading(false);
+          }
+        } else {
+          setLoading(false);
+        }
+      } catch (error) {
+        console.log('Erro em loadPetDetails:', error);
+        setLoading(false);
+      }
+    };
+
+    loadPetDetails();
+  }, [route.params]);
+
+  // Usa petData normalizado ou valores padrão
   const pet = petData || {
     name: 'Niça',
     breed: 'Branco',
@@ -35,8 +156,9 @@ export default function PetDetail() {
     description: 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
     personality: 'Nenhuma característica informada.',
     tutor: 'Rayan Rodrigues',
-    tutorImage: TUTOR_IMAGE,
-    image: 'https://placekitten.com/400/600'
+    tutorImage: TUTOR_DEFAULT,
+    image: 'https://placekitten.com/400/600',
+    genero: '♂'
   };
 
   const handleLogout = () => {
@@ -92,6 +214,13 @@ export default function PetDetail() {
           keyboardShouldPersistTaps="handled"
         >
           
+          {loading ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
+              <ActivityIndicator size="large" color="#9127E1" />
+              <Text style={{ marginTop: 10, color: '#666' }}>Carregando informações...</Text>
+            </View>
+          ) : (
+          <>
           {/* PET IMAGE */}
           <View style={styles.imageContainer}>
             <Image 
@@ -100,7 +229,35 @@ export default function PetDetail() {
             />
             {/* GENDER BADGE */}
             <View style={styles.genderBadge}>
-              <Text style={styles.genderText}>♂</Text>
+              <Text style={styles.genderText}>{pet.genero}</Text>
+            </View>
+          </View>
+
+          {/* PET NAME AND BREED */}
+          <View style={styles.petHeaderSection}>
+            <Text style={styles.petName}>{pet.name}</Text>
+            <View style={styles.petBreedBadge}>
+              <Text style={styles.petBreedText}>{pet.breed}</Text>
+            </View>
+          </View>
+
+          {/* TUTOR RESPONSÁVEL */}
+          <View style={styles.tutorCard}>
+            <Text style={styles.tutorLabel}>TUTOR RESPONSÁVEL</Text>
+            <View style={styles.tutorContent}>
+              <Image 
+                source={pet.tutorImage} 
+                style={styles.tutorImage} 
+              />
+              <View style={styles.tutorInfo}>
+                <Text style={styles.tutorName}>{pet.tutor}</Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.messageButton}
+                onPress={handleContact}
+              >
+                <Text style={styles.messageButtonText}>💬</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -142,26 +299,6 @@ export default function PetDetail() {
             </Text>
           </View>
 
-          {/* TUTOR RESPONSÁVEL */}
-          <View style={styles.tutorCard}>
-            <Text style={styles.tutorLabel}>TUTOR RESPONSÁVEL</Text>
-            <View style={styles.tutorContent}>
-              <Image 
-                source={pet.tutorImage} 
-                style={styles.tutorImage} 
-              />
-              <View style={styles.tutorInfo}>
-                <Text style={styles.tutorName}>{pet.tutor}</Text>
-              </View>
-              <TouchableOpacity 
-                style={styles.messageButton}
-                onPress={handleContact}
-              >
-                <Text style={styles.messageButtonText}>💬</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
           {/* ACTION BUTTONS */}
           <View style={styles.actionButtons}>
             <TouchableOpacity 
@@ -180,6 +317,8 @@ export default function PetDetail() {
               <Text style={styles.contactButtonText}>Quero entrar em contato</Text>
             </TouchableOpacity>
           </View>
+          </>
+          )}
 
         </ScrollView>
 

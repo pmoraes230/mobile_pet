@@ -90,6 +90,38 @@ export const styles = StyleSheet.create({
     color: 'white',
   },
 
+  // PET NAME AND BREED SECTION
+  petHeaderSection: {
+    backgroundColor: '#FFF',
+    paddingHorizontal: 16,
+    paddingVertical: 20,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+
+  petName: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: '#333',
+    marginBottom: 8,
+  },
+
+  petBreedBadge: {
+    backgroundColor: '#F3E8FF',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+
+  petBreedText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#A855F7',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+
   // INFO CARDS
   infoCardsContainer: {
     flexDirection: 'row',

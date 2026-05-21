@@ -129,6 +129,7 @@ export default function TelaAdocao() {
 
       setPetsFeed(adoptionPets);
       console.log('PETS FEED:', adoptionPets.length);
+      console.log('PRIMEIRO PET ESTRUTURA:', JSON.stringify(adoptionPets[0], null, 2));
       setMeusPets(myPets);
 
     } catch (error) {
@@ -409,9 +410,8 @@ export default function TelaAdocao() {
                     onPress={() => {}}
                     actionLabel="Quero Adotar"
                     onActionPress={() =>
-                    handleInterest(pet.id || pet.ID_PET)
+                      navigation.navigate('PetDetail', { petData: pet })
                     }
-                    
                     cardStyle={styles.smallCard}
                   />
                 ))}

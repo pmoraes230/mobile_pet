@@ -1,6 +1,10 @@
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+  },
   safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
@@ -52,7 +56,7 @@ export const styles = StyleSheet.create({
   },
   // BOX DE IMAGEM
   uploadBox: {
-    height: 150,
+    height: 200,
     backgroundColor: '#F3F5F9',
     borderRadius: 20,
     borderWidth: 2,
@@ -61,6 +65,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 32,
+    overflow: 'hidden',
   },
   uploadText: {
     color: '#A0A7BA',
