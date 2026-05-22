@@ -34,14 +34,31 @@ export const getAgendaSemanal = async (data = new Date()) => {
             }
         });
 
+        const rawConsultas = Array.isArray(response.data.consultas)
+            ? response.data.consultas
+            : Array.isArray(response.data.consulta)
+                ? response.data.consulta
+                : [];
+
+        const normalizeConsulta = (consulta) => ({
+            ...consulta,
+            data: consulta.data || consulta.DATA || consulta.data_agendada || consulta.DATA_AGENDADA || consulta.data_hora || consulta.DATA_HORA || consulta.dataHora || consulta.dataHoraConsulta || consulta.DATA_HORA || consulta.DATA_HORA_CONSULTA,
+            hora: consulta.hora || consulta.HORA || consulta.horario || consulta.HORARIO || consulta.time || consulta.TIME || consulta.hora_consulta || consulta.HORA_CONSULTA,
+            veterinario: consulta.veterinario || consulta.VETERINARIO || consulta.nomeVeterinario || consulta.NOME_VETERINARIO || consulta.nome_veterinario,
+            tipo: consulta.tipo || consulta.TIPO || consulta.tipoConsulta || consulta.TIPO_CONSULTA || consulta.servico || consulta.SERVICO,
+            status: consulta.status || consulta.STATUS || consulta.situacao || consulta.SITUACAO || consulta.status_consulta || consulta.STATUS_CONSULTA,
+        });
+
         return {
             pets: response.data.pets || response.data.pet || [],
             vacinas: response.data.vacinas || response.data.vacina || [],
-            consultas: response.data.consultas || response.data.consulta || [],
+            consultas: rawConsultas.map(normalizeConsulta),
             veterinarios: response.data.veterinarios || response.data.veterinario || [],
             monday: response.data.monday,
             sunday: response.data.sunday
         };
+
+        console.log("Resposta da API:", response.data);
 
     } catch (error) {
         // Tratamento de erros
@@ -143,39 +160,72 @@ export const criarAgendamento = async (dadosAgendamento) => {
 }
 
 export const getVeterinarios = async () => {
-  const token = await getToken();
-  const response = await axios.get(`${API_URL}/api/consultas/veterinarios`, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
+    const token = await getToken();
+    const response = await axios.get(`${API_URL}/api/consultas/veterinarios`, {
+        headers: { Authorization: `Bearer ${token}` }
+    });
+    return response.data;
 };
 
 export const getAgendaDisponivelDates = async (vetId) => {
-  const token = await getToken();
-  const response = await axios.get(`${API_URL}/api/consultas/horarios`, { // ← /horarios, não /agenda
-    params: { vet_id: vetId },
-    headers: { Authorization: `Bearer ${token}` }
-  });
+    const token = await getToken();
+    const response = await axios.get(`${API_URL}/api/consultas/horarios`, { // ← /horarios, não /agenda
+        params: { vet_id: vetId },
+        headers: { Authorization: `Bearer ${token}` }
+    });
 
-  const datas = response.data.datas || [];
+    const datas = response.data.datas || [];
 
-  return datas.map((dateStr, index) => ({
-    ID: index,
-    DATA: dateStr, // "YYYY-MM-DD"
-  }));
+    return datas.map((dateStr, index) => ({
+        ID: index,
+        DATA: dateStr, // "YYYY-MM-DD"
+    }));
 };
 
+export const getAgendaTutor = async (data = new Date()) => {
+    try {
+        const token = await getToken();
+
+        if (!token) {
+            throw new Error("Usuário não autenticado. Faça login para continuar.");
+        }
+
+        const response = await axios.get(`${API_URL}/api/consultas/consultasmarcadas`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const rawConsultas = Array.isArray(response.data.consultas)
+            ? response.data.consultas
+            : Array.isArray(response.data)
+                ? response.data
+                : [];
+        
+        log("Resposta da API (getAgendaTutor):", rawConsultas);
+
+        return {
+            consultas: rawConsultas
+        };
+    } catch (error) {
+        // Tratamento de erros
+        console.error("Erro ao obter agenda do tutor:", error);
+        throw new Error("Erro ao obter agenda do tutor.");
+    }
+}
+
 export const getAgendaDisponivelTimes = async (vetId, data) => {
-  const token = await getToken();
-  const response = await axios.get(`${API_URL}/api/consultas/horarios`, { // ← /horarios
-    params: { vet_id: vetId, data },
-    headers: { Authorization: `Bearer ${token}` }
-  });
+    const token = await getToken();
+    const response = await axios.get(`${API_URL}/api/consultas/horarios`, { // ← /horarios
+        params: { vet_id: vetId, data },
+        headers: { Authorization: `Bearer ${token}` }
+    });
 
-  const horarios = response.data.horarios || [];
+    const horarios = response.data.horarios || [];
 
-  return horarios.map(item => ({
-    ID: item.id,
-    HORA: item.texto, // "HH:MM"
-  }));
+    return horarios.map(item => ({
+        ID: item.id,
+        HORA: item.texto, // "HH:MM"
+    }));
 };

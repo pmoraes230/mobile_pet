@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   ScrollView, 
@@ -14,7 +14,7 @@ import { Plus, ChevronLeft, ChevronRight, CalendarX, Clock, User, AlertCircle } 
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
-import { getAgendaSemanal } from '../../services/agendamentoService';
+import { getAgendaTutor } from '../../services/agendamentoService';
 
 export default function TelaAgendamento() {
   const navigation = useNavigation();
@@ -39,7 +39,7 @@ export default function TelaAgendamento() {
     setCarregando(true);
     setErro(null);
     try {
-      const dados = await getAgendaSemanal(dataAtual);
+      const dados = await getAgendaTutor(dataAtual);
       setAgenda(dados);
     } catch (erro) {
       setErro(erro.message);
@@ -106,13 +106,39 @@ export default function TelaAgendamento() {
     return { dias, diasVazios };
   };
 
+  const parseConsultaData = (value) => {
+    if (!value) return null;
+    if (value instanceof Date) return value;
+
+    const asDate = new Date(value);
+    if (!isNaN(asDate)) return asDate;
+
+    const ddmmyyyy = value.match(/^([0-3]\d)-([0-1]\d)-(\d{4})(?:[T\s]([0-2]\d):([0-5]\d)(?::([0-5]\d))?)?$/);
+    if (ddmmyyyy) {
+      const [, day, month, year, hour = '00', minute = '00', second = '00'] = ddmmyyyy;
+      return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+    }
+
+    const dmySlash = value.match(/^([0-3]\d)\/([0-1]\d)\/(\d{4})(?:[T\s]([0-2]\d):([0-5]\d)(?::([0-5]\d))?)?$/);
+    if (dmySlash) {
+      const [, day, month, year, hour = '00', minute = '00', second = '00'] = dmySlash;
+      return new Date(`${year}-${month}-${day}T${hour}:${minute}:${second}`);
+    }
+
+    return null;
+  };
+
+  const getConsultaDate = (consulta) => {
+    return parseConsultaData(consulta.data) || parseConsultaData(consulta.DATA) || parseConsultaData(consulta.data_agendada) || parseConsultaData(consulta.DATA_AGENDADA) || null;
+  };
+
   // Filtrar consultas para a data selecionada
   const buscarConsultasData = (data) => {
     if (!agenda?.consultas) return [];
     
     return agenda.consultas.filter(consulta => {
-      const dataConsulta = new Date(consulta.data);
-      return dataConsulta.toDateString() === data.toDateString();
+      const dataConsulta = getConsultaDate(consulta);
+      return dataConsulta?.toDateString() === data.toDateString();
     });
   };
 
@@ -121,8 +147,11 @@ export default function TelaAgendamento() {
     if (!agenda?.consultas) return [];
     const agora = new Date();
     return agenda.consultas
-      .filter(consulta => new Date(consulta.data) >= agora)
-      .sort((a, b) => new Date(a.data) - new Date(b.data));
+      .filter(consulta => {
+        const dataConsulta = getConsultaDate(consulta);
+        return dataConsulta ? dataConsulta >= agora : false;
+      })
+      .sort((a, b) => getConsultaDate(a) - getConsultaDate(b));
   };
 
   // Filtrar consultas passadas (histórico)
@@ -130,8 +159,11 @@ export default function TelaAgendamento() {
     if (!agenda?.consultas) return [];
     const agora = new Date();
     return agenda.consultas
-      .filter(consulta => new Date(consulta.data) < agora)
-      .sort((a, b) => new Date(b.data) - new Date(a.data)); // Mais recentes primeiro
+      .filter(consulta => {
+        const dataConsulta = getConsultaDate(consulta);
+        return dataConsulta ? dataConsulta < agora : false;
+      })
+      .sort((a, b) => getConsultaDate(b) - getConsultaDate(a)); // Mais recentes primeiro
   };
 
   const diasSemana = gerarDiasSemana();
@@ -368,11 +400,11 @@ export default function TelaAgendamento() {
                 {obterConsultasProximas().length > 0 ? (
                   <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
                     {obterConsultasProximas().map((consulta, index) => {
-                      const dataConsulta = new Date(consulta.data).toLocaleDateString('pt-BR', {
+                      const dataConsulta = getConsultaDate(consulta)?.toLocaleDateString('pt-BR', {
                         weekday: 'long',
                         day: 'numeric',
                         month: 'long'
-                      });
+                      }) || 'Data não informada';
                       return (
                         <View
                           key={index}
@@ -442,11 +474,11 @@ export default function TelaAgendamento() {
                 {obterHistoricoConsultas().length > 0 ? (
                   <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
                     {obterHistoricoConsultas().map((consulta, index) => {
-                      const dataConsulta = new Date(consulta.data).toLocaleDateString('pt-BR', {
+                      const dataConsulta = getConsultaDate(consulta)?.toLocaleDateString('pt-BR', {
                         weekday: 'long',
                         day: 'numeric',
                         month: 'long'
-                      });
+                      }) || 'Data não informada';
                       return (
                         <View
                           key={index}
