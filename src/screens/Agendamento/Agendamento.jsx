@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert
 } from 'react-native';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { Plus, ChevronLeft, ChevronRight, CalendarX, Clock, User, AlertCircle } from 'lucide-react-native';
@@ -20,15 +19,13 @@ export default function TelaAgendamento() {
   const navigation = useNavigation();
   const [selectedDay, setSelectedDay] = useState(4);
   const [viewMode, setViewMode] = useState('week');
-  const [appointmentView, setAppointmentView] = useState('proximas'); // 'proximas' ou 'historico'
+  const [appointmentView, setAppointmentView] = useState('proximas');
   
-  // Estados para dados da API
   const [agenda, setAgenda] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
   const [dataAtual, setDataAtual] = useState(new Date());
   
-  // Buscar agenda ao carregar a tela e quando ela ganhar foco
   useFocusEffect(
     React.useCallback(() => {
       buscarAgenda();
@@ -49,51 +46,59 @@ export default function TelaAgendamento() {
     }
   };
 
-  // Gerar dias da semana a partir do dataAtual
+  // Converte data UTC do backend para "YYYY-MM-DD" sem deslocar pelo fuso
+  // Ex: "2026-03-09T00:00:00.000Z" → "2026-03-09" (e não "2026-03-08" em UTC-3)
+  const toUTCDateString = (date) => {
+    if (!date) return null;
+    const d = date instanceof Date ? date : new Date(date);
+    if (isNaN(d)) return null;
+    const year = d.getUTCFullYear();
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Converte data local do calendário (gerada pelo JS no fuso local) para "YYYY-MM-DD"
+  const toLocalDateString = (date) => {
+    if (!date) return null;
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
   const gerarDiasSemana = () => {
     const dias = [];
     const hoje = new Date(dataAtual);
-    
-    // Encontrar o domingo da semana
     const primeiro = hoje.getDate() - hoje.getDay();
     const domingo = new Date(hoje.setDate(primeiro));
-    
     const nomes = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
     
     for (let i = 0; i < 7; i++) {
       const data = new Date(domingo);
       data.setDate(data.getDate() + i);
-      
       dias.push({
         id: i,
         label: nomes[i],
         num: data.getDate().toString().padStart(2, '0'),
         data: data,
-        temAgendamento: false
       });
     }
-    
     return dias;
   };
 
-  // Gerar dias do mês
   const gerarDiasMes = () => {
     const ano = dataAtual.getFullYear();
     const mes = dataAtual.getMonth();
-    
     const primeiro = new Date(ano, mes, 1);
     const ultimo = new Date(ano, mes + 1, 0);
     const diasVazios = primeiro.getDay();
     const diasMes = ultimo.getDate();
-    
     const dias = [];
     
-    // Dias vazios no início
     for (let i = 0; i < diasVazios; i++) {
       dias.push({ id: `vazio-${i}`, vazio: true });
     }
-    
-    // Dias do mês
     for (let i = 1; i <= diasMes; i++) {
       dias.push({
         id: `dia-${i}`,
@@ -102,14 +107,12 @@ export default function TelaAgendamento() {
         vazio: false
       });
     }
-    
     return { dias, diasVazios };
   };
 
   const parseConsultaData = (value) => {
     if (!value) return null;
-    if (value instanceof Date) return value;
-
+    if (value instanceof Date) return isNaN(value) ? null : value;
     const asDate = new Date(value);
     if (!isNaN(asDate)) return asDate;
 
@@ -129,41 +132,48 @@ export default function TelaAgendamento() {
   };
 
   const getConsultaDate = (consulta) => {
-    return parseConsultaData(consulta.data) || parseConsultaData(consulta.DATA) || parseConsultaData(consulta.data_agendada) || parseConsultaData(consulta.DATA_AGENDADA) || null;
+    return (
+      parseConsultaData(consulta.data) ||
+      parseConsultaData(consulta.DATA) ||
+      parseConsultaData(consulta.data_agendada) ||
+      parseConsultaData(consulta.DATA_AGENDADA) ||
+      null
+    );
   };
 
-  // Filtrar consultas para a data selecionada
-  const buscarConsultasData = (data) => {
+  // "YYYY-MM-DD" de hoje no fuso local
+  const hojeLocalString = () => toLocalDateString(new Date());
+
+  // Compara data da consulta (UTC do backend) com data do calendário (local)
+  const buscarConsultasData = (calendarDate) => {
     if (!agenda?.consultas) return [];
-    
+    const calStr = toLocalDateString(calendarDate); // dia do calendário em local
     return agenda.consultas.filter(consulta => {
-      const dataConsulta = getConsultaDate(consulta);
-      return dataConsulta?.toDateString() === data.toDateString();
+      const d = getConsultaDate(consulta);
+      return toUTCDateString(d) === calStr; // data da consulta em UTC (sem fuso)
     });
   };
 
-  // Filtrar consultas futuras (próximas)
   const obterConsultasProximas = () => {
     if (!agenda?.consultas) return [];
-    const agora = new Date();
+    const hoje = hojeLocalString();
     return agenda.consultas
       .filter(consulta => {
-        const dataConsulta = getConsultaDate(consulta);
-        return dataConsulta ? dataConsulta >= agora : false;
+        const d = getConsultaDate(consulta);
+        return toUTCDateString(d) >= hoje;
       })
       .sort((a, b) => getConsultaDate(a) - getConsultaDate(b));
   };
 
-  // Filtrar consultas passadas (histórico)
   const obterHistoricoConsultas = () => {
     if (!agenda?.consultas) return [];
-    const agora = new Date();
+    const hoje = hojeLocalString();
     return agenda.consultas
       .filter(consulta => {
-        const dataConsulta = getConsultaDate(consulta);
-        return dataConsulta ? dataConsulta < agora : false;
+        const d = getConsultaDate(consulta);
+        return toUTCDateString(d) < hoje;
       })
-      .sort((a, b) => getConsultaDate(b) - getConsultaDate(a)); // Mais recentes primeiro
+      .sort((a, b) => getConsultaDate(b) - getConsultaDate(a));
   };
 
   const diasSemana = gerarDiasSemana();
@@ -173,10 +183,65 @@ export default function TelaAgendamento() {
     hasAppointment: !day.vazio && buscarConsultasData(day.data).length > 0,
   }));
   const emptyDays = Array(diasVazios).fill(null);
-  const dataAtualSelecionada = diasSemana[selectedDay]?.data || dataAtual;
-  const consultasAtual = buscarConsultasData(dataAtualSelecionada);
 
   const mesAtualTexto = dataAtual.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
+
+  const renderConsultaCard = (consulta, index, isProxima) => {
+    const d = getConsultaDate(consulta);
+    // Formata usando UTC para não deslocar o dia
+    const dataConsulta = d
+      ? new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+          .toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+      : 'Data não informada';
+
+    return (
+      <View
+        key={consulta.id || index}
+        style={{
+          backgroundColor: '#F8F9FA',
+          borderRadius: 8,
+          padding: 12,
+          marginBottom: 10,
+          borderLeftWidth: 4,
+          borderLeftColor: isProxima ? '#007AFF' : '#8B8B8B',
+          opacity: isProxima ? 1 : 0.8,
+        }}
+      >
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: isProxima ? '#000' : '#333', marginBottom: 4 }}>
+              {consulta.tipo || 'Consulta'}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <User size={14} color="#666" />
+              <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
+                {consulta.veterinario || 'Veterinário não informado'}
+              </Text>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <Clock size={14} color="#666" />
+              <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
+                {consulta.hora || 'Horário não informado'}
+              </Text>
+            </View>
+            <Text style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
+              {dataConsulta}
+            </Text>
+          </View>
+          <View style={{
+            backgroundColor: isProxima ? '#E8F4FF' : '#E8E8E8',
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            borderRadius: 4
+          }}>
+            <Text style={{ fontSize: 11, color: isProxima ? '#007AFF' : '#666', fontWeight: '600' }}>
+              {consulta.status || (isProxima ? 'Agendada' : 'Realizada')}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <KeyboardAvoidingView
@@ -246,7 +311,6 @@ export default function TelaAgendamento() {
                   Semana
                 </Text>
               </TouchableOpacity>
-
               <TouchableOpacity
                 style={[styles.toggleButton, viewMode === 'month' && styles.toggleButtonActive]}
                 onPress={() => setViewMode('month')}
@@ -290,10 +354,7 @@ export default function TelaAgendamento() {
                     <TouchableOpacity 
                       key={item.id}
                       onPress={() => setSelectedDay(item.id)}
-                      style={[
-                        styles.dayBox, 
-                        selectedDay === item.id && styles.dayBoxActive
-                      ]}
+                      style={[styles.dayBox, selectedDay === item.id && styles.dayBoxActive]}
                     >
                       <Text style={[styles.dayLabel, selectedDay === item.id && styles.textWhite]}>
                         {item.label}
@@ -311,7 +372,6 @@ export default function TelaAgendamento() {
                       <Text key={day} style={styles.weekDayHeader}>{day}</Text>
                     ))}
                   </View>
-
                   <View style={styles.monthDaysGrid}>
                     {emptyDays.map((_, index) => (
                       <View key={`empty-${index}`} style={styles.emptyDayBox} />
@@ -319,15 +379,9 @@ export default function TelaAgendamento() {
                     {diasMesComAppt.map((day) => (
                       <TouchableOpacity 
                         key={day.id}
-                        style={[
-                          styles.monthDayBox,
-                          day.hasAppointment && styles.dayWithAppointment
-                        ]}
+                        style={[styles.monthDayBox, day.hasAppointment && styles.dayWithAppointment]}
                       >
-                        <Text style={[
-                          styles.monthDayNum,
-                          day.hasAppointment && styles.dayNumWithAppointment
-                        ]}>
+                        <Text style={[styles.monthDayNum, day.hasAppointment && styles.dayNumWithAppointment]}>
                           {day.num}
                         </Text>
                         {day.hasAppointment && <View style={styles.appointmentDot} />}
@@ -338,23 +392,12 @@ export default function TelaAgendamento() {
               )}
             </View>
 
-            {/* Toggle entre Próximas e Histórico */}
+            {/* Toggle Próximas / Histórico */}
             <View style={{ paddingHorizontal: 16, marginBottom: 16 }}>
-              <View style={{ 
-                flexDirection: 'row', 
-                backgroundColor: '#F0F0F0', 
-                borderRadius: 8,
-                padding: 4
-              }}>
+              <View style={{ flexDirection: 'row', backgroundColor: '#F0F0F0', borderRadius: 8, padding: 4 }}>
                 <TouchableOpacity
                   style={[
-                    { 
-                      flex: 1, 
-                      paddingVertical: 10, 
-                      paddingHorizontal: 12,
-                      borderRadius: 6,
-                      alignItems: 'center'
-                    },
+                    { flex: 1, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 6, alignItems: 'center' },
                     appointmentView === 'proximas' && { backgroundColor: '#007AFF' }
                   ]}
                   onPress={() => setAppointmentView('proximas')}
@@ -363,19 +406,13 @@ export default function TelaAgendamento() {
                     { fontSize: 14, fontWeight: '600', color: '#666' },
                     appointmentView === 'proximas' && { color: '#FFF' }
                   ]}>
-                    Próximas
+                    Próximas ({obterConsultasProximas().length})
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[
-                    { 
-                      flex: 1, 
-                      paddingVertical: 10, 
-                      paddingHorizontal: 12,
-                      borderRadius: 6,
-                      alignItems: 'center'
-                    },
+                    { flex: 1, paddingVertical: 10, paddingHorizontal: 12, borderRadius: 6, alignItems: 'center' },
                     appointmentView === 'historico' && { backgroundColor: '#007AFF' }
                   ]}
                   onPress={() => setAppointmentView('historico')}
@@ -384,161 +421,49 @@ export default function TelaAgendamento() {
                     { fontSize: 14, fontWeight: '600', color: '#666' },
                     appointmentView === 'historico' && { color: '#FFF' }
                   ]}>
-                    Histórico
+                    Histórico ({obterHistoricoConsultas().length})
                   </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* Seção de Próximas Consultas */}
+            {/* Próximas Consultas */}
             {appointmentView === 'proximas' && (
               <>
-                <Text style={styles.sectionTitle}>
-                  Próximas Consultas
-                </Text>
-
+                <Text style={styles.sectionTitle}>Próximas Consultas</Text>
                 {obterConsultasProximas().length > 0 ? (
                   <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
-                    {obterConsultasProximas().map((consulta, index) => {
-                      const dataConsulta = getConsultaDate(consulta)?.toLocaleDateString('pt-BR', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long'
-                      }) || 'Data não informada';
-                      return (
-                        <View
-                          key={index}
-                          style={{
-                            backgroundColor: '#F8F9FA',
-                            borderRadius: 8,
-                            padding: 12,
-                            marginBottom: 10,
-                            borderLeftWidth: 4,
-                            borderLeftColor: '#007AFF'
-                          }}
-                        >
-                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <View style={{ flex: 1 }}>
-                              <Text style={{ fontSize: 14, fontWeight: '600', color: '#000', marginBottom: 4 }}>
-                                {consulta.tipo || 'Consulta'}
-                              </Text>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                                <User size={14} color="#666" />
-                                <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
-                                  {consulta.veterinario || 'Veterinário não informado'}
-                                </Text>
-                              </View>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                                <Clock size={14} color="#666" />
-                                <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
-                                  {consulta.hora || 'Horário não informado'}
-                                </Text>
-                              </View>
-                              <Text style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
-                                {dataConsulta}
-                              </Text>
-                            </View>
-                            <View style={{
-                              backgroundColor: '#E8F4FF',
-                              paddingHorizontal: 8,
-                              paddingVertical: 4,
-                              borderRadius: 4
-                            }}>
-                              <Text style={{ fontSize: 11, color: '#007AFF', fontWeight: '600' }}>
-                                {consulta.status || 'Agendada'}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                      );
-                    })}
+                    {obterConsultasProximas().map((consulta, index) =>
+                      renderConsultaCard(consulta, index, true)
+                    )}
                   </View>
                 ) : (
                   <View style={styles.emptyContainer}>
                     <CalendarX size={45} color="#CBD5E0" strokeWidth={1.5} />
-                    <Text style={styles.emptyText}>
-                      Nenhuma consulta próxima agendada.
-                    </Text>
+                    <Text style={styles.emptyText}>Nenhuma consulta próxima agendada.</Text>
                   </View>
                 )}
               </>
             )}
 
-            {/* Seção de Histórico */}
+            {/* Histórico */}
             {appointmentView === 'historico' && (
               <>
-                <Text style={styles.sectionTitle}>
-                  Histórico de Consultas
-                </Text>
-
+                <Text style={styles.sectionTitle}>Histórico de Consultas</Text>
                 {obterHistoricoConsultas().length > 0 ? (
                   <View style={{ paddingHorizontal: 16, marginBottom: 20 }}>
-                    {obterHistoricoConsultas().map((consulta, index) => {
-                      const dataConsulta = getConsultaDate(consulta)?.toLocaleDateString('pt-BR', {
-                        weekday: 'long',
-                        day: 'numeric',
-                        month: 'long'
-                      }) || 'Data não informada';
-                      return (
-                        <View
-                          key={index}
-                          style={{
-                            backgroundColor: '#F8F9FA',
-                            borderRadius: 8,
-                            padding: 12,
-                            marginBottom: 10,
-                            borderLeftWidth: 4,
-                            borderLeftColor: '#8B8B8B',
-                            opacity: 0.8
-                          }}
-                        >
-                          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                            <View style={{ flex: 1 }}>
-                              <Text style={{ fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 4 }}>
-                                {consulta.tipo || 'Consulta'}
-                              </Text>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                                <User size={14} color="#666" />
-                                <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
-                                  {consulta.veterinario || 'Veterinário não informado'}
-                                </Text>
-                              </View>
-                              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                                <Clock size={14} color="#666" />
-                                <Text style={{ fontSize: 12, color: '#666', marginLeft: 6 }}>
-                                  {consulta.hora || 'Horário não informado'}
-                                </Text>
-                              </View>
-                              <Text style={{ fontSize: 11, color: '#999', marginTop: 4 }}>
-                                {dataConsulta}
-                              </Text>
-                            </View>
-                            <View style={{
-                              backgroundColor: '#E8E8E8',
-                              paddingHorizontal: 8,
-                              paddingVertical: 4,
-                              borderRadius: 4
-                            }}>
-                              <Text style={{ fontSize: 11, color: '#666', fontWeight: '600' }}>
-                                {consulta.status || 'Realizada'}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                      );
-                    })}
+                    {obterHistoricoConsultas().map((consulta, index) =>
+                      renderConsultaCard(consulta, index, false)
+                    )}
                   </View>
                 ) : (
                   <View style={styles.emptyContainer}>
                     <CalendarX size={45} color="#CBD5E0" strokeWidth={1.5} />
-                    <Text style={styles.emptyText}>
-                      Nenhuma consulta anterior registrada.
-                    </Text>
+                    <Text style={styles.emptyText}>Nenhuma consulta anterior registrada.</Text>
                   </View>
                 )}
               </>
             )}
-
 
           </ScrollView>
         )}

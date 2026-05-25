@@ -58,10 +58,7 @@ export const getAgendaSemanal = async (data = new Date()) => {
             sunday: response.data.sunday
         };
 
-        console.log("Resposta da API:", response.data);
-
     } catch (error) {
-        // Tratamento de erros
         if (error.response) {
             const status = error.response.status;
             const serverMessage = error.response.data?.message ||
@@ -98,7 +95,6 @@ export const criarAgendamento = async (dadosAgendamento) => {
             throw new Error("Usuário não autenticado. Faça login para continuar.");
         }
 
-        // Validação dos dados obrigatórios
         const { agendaDisponivelId, petId, tipo, obs } = dadosAgendamento;
 
         if (!agendaDisponivelId || !petId || !tipo) {
@@ -128,7 +124,6 @@ export const criarAgendamento = async (dadosAgendamento) => {
         };
 
     } catch (error) {
-        // Tratamento de erros
         if (error.response) {
             const status = error.response.status;
             const serverMessage = error.response.data?.message ||
@@ -169,7 +164,7 @@ export const getVeterinarios = async () => {
 
 export const getAgendaDisponivelDates = async (vetId) => {
     const token = await getToken();
-    const response = await axios.get(`${API_URL}/api/consultas/horarios`, { // ← /horarios, não /agenda
+    const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
         params: { vet_id: vetId },
         headers: { Authorization: `Bearer ${token}` }
     });
@@ -178,7 +173,7 @@ export const getAgendaDisponivelDates = async (vetId) => {
 
     return datas.map((dateStr, index) => ({
         ID: index,
-        DATA: dateStr, // "YYYY-MM-DD"
+        DATA: dateStr,
     }));
 };
 
@@ -190,26 +185,31 @@ export const getAgendaTutor = async (data = new Date()) => {
             throw new Error("Usuário não autenticado. Faça login para continuar.");
         }
 
-        const response = await axios.get(`${API_URL}/api/consultas/consultasmarcadas`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
+        let response;
+        try {
+            response = await axios.get(`${API_URL}/api/consultas/marcadas`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+        } catch (error) {
+            console.error("Erro ao obter agenda do tutor url:", error);
+            throw new Error("Erro ao obter agenda do tutor url.");
+        }
 
         const rawConsultas = Array.isArray(response.data.consultas)
             ? response.data.consultas
             : Array.isArray(response.data)
                 ? response.data
                 : [];
-        
-        log("Resposta da API (getAgendaTutor):", rawConsultas);
+
+        console.log("Resposta da API (getAgendaTutor):", rawConsultas); // ✅ Fix 3: log → console.log
 
         return {
             consultas: rawConsultas
         };
     } catch (error) {
-        // Tratamento de erros
         console.error("Erro ao obter agenda do tutor:", error);
         throw new Error("Erro ao obter agenda do tutor.");
     }
@@ -217,7 +217,7 @@ export const getAgendaTutor = async (data = new Date()) => {
 
 export const getAgendaDisponivelTimes = async (vetId, data) => {
     const token = await getToken();
-    const response = await axios.get(`${API_URL}/api/consultas/horarios`, { // ← /horarios
+    const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
         params: { vet_id: vetId, data },
         headers: { Authorization: `Bearer ${token}` }
     });
@@ -226,6 +226,6 @@ export const getAgendaDisponivelTimes = async (vetId, data) => {
 
     return horarios.map(item => ({
         ID: item.id,
-        HORA: item.texto, // "HH:MM"
+        HORA: item.texto,
     }));
 };
