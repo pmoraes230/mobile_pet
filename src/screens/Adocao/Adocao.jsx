@@ -128,13 +128,10 @@ export default function TelaAdocao() {
         );
 
       setPetsFeed(adoptionPets);
-      console.log('PETS FEED:', adoptionPets.length);
-      console.log('PRIMEIRO PET ESTRUTURA:', JSON.stringify(adoptionPets[0], null, 2));
       setMeusPets(myPets);
 
     } catch (error) {
 
-      console.log('ERRO ADOÇÃO:', error?.response?.data || error);
 
       Alert.alert(
         'Erro',
@@ -174,8 +171,6 @@ export default function TelaAdocao() {
       );
 
     } catch (error) {
-
-      console.log(error?.response?.data);
 
       Alert.alert(
         'Erro',

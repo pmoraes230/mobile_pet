@@ -1,28 +1,243 @@
 import React, { useState, useEffect } from 'react';
 import {
-  View,
-  ScrollView,
-  TouchableOpacity,
-  Text,
-  TextInput,
-  Modal,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
-  Alert,
+  View, ScrollView, TouchableOpacity, Text, TextInput,
+  Modal, FlatList, KeyboardAvoidingView, Platform,
+  ActivityIndicator, Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { styles } from './styles';
+import { X } from 'lucide-react-native';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
-import { getAgendaSemanal, criarAgendamento, getAgendaDisponivelDates, getAgendaDisponivelTimes } from '../../services/agendamentoService';
+import {
+  getAgendaSemanal, criarAgendamento,
+  getAgendaDisponivelDates, getAgendaDisponivelTimes,
+} from '../../services/agendamentoService';
 
+// ─── helpers ──────────────────────────────────────────────────────────────────
+const getItemLabel = (item) =>
+  item?.name || item?.nome || item?.NOME || item?.descricao || item?.titulo || 'Selecionar';
+
+const getItemId = (item) =>
+  item?.id ?? item?.ID ?? item?.petId ?? item?.ID_PET ?? item?.id_pet ??
+  item?._id ?? item?.veterinario_id ?? item?.id_veterinario;
+
+// ─── select field ─────────────────────────────────────────────────────────────
+function SelectField({ label, value, placeholder, onPress, isStep = false }) {
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{
+        fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
+        textTransform: 'uppercase', marginBottom: 8,
+        color: isStep ? '#9333ea' : '#9ca3af',
+      }}>
+        {label}
+      </Text>
+      <TouchableOpacity
+        onPress={onPress}
+        style={{
+          backgroundColor: '#f3f4f6', borderRadius: 16,
+          paddingVertical: 16, paddingHorizontal: 16,
+          flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        }}
+      >
+        <Text style={{ fontWeight: '700', color: value ? '#374151' : '#9ca3af', fontSize: 14 }}>
+          {value || placeholder}
+        </Text>
+        <Text style={{ color: '#9ca3af', fontSize: 12 }}>▼</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// ─── chips de dia ─────────────────────────────────────────────────────────────
+function ChipsDias({ datas, selectedDate, onSelect, loading }) {
+  if (loading) {
+    return (
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{
+          fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
+          textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+        }}>
+          Escolha o Dia
+        </Text>
+        <ActivityIndicator color="#9333ea" style={{ marginTop: 8 }} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{
+        fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
+        textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+      }}>
+        Escolha o Dia
+      </Text>
+
+      {datas.length > 0 ? (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+          {datas.map((item) => {
+            const ativo = selectedDate?.id === item.id;
+            return (
+              <TouchableOpacity
+                key={item.id}
+                onPress={() => onSelect(item)}
+                style={{
+                  width: '30%', paddingVertical: 12, paddingHorizontal: 4,
+                  borderRadius: 14, borderWidth: 2, alignItems: 'center',
+                  backgroundColor: ativo ? '#9333ea' : '#fff',
+                  borderColor: ativo ? '#9333ea' : '#f3f4f6',
+                }}
+              >
+                <Text style={{
+                  fontSize: 11, fontWeight: '900', textTransform: 'uppercase',
+                  letterSpacing: 0.5, color: ativo ? '#fff' : '#374151',
+                }}>
+                  {item.dateLabel}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      ) : (
+        <View style={{
+          backgroundColor: '#f3f4f6',
+          padding: 20,
+          borderRadius: 16,
+          alignItems: 'center',
+          borderWidth: 1,
+          borderColor: '#e5e7eb',
+        }}>
+          <Text style={{ color: '#6b7280', fontWeight: '600', textAlign: 'center' }}>
+            Nenhuma data disponível para este veterinário no momento.
+          </Text>
+          <Text style={{ color: '#9ca3af', fontSize: 13, marginTop: 4, textAlign: 'center' }}>
+            Tente selecionar outro veterinário.
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
+// ─── chips de horário ─────────────────────────────────────────────────────────
+function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
+  if (loading) {
+    return <ActivityIndicator color="#9333ea" style={{ marginTop: 8, marginBottom: 16 }} />;
+  }
+  if (!slots.length) {
+    return (
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{
+          fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
+          textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+        }}>
+          Horários Disponíveis
+        </Text>
+        <View style={{
+          backgroundColor: '#f3f4f6',
+          padding: 20,
+          borderRadius: 16,
+          alignItems: 'center',
+        }}>
+          <Text style={{ color: '#6b7280', textAlign: 'center' }}>
+            Nenhum horário disponível para esta data.
+          </Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={{
+        fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
+        textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+      }}>
+        Horários Disponíveis
+      </Text>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {slots.map((slot) => {
+          const ativo = selectedSlot?.id === slot.id;
+          return (
+            <TouchableOpacity
+              key={slot.id}
+              onPress={() => onSelect(slot)}
+              style={{
+                width: '22%', paddingVertical: 10, alignItems: 'center',
+                borderRadius: 12, borderWidth: 2,
+                backgroundColor: ativo ? '#9333ea' : '#fff',
+                borderColor: ativo ? '#9333ea' : '#f3f4f6',
+                shadowColor: ativo ? '#9333ea' : 'transparent',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: ativo ? 0.3 : 0,
+                shadowRadius: 6, elevation: ativo ? 4 : 0,
+                transform: ativo ? [{ translateY: -2 }] : [],
+              }}
+            >
+              <Text style={{
+                fontSize: 12, fontWeight: '900',
+                color: ativo ? '#fff' : '#374151',
+              }}>
+                {slot.hora}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+// ─── modal de seleção ─────────────────────────────────────────────────────────
+function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
+  return (
+    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+      <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}>
+        <View style={{
+          backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28,
+          maxHeight: '60%', paddingBottom: 24,
+        }}>
+          <View style={{
+            flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+            padding: 24, borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
+          }}>
+            <Text style={{ fontSize: 18, fontWeight: '900', color: '#111827' }}>{titulo}</Text>
+            <TouchableOpacity
+              onPress={onClose}
+              style={{ backgroundColor: '#f3f4f6', borderRadius: 20, padding: 6 }}
+            >
+              <X size={18} color="#6b7280" />
+            </TouchableOpacity>
+          </View>
+
+          <FlatList
+            data={dados}
+            keyExtractor={(item) => String(getItemId(item) ?? item.name)}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                onPress={() => onSelect(item)}
+                style={{
+                  paddingVertical: 14, paddingHorizontal: 24,
+                  borderBottomWidth: 1, borderBottomColor: '#f9fafb',
+                }}
+              >
+                <Text style={{ fontSize: 15, fontWeight: '700', color: '#374151' }}>
+                  {getItemLabel(item)}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+// ─── tela principal ───────────────────────────────────────────────────────────
 export default function TelaNovoAgendamento() {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState('home');
 
-  // Estados para os selects
   const [selectedPet, setSelectedPet] = useState(null);
   const [selectedVeterinario, setSelectedVeterinario] = useState(null);
   const [selectedServico, setSelectedServico] = useState('Consulta Geral');
@@ -38,64 +253,40 @@ export default function TelaNovoAgendamento() {
   const [agendaErro, setAgendaErro] = useState(null);
   const [agendaDados, setAgendaDados] = useState({ pets: [], veterinarios: [] });
 
-  // Estados para controlar modais
   const [modalPetOpen, setModalPetOpen] = useState(false);
   const [modalVeterOpen, setModalVeterOpen] = useState(false);
   const [modalServicoOpen, setModalServicoOpen] = useState(false);
 
-  const handleLogout = () => {
-    navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
-  };
-
-  // Dados de fallback
-  const pets = [
-    { id: 1, name: 'Missy' },
-    { id: 2, name: 'Rex' },
-    { id: 3, name: 'Bella' },
-    { id: 4, name: 'Max' },
-    { id: 5, name: 'Luna' },
+  // fallbacks
+  const petsOpcao = agendaDados.pets.length > 0 ? agendaDados.pets : [
+    { id: 1, name: 'Missy' }, { id: 2, name: 'Rex' },
+    { id: 3, name: 'Bella' }, { id: 4, name: 'Max' }, { id: 5, name: 'Luna' },
   ];
-
-  const veterinarios = [
-    { id: 1, name: 'Dr. Patrick Nascimento' },
-    { id: 2, name: 'Dr. Silva' },
-    { id: 3, name: 'Dra. Maria' },
-    { id: 4, name: 'Dr. João' },
+  const veterinariosOpcao = agendaDados.veterinarios.length > 0 ? agendaDados.veterinarios : [
+    { id: 1, name: 'Dr. Patrick Nascimento' }, { id: 2, name: 'Dr. Silva' },
+    { id: 3, name: 'Dra. Maria' }, { id: 4, name: 'Dr. João' },
   ];
-
-  const servicos = [
-    { id: 1, name: 'Consulta Geral' },
-    { id: 2, name: 'Vacinação' },
-    { id: 3, name: 'Check-up' },
-    { id: 4, name: 'Retorno' },
+  const servicosOpcao = [
+    { id: 1, name: 'Consulta Geral' }, { id: 2, name: 'Vacinação' },
+    { id: 3, name: 'Check-up' }, { id: 4, name: 'Retorno' },
   ];
-
-  const petsOpcao = agendaDados.pets.length > 0 ? agendaDados.pets : pets;
-  const veterinariosOpcao = agendaDados.veterinarios.length > 0 ? agendaDados.veterinarios : veterinarios;
-
-  const getItemLabel = (item) => item?.name || item?.nome || item?.NOME || item?.descricao || item?.titulo || 'Selecionar';
-  const getItemId = (item) => item?.id ?? item?.ID ?? item?.petId ?? item?.ID_PET ?? item?.id_pet ?? item?._id ?? item?.veterinario_id ?? item?.id_veterinario;
 
   useEffect(() => {
-    const carregarAgenda = async () => {
+    (async () => {
       setAgendaCarregando(true);
       try {
         const dados = await getAgendaSemanal(new Date());
         setAgendaDados(dados);
-        setSelectedPet((prev) => prev || (dados.pets?.[0] ?? null));
-        const primeiroVet = dados.veterinarios?.[0] ?? null;
+        setSelectedPet((prev) => prev || dados.pets?.[0] || null);
+        const primeiroVet = dados.veterinarios?.[0] || null;
         setSelectedVeterinario((prev) => prev || primeiroVet);
-        if (primeiroVet) {
-          await loadAvailableDates(getItemId(primeiroVet));
-        }
+        if (primeiroVet) await loadAvailableDates(getItemId(primeiroVet));
       } catch (err) {
-        setAgendaErro(err.message || 'Erro ao carregar dados da agenda.');
+        setAgendaErro(err.message || 'Erro ao carregar dados.');
       } finally {
         setAgendaCarregando(false);
       }
-    };
-
-    carregarAgenda();
+    })();
   }, []);
 
   const loadAvailableDates = async (vetId) => {
@@ -104,24 +295,31 @@ export default function TelaNovoAgendamento() {
     setSelectedDate(null);
     setAvailableSlots([]);
     setSelectedSlot(null);
+
     try {
       const datas = await getAgendaDisponivelDates(vetId);
-      setAvailableDates(datas.map((item, index) => {
-        const rawDate = item.DATA; // "YYYY-MM-DD"
-        const dateObj = new Date(rawDate + 'T00:00:00'); // evita fuso horário
+
+      const formatted = datas.map((item, i) => {
+        const rawDate = item.DATA; // Deve ser "2026-05-26"
+
+        // Correção: Garante formato YYYY-MM-DD
+        const dateObj = new Date(rawDate);
+        const formattedDate = dateObj.toISOString().split('T')[0]; // "2026-05-26"
 
         return {
-          id: item.ID ?? index,
-          date: rawDate,
+          id: item.ID ?? `date-${i}`,
+          date: formattedDate,                    // ← Formato limpo
           dateLabel: dateObj.toLocaleDateString('pt-BR', {
-            weekday: 'short',
             day: '2-digit',
-            month: '2-digit',
+            month: '2-digit'
           }),
         };
-      }));
-    } catch (error) {
-      setAgendaErro(error.message || 'Erro ao buscar datas disponíveis.');
+      });
+
+      setAvailableDates(formatted);
+    } catch (e) {
+      console.error(e);
+      setAgendaErro('Erro ao buscar datas disponíveis.');
     } finally {
       setLoadingDates(false);
     }
@@ -131,95 +329,87 @@ export default function TelaNovoAgendamento() {
     setLoadingSlots(true);
     setAvailableSlots([]);
     setSelectedSlot(null);
+
     try {
-      const vagas = await getAgendaDisponivelTimes(vetId, dateString);
+      // 🔥 CORREÇÃO: Garante que a data seja enviada como string YYYY-MM-DD pura
+      let cleanDate = dateString;
+
+      if (dateString instanceof Date) {
+        cleanDate = dateString.toISOString().split('T')[0];
+      } else if (typeof dateString === 'string' && dateString.includes('T')) {
+        cleanDate = dateString.split('T')[0];
+      }
+
+      const vagas = await getAgendaDisponivelTimes(vetId, cleanDate);
+
       setAvailableSlots(vagas.map((item) => ({
         id: item.ID,
-        hora: item.HORA, // já vem "HH:MM" do backend
-        raw: item,
+        hora: item.HORA,
+        raw: item
       })));
-    } catch (error) {
-      setAgendaErro(error.message || 'Erro ao buscar horários disponíveis.');
+    } catch (e) {
+      console.error("Erro ao buscar horários:", e);
+      setAgendaErro('Erro ao buscar horários.');
     } finally {
       setLoadingSlots(false);
     }
   };
 
-  const handleVeterinarioSelect = async (veterinario) => {
-    setSelectedVeterinario(veterinario);
+  const handleVeterinarioSelect = async (vet) => {
+    setSelectedVeterinario(vet);
     setModalVeterOpen(false);
-    const vetId = getItemId(veterinario);
-    if (vetId) {
-      await loadAvailableDates(vetId);
-    }
+    setSelectedDate(null);
+    setSelectedSlot(null);
+    setAvailableSlots([]);
+
+    const vetId = getItemId(vet);
+    if (vetId) await loadAvailableDates(vetId);
   };
 
   const handleDateSelect = async (dateItem) => {
     setSelectedDate(dateItem);
     setSelectedSlot(null);
+
     const vetId = getItemId(selectedVeterinario);
+
     if (vetId && dateItem?.date) {
-      await loadAvailableSlots(vetId, dateItem.date);
+      await loadAvailableSlots(vetId, dateItem.date);   // Passa a string limpa
     }
   };
 
-  const handleConfirmarAgendamento = async () => {
+  const handleConfirmar = async () => {
     if (!selectedPet || !selectedVeterinario || !selectedServico) {
       Alert.alert('Preencha os campos', 'Selecione pet, veterinário e tipo de serviço.');
       return;
     }
-
     if (!selectedDate || !selectedSlot) {
-      Alert.alert('Selecione data e horário', 'Escolha uma data e um horário disponíveis para continuar.');
+      Alert.alert('Selecione data e horário', 'Escolha uma data e um horário disponíveis.');
       return;
     }
-
     setIsSubmitting(true);
     setAgendaErro(null);
-
     try {
       const agendaDisponivelId = getItemId(selectedSlot);
       const petId = getItemId(selectedPet);
-      if (agendaDisponivelId == null || petId == null) {
-        throw new Error('ID de pet ou de vaga não encontrado.');
-      }
-
-      const resultado = await criarAgendamento({
-        agendaDisponivelId,
-        petId,
-        tipo: selectedServico,
-        obs,
-      });
-
+      if (agendaDisponivelId == null || petId == null)
+        throw new Error('ID de pet ou vaga não encontrado.');
+      const resultado = await criarAgendamento({ agendaDisponivelId, petId, tipo: selectedServico, obs });
       Alert.alert('Agendamento criado', resultado.mensagem, [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
-    } catch (error) {
-      const message = error.message || 'Erro ao criar o agendamento.';
-      setAgendaErro(message);
-      Alert.alert('Erro', message);
+    } catch (e) {
+      const msg = e.message || 'Erro ao criar agendamento.';
+      setAgendaErro(msg);
+      Alert.alert('Erro', msg);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const renderModalItem = (item, onSelect) => (
-    <TouchableOpacity
-      style={styles.modalItem}
-      onPress={() => onSelect(item)}
-    >
-      <Text style={styles.modalItemText}>{getItemLabel(item)}</Text>
-    </TouchableOpacity>
-  );
-
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.container}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
 
-        {/* HEADER */}
         <HeaderHome
           userName="Rayan"
           showSearch={false}
@@ -228,238 +418,182 @@ export default function TelaNovoAgendamento() {
           onBackPress={() => navigation.goBack()}
         />
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* TÍTULO */}
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Novo Agendamento</Text>
-            <Text style={styles.modalSubtitle}>Escolha o veterinário, dia e horário</Text>
+        {agendaCarregando ? (
+          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#9333ea" />
+            <Text style={{ marginTop: 12, color: '#6b7280', fontSize: 14 }}>Carregando...</Text>
           </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{ fontSize: 24, fontWeight: '900', color: '#111827', letterSpacing: -0.5 }}>
+                Novo Agendamento
+              </Text>
+              <Text style={{ color: '#6b7280', fontWeight: '500', fontSize: 14, marginTop: 4 }}>
+                Escolha o veterinário, dia e horário
+              </Text>
+            </View>
 
-          {/* QUAL PET? */}
-          <View style={styles.inputWrapper}>
-            <Text style={styles.label}>QUAL PET?</Text>
-            <TouchableOpacity
-              style={styles.selectField}
+            {/* 1. Pet */}
+            <SelectField
+              label="Qual Pet?"
+              value={selectedPet ? getItemLabel(selectedPet) : null}
+              placeholder="Selecione seu pet..."
               onPress={() => setModalPetOpen(true)}
-            >
-              <Text style={styles.selectText}>
-                {selectedPet ? getItemLabel(selectedPet) : 'Selecione seu pet...'}
-              </Text>
-              <Text style={{ color: '#A0A7BA' }}>▼</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* VETERINÁRIO */}
-          <View style={styles.inputWrapper}>
-            <Text style={styles.label}>VETERINÁRIO</Text>
-            <TouchableOpacity
-              style={styles.selectField}
-              onPress={() => setModalVeterOpen(true)}
-            >
-              <Text style={styles.selectText}>
-                {selectedVeterinario ? getItemLabel(selectedVeterinario) : 'Escolha o médico...'}
-              </Text>
-              <Text style={{ color: '#A0A7BA' }}>▼</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* TIPO DE SERVIÇO */}
-          <View style={styles.inputWrapper}>
-            <Text style={styles.label}>TIPO DE SERVIÇO</Text>
-            <TouchableOpacity
-              style={styles.selectField}
-              onPress={() => setModalServicoOpen(true)}
-            >
-              <Text style={styles.selectText}>{selectedServico}</Text>
-              <Text style={{ color: '#A0A7BA' }}>▼</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* DATA DISPONÍVEL */}
-          <View style={styles.inputWrapper}>
-            <Text style={styles.label}>DATA DA CONSULTA</Text>
-            {loadingDates ? (
-              <ActivityIndicator style={{ marginTop: 10 }} />
-            ) : availableDates.length > 0 ? (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
-                {availableDates.map((item) => (
-                  <TouchableOpacity
-                    key={item.id}
-                    onPress={() => handleDateSelect(item)}
-                    style={[styles.dayCard, selectedDate?.id === item.id && styles.dayCardActive]}
-                  >
-                    <Text style={[styles.dayLabel, selectedDate?.id === item.id && styles.textWhite]}>
-                      {item.dateLabel}
-                    </Text>
-                    <Text style={[styles.dayNum, selectedDate?.id === item.id && styles.textWhite]}>
-                      {item.date?.slice(8, 10)}/{item.date?.slice(5, 7)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            ) : (
-              <Text style={{ color: '#666', marginTop: 10 }}>
-                {selectedVeterinario ? 'Sem datas disponíveis para este veterinário.' : 'Selecione um veterinário para ver as datas.'}
-              </Text>
-            )}
-          </View>
-
-          <View style={styles.inputWrapper}>
-            <Text style={styles.label}>HORÁRIO</Text>
-            {loadingSlots ? (
-              <ActivityIndicator style={{ marginTop: 10 }} />
-            ) : availableSlots.length > 0 ? (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 10 }}>
-                {availableSlots.map((slot) => (
-                  <TouchableOpacity
-                    key={slot.id}
-                    onPress={() => setSelectedSlot(slot)}
-                    style={[styles.dayCard, selectedSlot?.id === slot.id && styles.dayCardActive]}
-                  >
-                    <Text style={[styles.dayLabel, selectedSlot?.id === slot.id && styles.textWhite]}>
-                      {slot.hora || 'Sem horário'}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            ) : (
-              <Text style={{ color: '#666', marginTop: 10 }}>
-                {selectedDate ? 'Sem horários disponíveis para esta data.' : 'Selecione uma data para ver horários.'}
-              </Text>
-            )}
-          </View>
-
-          {/* OBSERVAÇÕES */}
-          <View style={[styles.inputWrapper, { marginTop: 25 }]}>
-            <Text style={styles.label}>OBSERVAÇÕES</Text>
-            <TextInput
-              style={styles.textArea}
-              placeholder="Descreva brevemente..."
-              multiline
-              placeholderTextColor="#A0A7BA"
-              value={obs}
-              onChangeText={setObs}
             />
-          </View>
 
-          {agendaErro && (
-            <View style={{ marginBottom: 20 }}>
-              <Text style={{ color: '#DC143C', fontSize: 13 }}>{agendaErro}</Text>
+            {/* 2. Veterinário */}
+            <SelectField
+              label="Veterinário"
+              value={selectedVeterinario ? getItemLabel(selectedVeterinario) : null}
+              placeholder="Escolha o médico..."
+              onPress={() => setModalVeterOpen(true)}
+            />
+
+            {/* 3. Chips de Dias - Só aparece se ainda não escolheu data */}
+            {selectedVeterinario && !selectedDate && (
+              <ChipsDias
+                datas={availableDates}
+                selectedDate={selectedDate}
+                onSelect={handleDateSelect}
+                loading={loadingDates}
+              />
+            )}
+
+            {/* Data Selecionada */}
+            {selectedDate && (
+              <View style={{ marginBottom: 16 }}>
+                <Text style={{
+                  fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
+                  textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+                }}>
+                  Data Selecionada
+                </Text>
+                <View style={{
+                  backgroundColor: '#9333ea',
+                  paddingVertical: 14,
+                  paddingHorizontal: 16,
+                  borderRadius: 16,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}>
+                  <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
+                    {selectedDate.dateLabel}
+                  </Text>
+                  <TouchableOpacity onPress={() => setSelectedDate(null)}>
+                    <Text style={{ color: '#ddd', fontSize: 13, fontWeight: '600' }}>Trocar</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            )}
+
+            {/* 4. Horários - Só aparece após escolher a data */}
+            {(selectedDate || loadingSlots) && (
+              <ChipsHorarios
+                slots={availableSlots}
+                selectedSlot={selectedSlot}
+                onSelect={setSelectedSlot}
+                loading={loadingSlots}
+              />
+            )}
+
+            {/* 5. Tipo de Serviço */}
+            <SelectField
+              label="Tipo de Serviço"
+              value={selectedServico}
+              placeholder="Selecione o serviço..."
+              onPress={() => setModalServicoOpen(true)}
+            />
+
+            {/* 6. Observações */}
+            <View style={{ marginBottom: 16 }}>
+              <Text style={{
+                fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
+                textTransform: 'uppercase', marginBottom: 8, color: '#9ca3af',
+              }}>
+                Observações
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: '#f3f4f6', borderRadius: 16,
+                  paddingVertical: 14, paddingHorizontal: 16,
+                  fontWeight: '700', color: '#374151', fontSize: 14,
+                  minHeight: 90, textAlignVertical: 'top',
+                }}
+                placeholder="Descreva brevemente..."
+                placeholderTextColor="#9ca3af"
+                multiline
+                value={obs}
+                onChangeText={setObs}
+              />
             </View>
-          )}
 
-          {/* BOTÕES DE AÇÃO */}
-          <View style={styles.rowButtons}>
-            <TouchableOpacity style={styles.btnSecondary} onPress={() => navigation.goBack()} disabled={isSubmitting}>
-              <Text style={styles.btnTextSecondary}>Cancelar</Text>
-            </TouchableOpacity>
+            {agendaErro && (
+              <Text style={{ color: '#dc2626', fontSize: 13, marginBottom: 16 }}>{agendaErro}</Text>
+            )}
 
-            <TouchableOpacity
-              style={[styles.btnPrimary, isSubmitting && { opacity: 0.7 }]}
-              onPress={handleConfirmarAgendamento}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color="#FFF" />
-              ) : (
-                <Text style={styles.btnTextPrimary}>Agendar Agora</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
+            <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                disabled={isSubmitting}
+                style={{
+                  flex: 1, paddingVertical: 16, borderRadius: 16,
+                  backgroundColor: '#f3f4f6', alignItems: 'center',
+                }}
+              >
+                <Text style={{ fontWeight: '900', color: '#6b7280', fontSize: 14 }}>Cancelar</Text>
+              </TouchableOpacity>
 
-        {/* MODAIS */}
-        {/* Modal Pet */}
-        <Modal
+              <TouchableOpacity
+                onPress={handleConfirmar}
+                disabled={isSubmitting}
+                style={{
+                  flex: 1, paddingVertical: 16, borderRadius: 16,
+                  backgroundColor: '#9333ea', alignItems: 'center',
+                  opacity: isSubmitting ? 0.7 : 1,
+                  shadowColor: '#9333ea', shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.25, shadowRadius: 8, elevation: 4,
+                }}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={{ fontWeight: '900', color: '#fff', fontSize: 14 }}>Agendar Agora</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        )}
+
+        {/* Modais */}
+        <ModalSelecao
           visible={modalPetOpen}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setModalPetOpen(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selecione um Pet</Text>
-              <FlatList
-                data={petsOpcao}
-                keyExtractor={(item) => (item.id || item._id).toString()}
-                renderItem={({ item }) => renderModalItem(item, (selected) => {
-                  setSelectedPet(selected);
-                  setModalPetOpen(false);
-                })}
-              />
-              <TouchableOpacity
-                style={styles.modalCloseBtn}
-                onPress={() => setModalPetOpen(false)}
-              >
-                <Text style={styles.modalCloseBtnText}>Fechar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* Modal Veterinário */}
-        <Modal
-          visible={modalVeterOpen}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setModalVeterOpen(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selecione um Veterinário</Text>
-              <FlatList
-                data={veterinariosOpcao}
-                keyExtractor={(item) => (item.id || item._id).toString()}
-                renderItem={({ item }) => renderModalItem(item, handleVeterinarioSelect)}
-              />
-              <TouchableOpacity
-                style={styles.modalCloseBtn}
-                onPress={() => setModalVeterOpen(false)}
-              >
-                <Text style={styles.modalCloseBtnText}>Fechar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* Modal Serviço */}
-        <Modal
-          visible={modalServicoOpen}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => setModalServicoOpen(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selecione um Serviço</Text>
-              <FlatList
-                data={servicos}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => renderModalItem(item, (selected) => {
-                  setSelectedServico(selected.name);
-                  setModalServicoOpen(false);
-                })}
-              />
-              <TouchableOpacity
-                style={styles.modalCloseBtn}
-                onPress={() => setModalServicoOpen(false)}
-              >
-                <Text style={styles.modalCloseBtnText}>Fechar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-
-        {/* TAB BAR */}
-        <TabBar
-          activeTab={activeTab}
-          onTabPress={setActiveTab}
-          onLogout={handleLogout}
+          titulo="Selecione um Pet"
+          dados={petsOpcao}
+          onSelect={(item) => { setSelectedPet(item); setModalPetOpen(false); }}
+          onClose={() => setModalPetOpen(false)}
         />
+        <ModalSelecao
+          visible={modalVeterOpen}
+          titulo="Selecione um Veterinário"
+          dados={veterinariosOpcao}
+          onSelect={handleVeterinarioSelect}
+          onClose={() => setModalVeterOpen(false)}
+        />
+        <ModalSelecao
+          visible={modalServicoOpen}
+          titulo="Selecione um Serviço"
+          dados={servicosOpcao}
+          onSelect={(item) => { setSelectedServico(item.name); setModalServicoOpen(false); }}
+          onClose={() => setModalServicoOpen(false)}
+        />
+
+        <TabBar onLogout={() => navigation.reset({ index: 0, routes: [{ name: 'Login' }] })} />
       </View>
     </KeyboardAvoidingView>
   );

@@ -1,8 +1,6 @@
 import axios from "axios";
-import { jwtDecode } from "jwt-decode"
-import * as SecureStore from 'expo-secure-store'
-import { isAuthenticated, getToken, getUserInfo } from "./auth";
-import { API_URL, _API_URL_PROD } from "../utils/endPoint_Url";
+import { getToken } from "./auth";
+import { API_URL } from "../utils/endPoint_Url";
 
 // Formata a data para o padrão DD-MM-YYYY
 const formatarData = (data) => {
@@ -17,143 +15,54 @@ const formatarData = (data) => {
 export const getAgendaSemanal = async (data = new Date()) => {
     try {
         const token = await getToken();
-
-        if (!token) {
-            throw new Error("Usuário não autenticado. Faça login para continuar.");
-        }
+        if (!token) throw new Error("Usuário não autenticado.");
 
         const dataFormatada = formatarData(data);
 
         const response = await axios.get(`${API_URL}/api/consultas/agenda`, {
-            params: {
-                data: dataFormatada
-            },
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        const rawConsultas = Array.isArray(response.data.consultas)
-            ? response.data.consultas
-            : Array.isArray(response.data.consulta)
-                ? response.data.consulta
-                : [];
-
-        const normalizeConsulta = (consulta) => ({
-            ...consulta,
-            data: consulta.data || consulta.DATA || consulta.data_agendada || consulta.DATA_AGENDADA || consulta.data_hora || consulta.DATA_HORA || consulta.dataHora || consulta.dataHoraConsulta || consulta.DATA_HORA || consulta.DATA_HORA_CONSULTA,
-            hora: consulta.hora || consulta.HORA || consulta.horario || consulta.HORARIO || consulta.time || consulta.TIME || consulta.hora_consulta || consulta.HORA_CONSULTA,
-            veterinario: consulta.veterinario || consulta.VETERINARIO || consulta.nomeVeterinario || consulta.NOME_VETERINARIO || consulta.nome_veterinario,
-            tipo: consulta.tipo || consulta.TIPO || consulta.tipoConsulta || consulta.TIPO_CONSULTA || consulta.servico || consulta.SERVICO,
-            status: consulta.status || consulta.STATUS || consulta.situacao || consulta.SITUACAO || consulta.status_consulta || consulta.STATUS_CONSULTA,
+            params: { data: dataFormatada },
+            headers: { Authorization: `Bearer ${token}` }
         });
 
         return {
             pets: response.data.pets || response.data.pet || [],
             vacinas: response.data.vacinas || response.data.vacina || [],
-            consultas: rawConsultas.map(normalizeConsulta),
+            consultas: response.data.consultas || [],
             veterinarios: response.data.veterinarios || response.data.veterinario || [],
             monday: response.data.monday,
             sunday: response.data.sunday
         };
-
     } catch (error) {
-        if (error.response) {
-            const status = error.response.status;
-            const serverMessage = error.response.data?.message ||
-                error.response.data?.error ||
-                "Erro no servidor";
-
-            if (status === 401) {
-                throw new Error("Sua sessão expirou. Faça login novamente.");
-            }
-            if (status === 403) {
-                throw new Error("Acesso bloqueado. Entre em contato com o suporte.");
-            }
-            if (status === 404) {
-                throw new Error("Agenda não encontrada.");
-            }
-
-            throw new Error(serverMessage);
-        }
-
-        if (error.request) {
-            throw new Error("Sem conexão com a internet. Verifique sua rede.");
-        }
-
-        throw new Error("Ocorreu um erro inesperado. Tente novamente.");
+        console.error("Erro em getAgendaSemanal:", error);
+        throw error;
     }
 };
 
-// POST /api/consultas - Cria um novo agendamento de consulta
+// POST /api/consultas - Cria um novo agendamento
 export const criarAgendamento = async (dadosAgendamento) => {
     try {
         const token = await getToken();
-
-        if (!token) {
-            throw new Error("Usuário não autenticado. Faça login para continuar.");
-        }
+        if (!token) throw new Error("Usuário não autenticado.");
 
         const { agendaDisponivelId, petId, tipo, obs } = dadosAgendamento;
 
-        if (!agendaDisponivelId || !petId || !tipo) {
-            throw new Error("Preencha todos os campos obrigatórios: agendaDisponivelId, petId e tipo");
-        }
+        const response = await axios.post(`${API_URL}/api/consultas`, {
+            agendaDisponivelId,
+            petId,
+            tipo,
+            obs: obs || ""
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
-        const response = await axios.post(
-            `${API_URL}/api/consultas`,
-            {
-                agendaDisponivelId,
-                petId,
-                tipo,
-                obs: obs || ""
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            }
-        );
-
-        return {
-            sucesso: true,
-            mensagem: response.data.message || "Consulta agendada com sucesso!",
-            dados: response.data
-        };
-
+        return response.data;
     } catch (error) {
-        if (error.response) {
-            const status = error.response.status;
-            const serverMessage = error.response.data?.message ||
-                error.response.data?.error ||
-                "Erro no servidor";
-
-            if (status === 401) {
-                throw new Error("Sua sessão expirou. Faça login novamente.");
-            }
-            if (status === 400) {
-                throw new Error(`Dados inválidos: ${serverMessage}`);
-            }
-            if (status === 403) {
-                throw new Error("Você não tem permissão para agendar.");
-            }
-            if (status === 404) {
-                throw new Error("Pet, agenda disponível ou veterinário não encontrado.");
-            }
-
-            throw new Error(serverMessage);
-        }
-
-        if (error.request) {
-            throw new Error("Sem conexão com a internet. Verifique sua rede.");
-        }
-
-        throw new Error("Ocorreu um erro inesperado. Tente novamente.");
+        console.error("Erro em criarAgendamento:", error);
+        throw error;
     }
-}
+};
 
+// GET Veterinários
 export const getVeterinarios = async () => {
     const token = await getToken();
     const response = await axios.get(`${API_URL}/api/consultas/veterinarios`, {
@@ -162,70 +71,104 @@ export const getVeterinarios = async () => {
     return response.data;
 };
 
+// ====================== DATAS DISPONÍVEIS ======================
 export const getAgendaDisponivelDates = async (vetId) => {
-    const token = await getToken();
-    const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
-        params: { vet_id: vetId },
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    const datas = response.data.datas || [];
-
-    return datas.map((dateStr, index) => ({
-        ID: index,
-        DATA: dateStr,
-    }));
-};
-
-export const getAgendaTutor = async (data = new Date()) => {
     try {
         const token = await getToken();
+        if (!token) throw new Error("Usuário não autenticado.");
 
-        if (!token) {
-            throw new Error("Usuário não autenticado. Faça login para continuar.");
-        }
+        const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
+            params: { vet_id: vetId },
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
-        let response;
-        try {
-            response = await axios.get(`${API_URL}/api/consultas/marcadas`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-        } catch (error) {
-            console.error("Erro ao obter agenda do tutor url:", error);
-            throw new Error("Erro ao obter agenda do tutor url.");
-        }
+        const datas = response.data.datas || response.data || [];
 
-        const rawConsultas = Array.isArray(response.data.consultas)
-            ? response.data.consultas
-            : Array.isArray(response.data)
-                ? response.data
-                : [];
+        const unique = {};
+        return datas.map((item, index) => {
+            const dateStr = typeof item === 'string' ? item : item.DATA || item.date;
+            if (!dateStr || unique[dateStr]) return null;
+            unique[dateStr] = true;
 
-        console.log("Resposta da API (getAgendaTutor):", rawConsultas); // ✅ Fix 3: log → console.log
-
-        return {
-            consultas: rawConsultas
-        };
+            return {
+                ID: index,
+                DATA: dateStr,
+            };
+        }).filter(Boolean);
     } catch (error) {
-        console.error("Erro ao obter agenda do tutor:", error);
-        throw new Error("Erro ao obter agenda do tutor.");
+        console.error("Erro em getAgendaDisponivelDates:", error);
+        throw error;
     }
-}
+};
 
-export const getAgendaDisponivelTimes = async (vetId, data) => {
+// ====================== HORÁRIOS DISPONÍVEIS ======================
+export const getAgendaDisponivelTimes = async (vetId, date) => {
+  try {
     const token = await getToken();
+    if (!token) throw new Error("Usuário não autenticado.");
+
     const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
-        params: { vet_id: vetId, data },
-        headers: { Authorization: `Bearer ${token}` }
+      params: { vet_id: vetId, data: date },
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     const horarios = response.data.horarios || [];
 
     return horarios.map(item => ({
-        ID: item.id,
-        HORA: item.texto,
+      ID: item.id || item.ID,
+      HORA: item.texto || item.HORA,   // importante
+      raw: item
     }));
+  } catch (error) {
+    console.error("Erro em getAgendaDisponivelTimes:", error);
+    throw error;
+  }
+};
+
+// ====================== GET AGENDA TUTOR ======================
+export const getAgendaTutor = async () => {
+    try {
+        const token = await getToken();
+        if (!token) throw new Error("Usuário não autenticado.");
+
+        const response = await axios.get(`${API_URL}/api/consultas/marcadas`, {
+            headers: { 
+                Authorization: `Bearer ${token}` 
+            }
+        });
+
+        // Mapear dados da API para o formato esperado pelo frontend
+        const consultas = (response.data.consultas || response.data || []).map(consulta => ({
+            // Dados originais
+            id: consulta.id,
+            tipo_de_consulta: consulta.tipo,
+            observacoes: consulta.observacoes || "",
+            status: consulta.status,
+            petId: consulta.petId,
+            
+            // Campos mapeados para o CardConsulta
+            data_consulta: consulta.data, // ISO date string "2026-03-09T00:00:00.000Z"
+            horario_consulta: consulta.hora, // "14:30"
+            
+            // Objeto veterinario (o CardConsulta espera this format)
+            veterinario: {
+                nome: typeof consulta.veterinario === 'string' 
+                    ? consulta.veterinario 
+                    : consulta.veterinario?.nome || "Veterinário"
+            },
+            
+            // Objeto pet (o CardConsulta espera este format)
+            pet: {
+                nome: consulta.petNome || consulta.pet_nome || consulta.pet?.nome || "Pet"
+            }
+        }));
+
+        return { 
+            consultas,
+            vacinas: response.data.vacinas || []
+        };
+    } catch (error) {
+        console.error("Erro em getAgendaTutor:", error);
+        throw error;
+    }
 };

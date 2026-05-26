@@ -116,10 +116,6 @@ export default function AnunciarPet() {
         type: 'image/jpeg', 
         name: filename,
       });
-
-      console.log('📤 Enviando pet via axios:', { nome: petName, especie: selectedEspecie.name });
-      console.log('🖼️ URI:', petImage.uri);
-      console.log('🖼️ IMAGE:', petImage);
       const response = await api.post('/pets', formData);
 
       console.log('✅ Pet cadastrado com sucesso:', response.data);
