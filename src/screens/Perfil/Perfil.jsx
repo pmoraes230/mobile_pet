@@ -30,53 +30,40 @@ const Perfil = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Função para carregar os dados do tutor
-  const loadUserData = async () => {
+  const handleData = (res) => {
+    if (!res) return null;
+    return Array.isArray(res) ? res[0] : res;
+  };
+
+  const loadAllData = async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const data = await searchTutors();
-      setUserData(data);
+      const [tutorRes, cpfRes, infoRes] = await Promise.all([
+        searchTutors(),
+        consumerCPF(),
+        getUserInfo()
+      ]);
+
+      // DEBUG LOG: Se ainda não funcionar, olhe o terminal do seu VSCode e veja o que aparece aqui:
+      console.log("DADOS QUE CHEGARAM DO TUTOR:", JSON.stringify(tutorRes, null, 2));
+
+      setUserData(handleData(tutorRes));
+      setCpfData(handleData(cpfRes));
+      setImageUser(handleData(infoRes));
 
     } catch (err) {
       console.error("Erro ao carregar perfil:", err);
-      setError(err.message || "Não foi possível carregar os dados do perfil");
+      setError("Não foi possível carregar os dados do perfil");
     } finally {
       setLoading(false);
     }
   };
 
-  const loadCpfUser = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const data = await consumerCPF();
-      setCpfData(data)
-
-    } catch (err) {
-      console.error("Erro ao carregar cpf:", err);
-      setError(err.message || "Não foi possível carregar os dados do cpf");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  // Carrega os dados ao abrir a tela
   useEffect(() => {
-    loadUserData();
+    loadAllData();
   }, []);
-
-  useEffect(() => {
-    loadCpfUser();
-  }, [])
-
-  useEffect(() => {
-    getUserInfo().then(data => {
-      setImageUser(data)
-    })
-  }, [])
 
   const handleLogout = () => {
     navigation.reset({
@@ -85,26 +72,40 @@ const Perfil = () => {
     });
   };
 
-  // ==================== TELAS DE CARREGAMENTO E ERRO ====================
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
         <ActivityIndicator size="large" color="#9127E1" />
-        <Text style={{ marginTop: 15, color: '#666' }}>Carregando perfil...</Text>
       </View>
     );
   }
 
-  if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error}</Text>
-        <TouchableOpacity onPress={loadUserData}>
-          <Text style={{ color: '#9127E1', fontWeight: 'bold' }}>Tentar novamente</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+// --- MAPEAMENTO AJUSTADO PARA OS NOMES DA ENTIDADE ---
+  
+  // No Back-end definimos: this.nome
+  const nomeExibir = userData?.nome || 'Nome não encontrado';
+  
+  // No Back-end definimos: this.email
+  const emailExibir = userData?.email || 'Não informado';
+  
+  const telefoneExibir = userData?.telefone || 'Não informado';
+  
+  // No Back-end definimos: this.endereco
+  const enderecoExibir = userData?.endereco || 'Endereço não informado';
+  
+  // No Back-end definimos: this.dataNascimento
+  const rawNascimento = userData?.dataNascimento;
+  
+  // CPF (Vem do serviço de CPF ou do userData se estiver lá)
+  const cpfBruto = cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF;
+
+  // Foto (Ajustada para o caminho do S3 que vimos no seu log)
+  const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+  const fotoUrl = userData?.imagemPerfil; // Nome definido na entidade
+  
+  const fotoPerfil = fotoUrl 
+    ? { uri: `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${fotoUrl}` } 
+    : { uri: defaultAvatar };
 
   return (
     <KeyboardAvoidingView
@@ -113,7 +114,6 @@ const Perfil = () => {
     >
       <View style={styles.container}>
         
-        {/* HEADER */}
         <HeaderHome 
           userName={false} 
           showSearch={false} 
@@ -128,22 +128,14 @@ const Perfil = () => {
           keyboardShouldPersistTaps="handled"
         >
           
-          {/* CARD PERFIL PRINCIPAL */}
           <View style={styles.profileTopCard}>
             <View style={styles.profileRow}>
               <View style={styles.avatarWrapper}>
-                <Image
-                  source={
-                    imageUser?.imagem 
-                      ? { uri: imageUser.imagem } 
-                      : require('../../assets/rayan_lindo.webp')
-                  }
-                  style={styles.avatar}
-                />
+                <Image source={fotoPerfil} style={styles.avatar} />
               </View>
 
               <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{userData?.nome_tutor || 'Nome não encontrado'}</Text>
+                <Text style={styles.profileName}>{nomeExibir}</Text>
                 <View style={styles.tagRow}>
                   <Text style={styles.profileTag}>Responsável</Text>
                 </View>
@@ -152,11 +144,11 @@ const Perfil = () => {
                 <View style={styles.contactRow}>
                   <View style={styles.contactItem}>
                     <Mail size={14} color="#9127E1" />
-                    <Text style={styles.contactText}>{userData?.EMAIL || 'Não informado'}</Text>
+                    <Text style={styles.contactText}>{emailExibir}</Text>
                   </View>
                   <View style={styles.contactItem}>
                     <Phone size={14} color="#9127E1" />
-                    <Text style={styles.contactText}>Não informado</Text>
+                    <Text style={styles.contactText}>{telefoneExibir}</Text>
                   </View>
                 </View>
               </View>
@@ -172,9 +164,7 @@ const Perfil = () => {
             </TouchableOpacity>
           </View>
 
-          {/* SEÇÕES DE DADOS */}
           <View style={styles.sectionRow}>
-            {/* Dados Pessoais */}
             <View style={styles.card}>
               <View style={styles.sectionHeader}>
                 <View style={styles.iconCircle}>
@@ -182,21 +172,27 @@ const Perfil = () => {
                 </View>
                 <Text style={styles.cardTitle}>Dados Pessoais</Text>
               </View>
+              
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Documento CPF</Text>
-                <Text style={styles.detailValue}>{formateCPF(cpfData?.cpf) || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>
+                  {cpfBruto ? formateCPF(cpfBruto) : 'Não informado'}
+                </Text>
               </View>
+              
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Nascimento</Text>
-                <Text style={styles.detailValue}>{formateDate(userData?.DATA_NASCIMENTO) || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>
+                  {rawNascimento ? formateDate(rawNascimento) : 'Não informado'}
+                </Text>
               </View>
+              
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Endereço registrado</Text>
-                <Text style={styles.detailValue}>{userData?.ENDERECO || 'Não informado'}</Text>
+                <Text style={styles.detailValue}>{enderecoExibir}</Text>
               </View>
             </View>
 
-            {/* Meus Pets */}
             <View style={styles.card}> 
               <View style={styles.sectionHeader}>
                 <View style={[styles.iconCircle, {backgroundColor: '#E6FFFA'}]}>
@@ -220,7 +216,6 @@ const Perfil = () => {
             </View>
           </View>
 
-          {/* PRIVACIDADE E ACESSO */}
           <View style={styles.bottomCard}>
             <View style={styles.sectionHeader}>
               <View style={[styles.iconCircle, {backgroundColor: '#FFF4EE'}]}>
@@ -228,9 +223,6 @@ const Perfil = () => {
               </View>
               <Text style={styles.cardTitle}>Privacidade e Acesso</Text>
             </View>
-            <Text style={styles.bottomText}>
-              Gerencie o seu acesso, senha e segurança da conta.
-            </Text>
             <View style={styles.buttonRow}>
               <TouchableOpacity style={styles.secondaryButton} activeOpacity={0.8}>
                 <Text style={styles.secondaryButtonText}>ALTERAR SENHA</Text>
@@ -246,10 +238,7 @@ const Perfil = () => {
           </View>
 
         </ScrollView>
-
-        {/* TAB BAR */}
         <TabBar onLogout={handleLogout} />
-
       </View>
     </KeyboardAvoidingView>
   );

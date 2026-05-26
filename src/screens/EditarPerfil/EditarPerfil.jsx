@@ -21,70 +21,83 @@ import { consumerCPF } from '../../services/consumerCPF';
 import { getUserInfo } from '../../services/auth';
 import { formateCPF, formateDate } from '../../utils/formatters';
 
-const TUTOR_IMAGE = require('../../assets/user_default.png');
-
 export default function EditarPerfil() {
   const navigation = useNavigation();
 
-  const [name, setName] = useState(null);
-  const [address, setAddress] = useState(null);
-  const [phoneDdd, setPhoneDdd] = useState(null);
-  const [phoneNumber, setPhoneNumber] = useState(null);
+  const [name, setName] = useState('');
+  const [address, setAddress] = useState('');
+  const [phoneDdd, setPhoneDdd] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [userData, setUserData] = useState(null);
   const [imageUser, setImageUser] = useState(null);
-  const [cpfData, setCpfData] = useState('');
+  const [cpfData, setCpfData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Função para carregar os dados do tutor
+  // Função para tratar se a API responder com um Array [ { ... } ]
+  const handleData = (res) => {
+    if (!res) return null;
+    return Array.isArray(res) ? res[0] : res;
+  };
+
   const loadAll = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+    try {
+      setLoading(true);
+      setError(null);
 
-        const user = await searchTutors();
-        const cpfResponse = await consumerCPF();
-        const image = await getUserInfo();
+      const [userRes, cpfRes, imageRes] = await Promise.all([
+        searchTutors(),
+        consumerCPF(),
+        getUserInfo()
+      ]);
 
-        setUserData(user);
-        setCpfData(cpfResponse);
-        setImageUser(image);
+      const user = handleData(userRes);
+      const cpf = handleData(cpfRes);
+      const image = handleData(imageRes);
 
-        setName(user?.nome_tutor || '');
-        setAddress(user?.ENDERECO || '');
+      setUserData(user);
+      setCpfData(cpf);
+      setImageUser(image);
 
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
+      // Preenche os campos de input com o que veio do banco (minúsculo ou maiúsculo)
+      setName(user?.nome || user?.nome_tutor || '');
+      setAddress(user?.endereco || user?.ENDERECO || '');
+      
+      // Tenta extrair o telefone se ele vier do banco
+      const telCompleto = user?.telefone || user?.TELEFONE || '';
+      if (telCompleto.length >= 10) {
+        setPhoneDdd(telCompleto.substring(0, 2));
+        setPhoneNumber(telCompleto.substring(2));
       }
-    };
+
+    } catch (err) {
+      console.error(err);
+      setError("Erro ao carregar dados para edição.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    loadAll()
+    loadAll();
   }, []);
 
-
-  // ==================== TELAS DE CARREGAMENTO E ERRO ====================
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
         <ActivityIndicator size="large" color="#9127E1" />
-        <Text style={{ marginTop: 15, color: '#666' }}>Carregando perfil...</Text>
+        <Text style={{ marginTop: 15, color: '#666' }}>Carregando dados...</Text>
       </View>
     );
   }
 
-  if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Text style={{ color: 'red', textAlign: 'center', marginBottom: 20 }}>{error}</Text>
-        <TouchableOpacity onPress={loadAll}>
-          <Text style={{ color: '#9127E1', fontWeight: 'bold' }}>Tentar novamente</Text>
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  // Definição da foto (sem Rayan Lindo)
+  const fotoPerfil = imageUser?.imagem || userData?.imagem_perfil_tutor 
+    ? { uri: imageUser?.imagem || userData?.imagem_perfil_tutor } 
+    : require('../../assets/user_default.png');
+
+  // CPF para exibição
+  const cpfExibir = cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF || '';
 
   return (
     <KeyboardAvoidingView
@@ -93,7 +106,6 @@ export default function EditarPerfil() {
     >
       <View style={styles.container}>
 
-        {/* HEADER FIXO */}
         <HeaderHome
           userName={false}
           showSearch={false}
@@ -117,11 +129,7 @@ export default function EditarPerfil() {
           <View style={styles.photoCard}>
             <TouchableOpacity style={styles.avatarWrapper} activeOpacity={0.9}>
               <Image
-                source={
-                  imageUser?.imagem
-                    ? { uri: imageUser.imagem }
-                    : require('../../assets/user_default.png')
-                }
+                source={fotoPerfil}
                 style={styles.avatar}
               />
               <View style={styles.cameraBadge}>
@@ -147,13 +155,14 @@ export default function EditarPerfil() {
                 value={name}
                 onChangeText={setName}
                 style={styles.textInput}
+                placeholder="Seu nome"
               />
             </View>
 
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>CPF (não editável)</Text>
               <TextInput
-                value={formateCPF(cpfData?.cpf)}
+                value={formateCPF(cpfExibir)}
                 editable={false}
                 style={[styles.textInput, styles.disabledInput]}
               />
@@ -165,6 +174,7 @@ export default function EditarPerfil() {
                 value={address}
                 onChangeText={setAddress}
                 style={styles.textInput}
+                placeholder="Seu endereço"
               />
             </View>
           </View>
@@ -228,7 +238,6 @@ export default function EditarPerfil() {
 
         </ScrollView>
 
-        {/* TAB BAR FIXA */}
         <TabBar />
 
       </View>
