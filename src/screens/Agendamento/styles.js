@@ -90,7 +90,7 @@ export const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 5,
   },
   monthTitle: {
     fontSize: 20,
@@ -99,16 +99,19 @@ export const styles = StyleSheet.create({
   },
   arrows: {
     flexDirection: 'row',
-    gap: 25,
+    gap: 1,
   },
-  // GRID DE DIAS (Ajustado para caber igual ao print)
+  // GRID DE DIAS (Semana)
   daysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
+    alignItems: 'center',
   },
   dayBox: {
-    width: '23%', // 4 por linha
+    flexBasis: '13%',
+    maxWidth: 50,
+    minWidth: 42,
     height: 75,
     backgroundColor: '#F9FAFB',
     borderRadius: 16,
@@ -160,18 +163,22 @@ export const styles = StyleSheet.create({
   monthDaysGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
     paddingHorizontal: 5,
   },
   emptyDayBox: {
-    width: 40,
+    flexBasis: '13.8%',
+    maxWidth: 45,
+    minWidth: 40,
     height: 40,
-    margin: 1,
+    marginBottom: 6,
   },
   monthDayBox: {
-    width: 40,
+    flexBasis: '13.8%',
+    maxWidth: 45,
+    minWidth: 40,
     height: 40,
-    margin: 1,
+    marginBottom: 6,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
