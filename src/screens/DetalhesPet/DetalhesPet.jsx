@@ -53,7 +53,7 @@ export default function TelaDetalhesPet({ route }) {
       const response = await api.get(`/vacinas/pet/${pet.id || pet.ID}`);
       setVacinas(response.data || []);
     } catch (error) {
-      console.log('Erro ao carregar vacinas:', error);
+      throw new Error('Erro ao carregar vacinas: ' + error.message);
     }
   };
 
@@ -62,7 +62,7 @@ export default function TelaDetalhesPet({ route }) {
       const response = await api.get(`/medicamentos/pet/${pet.id || pet.ID}`);
       setMedicamentos(response.data || []);
     } catch (error) {
-      console.log('Erro ao carregar medicamentos:', error);
+      throw new Error('Erro ao carregar medicamentos: ' + error.message);
     }
   };
 

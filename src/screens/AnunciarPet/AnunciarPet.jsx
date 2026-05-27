@@ -88,7 +88,7 @@ export default function AnunciarPet() {
         setPetImage(result.assets[0]);
       }
     } catch (error) {
-      console.log('Erro imagem:', error);
+      throw new Error('Erro ao selecionar imagem: ' + error.message);
     }
   };
 
@@ -118,15 +118,10 @@ export default function AnunciarPet() {
       });
       const response = await api.post('/pets', formData);
 
-      console.log('✅ Pet cadastrado com sucesso:', response.data);
-
       Alert.alert('Sucesso', 'Pet cadastrado!', [
         { text: 'OK', onPress: () => navigation.navigate('MeusPets') },
       ]);
     } catch (error) {
-      console.log('❌ Erro ao salvar:', error.message);
-      console.log('Response data:', error.response?.data);
-      console.log('Error code:', error.code);
       Alert.alert('Erro', error.response?.data?.message || error.message || 'Não foi possível salvar o pet.');
     } finally {
       setLoading(false);

@@ -6,7 +6,7 @@ export const updatePet = async (petId, data) => {
   const token = await getToken();
 
   const response = await axios.put(
-    `${API_URL}/api/pets/${petId}`,
+    `${_API_URL_PROD}/api/pets/${petId}`,
     data,
     {
       headers: {

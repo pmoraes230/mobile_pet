@@ -91,7 +91,6 @@ export default function TelaDiario() {
       const token = await AsyncStorage.getItem('@token');
 
       if (!tutorId || !token) {
-        console.log('Falta TutorId ou Token no Storage');
         return;
       }
 
@@ -100,9 +99,6 @@ export default function TelaDiario() {
           Authorization: `Bearer ${token}`
         }
       });
-
-      // O log abaixo ajudará você a ver se os dados estão vindo do banco
-      console.log('Dados da API:', response.data);
 
       const formattedPets = response.data.map((pet) => ({
         id: pet.id || pet.ID,
@@ -117,23 +113,17 @@ export default function TelaDiario() {
       }
 
     } catch (error) {
-      console.log(
-        'Erro ao buscar pets:',
-        error.response?.data || error.message
-      );
+      throw new Error('Erro ao carregar pets: ' + error.message);
     }
   }
 
   async function loadRegistros(petId) {
   try {
     const token = await AsyncStorage.getItem('@token');
-    console.log('📊 Buscando registros para pet:', petId);
     
     const response = await api.get(`/diario/pet/${petId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
-
-    console.log('📊 Resposta bruta do servidor:', response.data);
 
     if (!Array.isArray(response.data)) {
       console.error('❌ Resposta não é um array!');
@@ -151,27 +141,20 @@ export default function TelaDiario() {
         item.createdAt,
     }));
 
-    console.log('📊 Registros formatados:', formatted);
     setRegistros(formatted);
 
     } catch (error) {
-      console.log(
-        '❌ Erro ao buscar registros:',
-        error.response?.data || error.message
-      );
+      throw new Error('Erro ao carregar registros: ' + error.message);
     }
   }
 
   async function loadCompareRegistros(petId) {
     try {
       const token = await AsyncStorage.getItem('@token');
-      console.log('📊 Buscando registros de comparação para pet:', petId);
       
       const response = await api.get(`/diario/pet/${petId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      
-      console.log('📊 Resposta de comparação:', response.data);
 
       if (!Array.isArray(response.data)) {
         console.error('❌ Resposta de comparação não é um array!');
@@ -189,14 +172,10 @@ export default function TelaDiario() {
           item.createdAt,
       }));
 
-      console.log('📊 Registros de comparação formatados:', formatted);
       setCompareRegistros(formatted);
 
     } catch (error) {
-      console.log(
-        '❌ Erro ao buscar comparação:',
-        error.response?.data || error.message
-      );
+      throw new Error('Erro ao carregar registros de comparação: ' + error.message);
     }
   }
 
@@ -221,7 +200,6 @@ export default function TelaDiario() {
         relato: relato,
         idPet: selectedPet.id,
       };
-      console.log('📤 Payload sendo enviado:', payload);
 
       // 2. Envia o POST com o cabeçalho de autorização
       await api.post('/diario', payload, {
@@ -238,11 +216,6 @@ export default function TelaDiario() {
       Alert.alert('Sucesso', 'Registro salvo!');
 
     } catch (error) {
-      console.log(
-        'Erro ao salvar:', 
-        error.response?.data || error.message
-      );
-
       Alert.alert(
         'Erro',
         error.response?.data?.error || 'Erro ao salvar registro'
@@ -251,14 +224,10 @@ export default function TelaDiario() {
   }
 
   const chartData = useMemo(() => {
-    console.log('📈 Gerando dados do gráfico. Registros:', registros);
     
     const base = registros
       .slice(0, 7)
       .reverse();
-
-    console.log('📈 Base para gráfico (últimos 7, invertidos):', base);
-    console.log('📈 Tamanho da base:', base.length);
 
     // Se não há dados, mostra gráfico vazio com placeholders
     const labels = base.length > 0
@@ -269,7 +238,6 @@ export default function TelaDiario() {
             const month = date.getUTCMonth() + 1;
             // Apenas data, sem quebra de linha
             const formatted = `${day}/${month}`;
-            console.log('📈 Data formatada:', item.data, '→', formatted);
             return formatted;
           } catch (err) {
             console.error('❌ Erro ao formatar data:', item.data, err);
@@ -297,10 +265,6 @@ export default function TelaDiario() {
     const compareDataWithMinimum = compareData.length === 1
       ? [...compareData, compareData[0]]
       : compareData;
-
-    console.log('📈 Labels:', labels);
-    console.log('📈 Primary Data:', primaryDataWithMinimum);
-    console.log('📈 Compare Mode:', compareMode, 'Compare Pet:', comparePet?.name);
 
     return {
       labels,

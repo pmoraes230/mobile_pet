@@ -12,14 +12,11 @@ export const getPetsByTutor = async () => {
 
         const userInfo = await getUserInfo();
 
-        console.log("USER INFO:", userInfo);
-
         if (!userInfo?.id) {
             throw new Error("Informações do usuário inválidas. Faça login novamente.");
         }
 
-        const url = `${API_URL}/api/pets/tutor/${userInfo.id}`;
-        console.log("URL CHAMADA:", url);
+        const url = `${_API_URL_PROD}/api/pets/tutor/${userInfo.id}`;
 
         const response = await axios.get(
             url,
@@ -29,8 +26,6 @@ export const getPetsByTutor = async () => {
                 }
             }
         );
-
-        console.log("PETS RETORNADOS:", response.data);
 
         return response.data;
 

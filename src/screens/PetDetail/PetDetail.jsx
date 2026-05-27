@@ -32,8 +32,6 @@ export default function PetDetail() {
   const normalizePetData = (rawData) => {
     if (!rawData) return null;
 
-    console.log('🐕 RAW DATA RECEBIDO:', JSON.stringify(rawData, null, 2));
-
     const getImageUri = (img) => {
       if (!img) return 'https://via.placeholder.com/300';
       return img.startsWith('http') ? img : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${img}`;
@@ -79,8 +77,6 @@ export default function PetDetail() {
       genero: genero
     };
 
-    console.log('✅ DADOS NORMALIZADOS:', JSON.stringify(normalized, null, 2));
-
     return normalized;
   };
 
@@ -92,7 +88,6 @@ export default function PetDetail() {
         const incomingPet = params.petData || params.pet;
 
         if (!incomingPet) {
-          console.log('Nenhum pet recebido nos params');
           return;
         }
 
@@ -113,9 +108,7 @@ export default function PetDetail() {
               }
             });
 
-            if (response.data) {
-              console.log('🧑 DADOS DO TUTOR RECEBIDOS:', JSON.stringify(response.data, null, 2));
-              
+            if (response.data) {       
               // Atualiza os dados do tutor
               normalized.tutor = response.data.nome || response.data.NOME || 'Tutor';
               normalized.tutorImage = response.data.imagem || response.data.IMAGEM 
@@ -126,10 +119,9 @@ export default function PetDetail() {
                 : TUTOR_DEFAULT;
               
               setPetData(normalized);
-              console.log('✅ DADOS DO TUTOR ATUALIZADOS:', normalized.tutor, normalized.tutorImage);
             }
           } catch (error) {
-            console.log('Erro ao carregar tutor:', error.message);
+            throw new Error("Erro ao carregar dados do tutor: " + (error.response?.data?.error || error.message));
             // Continua com os dados que já temos
           } finally {
             setLoading(false);
@@ -138,7 +130,7 @@ export default function PetDetail() {
           setLoading(false);
         }
       } catch (error) {
-        console.log('Erro em loadPetDetails:', error);
+        throw new Error("Erro ao carregar detalhes do pet: " + error.message);
         setLoading(false);
       }
     };
