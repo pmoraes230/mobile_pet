@@ -91,7 +91,7 @@ export default function TinderPet() {
           setPetLogado(response.data[0]); 
         }
       } catch (error) {
-        console.log('Erro ao carregar pets do tutor:', error.message);
+        throw new Error('Erro ao carregar dados iniciais: ' + error.message)
       }
     }
     init();
@@ -110,7 +110,7 @@ export default function TinderPet() {
       const response = await api.get(`/cupido/matches/${petLogado?.id || petLogado?.ID}`);
       setAmigosRecentes(response.data || []);
     } catch (error) {
-      console.log('Erro ao buscar matches:', error.message);
+      throw new Error('Erro ao carregar amigos recentes: ' + error.message);
     }
   }
 
@@ -125,7 +125,7 @@ export default function TinderPet() {
       setIndex(0);
       setPetAtual(lista[0] || null);
     } catch (error) {
-      console.log('Erro ao carregar feed:', error.message);
+      throw new Error('Erro ao carregar feed: ' + error.message);
       setPetAtual(null);
     } finally {
       setLoading(false);
@@ -144,7 +144,7 @@ export default function TinderPet() {
       const { sound: obj } = await Audio.Sound.createAsync(somParaTocar, { shouldPlay: true });
       setSound(obj);
       obj.setOnPlaybackStatusUpdate(async (s) => { if (s.didJustFinish) await obj.unloadAsync(); });
-    } catch (e) { console.log(e); }
+    } catch (e) { throw new Error('Erro ao reproduzir som de like: ' + e.message); }
   }
 
   async function playDislikeSound() {
@@ -157,7 +157,7 @@ export default function TinderPet() {
       const { sound: obj } = await Audio.Sound.createAsync(somParaTocar, { shouldPlay: true });
       setSound(obj);
       obj.setOnPlaybackStatusUpdate(async (s) => { if (s.didJustFinish) await obj.unloadAsync(); });
-    } catch (e) { console.log(e); }
+    } catch (e) { throw new Error('Erro ao reproduzir som de dislike: ' + e.message); }
   }
 
   const spawnHearts = (count = 10) => {
@@ -203,7 +203,7 @@ export default function TinderPet() {
         alvoId: petAtual?.id || petAtual?.ID, 
         acao: 'dislike' 
       });
-    } catch (e) { console.log(e.message); }
+    } catch (e) { throw new Error('Erro ao dar dislike: ' + e.message); }
   };
 
   const onPetch = async () => {
@@ -228,7 +228,7 @@ export default function TinderPet() {
       });
       if (response.data.match) carregarMatchesReais();
     } catch (e) { 
-      console.log("Erro ao dar like:", e.message); 
+      throw new Error('Erro ao dar like: ' + e.message); 
     }
   };
 

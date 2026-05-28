@@ -1,26 +1,32 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: {
     backgroundColor: '#F8F9FD',
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'ios' ? 16 : 20,
-    paddingBottom: 10,
+    paddingBottom: 14,
+    width: '100%',
   },
 
   // Alinhamento principal do topo
   greetingContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center', // ISSO centraliza tudo verticalmente
-    marginBottom: 10,
-    height: 44, // Altura fixa para garantir simetria
+    alignItems: 'center',
+    marginBottom: 12,
+    minHeight: 44,
+  },
+
+  greetingContainerNoSearch: {
+    marginBottom: 0,
   },
 
   greetingLeft: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+    minWidth: 0,
+    paddingRight: 10,
   },
 
   // BOTÃO DE VOLTAR (Quadrado Perfeito e Centralizado)
@@ -32,7 +38,6 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
-    // Sombras leves
     elevation: 3,
     shadowColor: '#000',
     shadowOpacity: 0.08,
@@ -54,6 +59,8 @@ export const styles = StyleSheet.create({
   // Texto de Saudação
   greetingInfo: {
     justifyContent: 'center',
+    flex: 1,
+    minWidth: 0,
   },
 
   greeting: {
@@ -61,18 +68,21 @@ export const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0D214F',
     lineHeight: 24,
+    flexShrink: 1,
   },
 
   subGreeting: {
     fontSize: 12,
     color: '#7E869E',
     marginTop: -2,
+    flexShrink: 1,
   },
 
   // Lado Direito (Sino + Perfil)
   rightContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
   },
 
   // BOTÃO DE NOTIFICAÇÃO (Com Badge corrigido)
@@ -86,7 +96,7 @@ export const styles = StyleSheet.create({
     marginRight: 10,
     borderWidth: 1,
     borderColor: '#F0F0F0',
-    position: 'relative', // Importante para o Badge flutuar
+    position: 'relative',
   },
 
   badge: {
@@ -100,7 +110,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: '#F8F9FD', // Cor do fundo para dar efeito de "corte"
+    borderColor: '#F8F9FD',
     zIndex: 10,
   },
 
@@ -137,7 +147,8 @@ export const styles = StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    columnGap: 10,
+    minHeight: 48,
   },
 
   searchInput: {
@@ -159,6 +170,8 @@ export const styles = StyleSheet.create({
     backgroundColor: '#F5E6FF',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#E9D7FF',
   },
 
   // MODAL DE NOTIFICAÇÕES
@@ -181,7 +194,7 @@ export const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 25,
-    paddingVertical: 20,
+    paddingVertical: 18,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F5F9',
   },
@@ -194,8 +207,9 @@ export const styles = StyleSheet.create({
 
   notificationItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    padding: 15,
+    alignItems: 'flex-start',
+    paddingVertical: 15,
+    paddingHorizontal: 15,
     marginHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#F9FAFB',
@@ -205,12 +219,14 @@ export const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#1A1A1B',
+    lineHeight: 18,
   },
 
   notifMessage: {
     fontSize: 12,
     color: '#7E869E',
     marginTop: 4,
+    lineHeight: 17,
   },
 
   notifTime: {
@@ -234,6 +250,7 @@ export const styles = StyleSheet.create({
 
   notifContent: {
     flex: 1,
+    minWidth: 0,
   },
 
   seeAllBtn: {
@@ -248,11 +265,5 @@ export const styles = StyleSheet.create({
     color: '#9127E1',
     fontSize: 14,
     fontWeight: '600',
-  },
-
-  closeIcon: {
-    fontSize: 24,
-    color: '#7E869E',
-    fontWeight: 'bold',
   },
 });

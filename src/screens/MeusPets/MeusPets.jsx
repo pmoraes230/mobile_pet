@@ -43,7 +43,6 @@ export default function TelaMeusPets() {
 
       setPets(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.log('Erro ao buscar pets:', error.message);
       setPets([]);
     } finally {
       setLoading(false);

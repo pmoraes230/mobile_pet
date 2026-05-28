@@ -4,7 +4,14 @@ import { styles } from './styles';
 
 export default function ConversationCard({ avatar, name, subtitle, onPress }) {
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.75} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.75}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={name}
+      accessibilityHint={subtitle}
+    >
       <Image source={avatar} style={styles.avatar} />
       <View style={styles.content}>
         <Text style={styles.name}>{name}</Text>

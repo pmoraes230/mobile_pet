@@ -46,9 +46,6 @@ const Perfil = () => {
         getUserInfo()
       ]);
 
-      // DEBUG LOG: Se ainda não funcionar, olhe o terminal do seu VSCode e veja o que aparece aqui:
-      console.log("DADOS QUE CHEGARAM DO TUTOR:", JSON.stringify(tutorRes, null, 2));
-
       setUserData(handleData(tutorRes));
       setCpfData(handleData(cpfRes));
       setImageUser(handleData(infoRes));

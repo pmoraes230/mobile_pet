@@ -1,21 +1,17 @@
-import { StyleSheet, Platform } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
-  safeArea: {
-    paddingTop: 35,
+  container: {
     flex: 1,
     backgroundColor: '#F8F9FD',
   },
-  container: {
-    paddingTop: 35,
+  chatContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
   },
-  // O SEGREDO DO ESPAÇAMENTO IGUAL AO DETALHES
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 20,         
-    paddingBottom: 150, // Espaço para não cobrir o input e a TabBar
+    paddingTop: 20,
+    paddingBottom: 24,
   },
   sectionHeader: {
     marginBottom: 20,
@@ -30,12 +26,11 @@ export const styles = StyleSheet.create({
     color: '#7E869E',
     marginTop: 4,
   },
-  // CARDS DA LISTA (ESTILO PREMIUM)
   conversaCard: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#FFF',
-    borderRadius: 25,
+    borderRadius: 20,
     padding: 15,
     marginBottom: 12,
     elevation: 4,
@@ -75,31 +70,32 @@ export const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: 0.5,
   },
-  // ÁREA DE CHAT ATIVO (BALÕES)
   messageReceived: {
     alignSelf: 'flex-start',
     backgroundColor: '#FFF',
-    padding: 15,
+    paddingVertical: 14,
+    paddingHorizontal: 15,
     borderRadius: 20,
     borderBottomLeftRadius: 5,
     marginBottom: 15,
     maxWidth: '80%',
     elevation: 2,
   },
-  // BARRA DE INPUT (CHAT PILL)
-  inputWrapper: {
-    position: 'absolute',
-    bottom: 95, // Acima da TabBar
-    left: 20,
-    right: 20,
+  chatFooter: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 16,
+    backgroundColor: '#F8F9FD',
+    borderTopWidth: 1,
+    borderTopColor: '#EDF0F5',
   },
   inputBar: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     backgroundColor: '#FFF',
-    borderRadius: 30,
+    borderRadius: 28,
     paddingHorizontal: 15,
-    height: 60,
+    minHeight: 60,
     elevation: 10,
     shadowColor: '#000',
     shadowOpacity: 0.1,
@@ -111,19 +107,22 @@ export const styles = StyleSheet.create({
     flex: 1,
     color: '#4A5568',
     fontSize: 15,
+    paddingVertical: 14,
+    minHeight: 24,
   },
   botaoEnviar: {
-    width: 45,
-    height: 45,
-    borderRadius: 23,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#9127E1',
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: 10,
+    marginBottom: 6,
   },
   empty: {
     textAlign: 'center',
     color: '#A0A7BA',
     marginTop: 50,
-  }
+  },
 });

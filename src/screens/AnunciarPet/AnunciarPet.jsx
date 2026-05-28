@@ -88,7 +88,7 @@ export default function AnunciarPet() {
         setPetImage(result.assets[0]);
       }
     } catch (error) {
-      console.log('Erro imagem:', error);
+      throw new Error('Erro ao selecionar imagem: ' + error.message);
     }
   };
 
