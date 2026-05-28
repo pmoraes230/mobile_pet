@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -14,16 +14,99 @@ import { Calendar, Clipboard, BookOpen, PawPrint, Heart, Dog } from 'lucide-reac
 import HeaderHome from '../../components/HeaderHome';
 import DashboardCard from '../../components/DashboardCard';
 import TabBar from '../../components/TabBar';
+import { getAgendaTutor } from '../../services/agendamentoService';
+
+const normalizarDataHora = (item) => {
+  const data = item?.data_consulta || item?.data_aplicacao;
+  if (!data) return null;
+
+  const dataHora = new Date(data);
+  const hora = item?.horario_consulta;
+
+  if (hora && typeof hora === 'string') {
+    const [horas, minutos] = hora.split(':');
+    dataHora.setUTCHours(Number(horas) || 0, Number(minutos) || 0, 0, 0);
+  }
+
+  return Number.isNaN(dataHora.getTime()) ? null : dataHora;
+};
+
+const formatarCompromisso = (compromisso) => {
+  if (!compromisso) {
+    return {
+      titulo: 'Sem agendamentos',
+      subtitulo: 'Tudo tranquilo por enquanto.',
+    };
+  }
+
+  const dataHora = normalizarDataHora(compromisso);
+  const data = dataHora
+    ? dataHora.toLocaleDateString('pt-BR', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short',
+        timeZone: 'UTC',
+      })
+    : 'Data nao informada';
+
+  const hora = compromisso.horario_consulta?.slice(0, 5);
+  const pet = compromisso.pet?.nome || 'Pet';
+  const tipo = compromisso.tipo_de_consulta || compromisso.nome || 'Consulta';
+
+  return {
+    titulo: `${tipo} - ${pet}`,
+    subtitulo: hora ? `${data} as ${hora}` : data,
+  };
+};
 
 export default function TelaInicial() {
   const navigation = useNavigation();
   const [activeTab, setActiveTab] = useState('home');
+  const [agenda, setAgenda] = useState({ consultas: [], vacinas: [] });
+  const [carregandoAgenda, setCarregandoAgenda] = useState(true);
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       setActiveTab('home');
+      let ativo = true;
+
+      const buscarProximoCompromisso = async () => {
+        setCarregandoAgenda(true);
+        try {
+          const dados = await getAgendaTutor();
+          if (ativo) setAgenda(dados);
+        } catch (error) {
+          console.error('Erro ao buscar proximo compromisso:', error);
+          if (ativo) setAgenda({ consultas: [], vacinas: [] });
+        } finally {
+          if (ativo) setCarregandoAgenda(false);
+        }
+      };
+
+      buscarProximoCompromisso();
+
+      return () => {
+        ativo = false;
+      };
     }, [])
   );
+
+  const proximoCompromisso = useMemo(() => {
+    const agora = new Date();
+    const compromissos = [
+      ...(agenda.consultas || []),
+      ...(agenda.vacinas || []),
+    ];
+
+    return compromissos
+      .map((item) => ({ item, dataHora: normalizarDataHora(item) }))
+      .filter(({ dataHora }) => dataHora && dataHora >= agora)
+      .sort((a, b) => a.dataHora - b.dataHora)[0]?.item || null;
+  }, [agenda]);
+
+  const cardCompromisso = carregandoAgenda
+    ? { titulo: 'Carregando agenda...', subtitulo: 'Buscando seus proximos compromissos.' }
+    : formatarCompromisso(proximoCompromisso);
 
   const handleLogout = () => {
     navigation.reset({
@@ -72,14 +155,14 @@ export default function TelaInicial() {
         {/* SCROLL CARDS */}
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ ...styles.screenContainer, paddingBottom: 100 }}
+          contentContainerStyle={styles.screenContainer}
           keyboardShouldPersistTaps="handled"
         >
           {/* PRÓXIMO COMPROMISSO CARD */}
           <View style={styles.appointmentCard}>
             <Text style={styles.appointmentTitle}>Próximo Compromisso</Text>
-            <Text style={styles.appointmentMain}>Sem agendamentos</Text>
-            <Text style={styles.appointmentSubtitle}>Tudo tranquilo por enquanto.</Text>
+            <Text style={styles.appointmentMain}>{cardCompromisso.titulo}</Text>
+            <Text style={styles.appointmentSubtitle}>{cardCompromisso.subtitulo}</Text>
           </View>
 
           <View style={styles.gridContainer}>

@@ -4,9 +4,16 @@ import { styles } from './styles';
 
 export default function DashboardCard({ icon: Icon, title, description, badge, onPress }) {
   return (
-    <TouchableOpacity style={styles.card} activeOpacity={0.75} onPress={onPress}>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.75}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityHint={description}
+    >
       {badge && <View style={styles.badge} />}
-      <View style={styles.iconContainer}>
+      <View style={styles.iconContainer} accessible={false}>
         <Icon size={32} color="#333" />
       </View>
       <Text style={styles.cardTitle}>{title}</Text>

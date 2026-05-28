@@ -2,14 +2,14 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 export const styles = StyleSheet.create({
   safeArea: {
-    paddingTop: 35,
+    paddingTop: 0,
     flex: 1,
     backgroundColor: '#F8F9FD',
   },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 100,
+    paddingBottom: 24,
   },
   // HEADER DA PÁGINA
   headerPage: {

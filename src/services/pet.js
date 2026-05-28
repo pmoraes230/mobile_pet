@@ -16,7 +16,7 @@ export const getPetsByTutor = async () => {
             throw new Error("Informações do usuário inválidas. Faça login novamente.");
         }
 
-        const url = `${_API_URL_PROD}/api/pets/tutor/${userInfo.id}`;
+        const url = `${API_URL || _API_URL_PROD}/api/pets/tutor/${userInfo.id}`;
 
         const response = await axios.get(
             url,
