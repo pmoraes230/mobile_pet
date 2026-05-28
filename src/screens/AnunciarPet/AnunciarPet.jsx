@@ -101,9 +101,9 @@ export default function AnunciarPet() {
       
       setLoading(true);
 
-      const filename = `pet_${Date.now()}.jpg`;
-
       const formData = new FormData();
+
+      // 1. Campos de texto
       formData.append('nome', petName);
       formData.append('especie', selectedEspecie.name);
       formData.append('raca', petRaca || 'Não informada');
@@ -111,27 +111,53 @@ export default function AnunciarPet() {
       formData.append('descricao', petDescricao || "");
       formData.append('dataNascimento', petData);
       formData.append('peso', petPeso ? petPeso.replace(',', '.') : "0");
+      
+      // 2. CAMPOS OBRIGATÓRIOS (Vimos no seu schema.prisma que são necessários)
+      formData.append('pelagem', 'Curta'); 
+      formData.append('castrado', 'Não');
+
+      // 3. TRATAMENTO DA IMAGEM (Melhorado para evitar Network Error no Android)
+      const uri = petImage.uri;
+      const filename = uri.split('/').pop(); 
+      const match = /\.(\w+)$/.exec(filename);
+      const type = match ? `image/${match[1]}` : `image/jpeg`;
+
       formData.append('imagem', {
-        uri: petImage.uri,
-        type: 'image/jpeg', 
+        uri: uri,
         name: filename,
+        type: type,
       });
 
-      console.log('📤 Enviando pet via axios:', { nome: petName, especie: selectedEspecie.name });
-      console.log('🖼️ URI:', petImage.uri);
-      console.log('🖼️ IMAGE:', petImage);
-      const response = await api.post('/pets', formData);
+      console.log('📤 Enviando para API...');
 
-      console.log('✅ Pet cadastrado com sucesso:', response.data);
+      // 4. Chamada API (Removido headers manuais para o Axios decidir o boundary)
+      const response = await api.post('/pets', formData, {
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      console.log('✅ Pet cadastrado:', response.data);
 
       Alert.alert('Sucesso', 'Pet cadastrado!', [
         { text: 'OK', onPress: () => navigation.navigate('MeusPets') },
       ]);
+
     } catch (error) {
-      console.log('❌ Erro ao salvar:', error.message);
-      console.log('Response data:', error.response?.data);
-      console.log('Error code:', error.code);
-      Alert.alert('Erro', error.response?.data?.message || error.message || 'Não foi possível salvar o pet.');
+      console.log('--- ERRO NO SALVAMENTO ---');
+      if (error.response) {
+        // O servidor respondeu com erro (ex: 400, 500)
+        console.log('Dados do erro:', error.response.data);
+        Alert.alert('Erro no Servidor', error.response.data.error || 'Erro interno');
+      } else if (error.request) {
+        // A requisição nem chegou no servidor (Network Error)
+        console.log('Erro de requisição:', error.request);
+        Alert.alert('Erro de Rede', 'Não foi possível conectar ao servidor. Verifique o IP no arquivo api.js');
+      } else {
+        console.log('Mensagem de erro:', error.message);
+        Alert.alert('Erro', error.message);
+      }
     } finally {
       setLoading(false);
     }
