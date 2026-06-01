@@ -55,9 +55,7 @@ export default function TelaDiario() {
 
   const [compareMode, setCompareMode] = useState(false);
 
-  const [comparePet, setComparePet] = useState(null);
-
-  const [compareRegistros, setCompareRegistros] = useState([]);
+  const [comparePeriod, setComparePeriod] = useState('lastWeek');
 
   const humorMap = {
     sad: 1,
@@ -74,12 +72,6 @@ export default function TelaDiario() {
       loadRegistros(selectedPet.id);
     }
   }, [selectedPet]);
-
-  useEffect(() => {
-    if (comparePet?.id) {
-      loadCompareRegistros(comparePet.id);
-    }
-  }, [comparePet]);
 
   async function loadPets() {
     try {
@@ -148,37 +140,6 @@ export default function TelaDiario() {
     }
   }
 
-  async function loadCompareRegistros(petId) {
-    try {
-      const token = await AsyncStorage.getItem('@token');
-      
-      const response = await api.get(`/diario/pet/${petId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      if (!Array.isArray(response.data)) {
-        console.error('❌ Resposta de comparação não é um array!');
-        setCompareRegistros([]);
-        return;
-      }
-
-      const formatted = response.data.map((item) => ({
-        id: item.id || item.ID,
-        humor: Number(item.humor || item.HUMOR),
-        relato: item.relato || item.RELATO,
-        data:
-          item.dataRegistro ||
-          item.DATA_REGISTRO ||
-          item.createdAt,
-      }));
-
-      setCompareRegistros(formatted);
-
-    } catch (error) {
-      throw new Error('Erro ao carregar registros de comparação: ' + error.message);
-    }
-  }
-
   async function salvarRegistro() {
     try {
       if (!selectedPet) {
@@ -225,78 +186,90 @@ export default function TelaDiario() {
 
   const chartData = useMemo(() => {
     
-    const base = registros
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    const twentyOneDaysAgo = new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000);
+
+    // Registros dos últimos 7 dias
+    const currentWeekRegistros = registros
+      .filter(item => {
+        const itemDate = new Date(item.data);
+        return itemDate >= sevenDaysAgo;
+      })
       .slice(0, 7)
       .reverse();
 
-    // Se não há dados, mostra gráfico vazio com placeholders
-    const labels = base.length > 0
-      ? base.map((item, index) => {
+    // Registros de 14-21 dias atrás (semana anterior)
+    const previousWeekRegistros = registros
+      .filter(item => {
+        const itemDate = new Date(item.data);
+        return itemDate >= fourteenDaysAgo && itemDate < sevenDaysAgo;
+      })
+      .slice(0, 7)
+      .reverse();
+
+    // Labels para os gráficos
+    const labels = currentWeekRegistros.length > 0
+      ? currentWeekRegistros.map((item) => {
           try {
             const date = new Date(item.data);
             const day = date.getUTCDate();
             const month = date.getUTCMonth() + 1;
-            // Apenas data, sem quebra de linha
-            const formatted = `${day}/${month}`;
-            return formatted;
+            return `${day}/${month}`;
           } catch (err) {
             console.error('❌ Erro ao formatar data:', item.data, err);
             return 'N/A';
           }
         })
-      : ['S', 'T', 'Q', 'Q', 'S', 'S', 'D']; // Placeholder: Seg-Dom
+      : ['S', 'T', 'Q', 'Q', 'S', 'S', 'D'];
 
-    const primaryData = base.length > 0
-      ? base.map((item) => item.humor)
-      : [2, 2, 2, 2, 2, 2, 2]; // Dados vazios mostram linha em neutro (valor 2)
-
-    // Garante no mínimo 2 pontos para LineChart renderizar
-    const primaryDataWithMinimum = primaryData.length === 1 
-      ? [...primaryData, primaryData[0]]
-      : primaryData;
-
-    const compareData = compareRegistros.length > 0
-      ? compareRegistros
-          .slice(0, 7)
-          .reverse()
-          .map((item) => item.humor)
+    // Dados da semana atual
+    const currentWeekData = currentWeekRegistros.length > 0
+      ? currentWeekRegistros.map((item) => item.humor)
       : [2, 2, 2, 2, 2, 2, 2];
 
-    const compareDataWithMinimum = compareData.length === 1
-      ? [...compareData, compareData[0]]
-      : compareData;
+    const currentWeekDataWithMinimum = currentWeekData.length === 1 
+      ? [...currentWeekData, currentWeekData[0]]
+      : currentWeekData;
+
+    // Dados da semana anterior
+    const previousWeekData = previousWeekRegistros.length > 0
+      ? previousWeekRegistros.map((item) => item.humor)
+      : [2, 2, 2, 2, 2, 2, 2];
+
+    const previousWeekDataWithMinimum = previousWeekData.length === 1
+      ? [...previousWeekData, previousWeekData[0]]
+      : previousWeekData;
 
     return {
       labels,
       datasets: [
         {
-          data: primaryDataWithMinimum,
+          data: currentWeekDataWithMinimum,
           color: () => '#9333EA',
           strokeWidth: 4,
         },
-        ...(compareMode && comparePet
+        ...(compareMode
           ? [
               {
-                data: compareDataWithMinimum,
+                data: previousWeekDataWithMinimum,
                 color: () => '#FF7A2F',
                 strokeWidth: 3,
               },
             ]
           : []),
       ],
-      legend: compareMode && comparePet
+      legend: compareMode
         ? [
-            selectedPet?.name,
-            comparePet?.name,
+            'Esta semana',
+            'Semana passada',
           ]
         : [],
     };
   }, [
     registros,
-    compareRegistros,
     compareMode,
-    comparePet,
-    selectedPet,
   ]);
 
   function getMoodLabel(humor) {
@@ -351,12 +324,17 @@ export default function TelaDiario() {
           {/* HERO DO GRÁFICO */}
           <View
             style={{
-              backgroundColor: '#151A24',
-              borderRadius: 28,
-              padding: 20,
-              marginBottom: 22,
-              borderWidth: 1,
-              borderColor: '#242B3B',
+              backgroundColor: '#FFFFFF',
+              borderRadius: 32,
+              padding: 24,
+              marginBottom: 24,
+              borderWidth: 2,
+              borderColor: '#E8DFF5',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 8,
+              elevation: 3,
             }}
           >
             <View
@@ -364,15 +342,16 @@ export default function TelaDiario() {
                 flexDirection: 'row',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                marginBottom: 20,
+                marginBottom: 28,
               }}
             >
               <View>
                 <Text
                   style={{
-                    color: '#FFF',
-                    fontSize: 22,
-                    fontWeight: '800',
+                    color: '#1A1A2E',
+                    fontSize: 24,
+                    fontWeight: '900',
+                    letterSpacing: 0.5,
                   }}
                 >
                   Humor emocional
@@ -380,8 +359,10 @@ export default function TelaDiario() {
 
                 <Text
                   style={{
-                    color: '#8B93A7',
-                    marginTop: 4,
+                    color: '#9333EA',
+                    marginTop: 6,
+                    fontSize: 13,
+                    fontWeight: '600',
                   }}
                 >
                   Tendência dos últimos dias
@@ -391,11 +372,15 @@ export default function TelaDiario() {
               <TouchableOpacity
                 style={{
                   backgroundColor: '#9333EA',
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  borderRadius: 999,
-                  borderWidth: 2,
-                  borderColor: '#C084FC',
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: 12,
+                  borderWidth: 0,
+                  shadowColor: '#9333EA',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 8,
+                  elevation: 4,
                 }}
                 onPress={() => setModalPetOpen(true)}
                 activeOpacity={0.7}
@@ -403,8 +388,9 @@ export default function TelaDiario() {
                 <Text
                   style={{
                     color: '#FFF',
-                    fontWeight: '700',
+                    fontWeight: '800',
                     fontSize: 12,
+                    letterSpacing: 0.5,
                   }}
                 >
                   {selectedPet?.name?.toUpperCase()}
@@ -413,45 +399,82 @@ export default function TelaDiario() {
             </View>
 
             {registros.length > 0 ? (
-              <LineChart
-                data={chartData}
-                width={screenWidth - 80}
-                height={240}
-                withShadow={false}
-                withOuterLines={false}
-                withInnerLines={false}
-                withVerticalLines={false}
-                withHorizontalLines={false}
-                fromZero
-                yAxisInterval={1}
-                bezier
-                segments={3}
-                chartConfig={{
-                  backgroundGradientFrom: '#151A24',
-                  backgroundGradientTo: '#151A24',
+              <>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-around',
+                    marginVertical: 12,
+                    paddingHorizontal: 8,
+                  }}
+                >
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ color: '#FF7A2F', fontSize: 18, marginBottom: 4 }}>😢</Text>
+                    <Text style={{ color: '#8B93A7', fontSize: 10 }}>1 = Triste</Text>
+                  </View>
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ color: '#FFD166', fontSize: 18, marginBottom: 4 }}>😐</Text>
+                    <Text style={{ color: '#8B93A7', fontSize: 10 }}>2 = Neutro</Text>
+                  </View>
+                  <View style={{ alignItems: 'center', flex: 1 }}>
+                    <Text style={{ color: '#52D273', fontSize: 18, marginBottom: 4 }}>😊</Text>
+                    <Text style={{ color: '#8B93A7', fontSize: 10 }}>3 = Feliz</Text>
+                  </View>
+                </View>
 
-                  decimalPlaces: 0,
+                <View
+                  style={{
+                    marginVertical: 16,
+                    paddingVertical: 16,
+                    borderRadius: 24,
+                    backgroundColor: '#F9F6FF',
+                    borderWidth: 1,
+                    borderColor: '#E8DFF5',
+                    alignItems: 'center',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <LineChart
+                    data={chartData}
+                    width={screenWidth - 72}
+                    height={280}
+                    withShadow={false}
+                    withOuterLines={false}
+                    withInnerLines={false}
+                    withVerticalLines={false}
+                    withHorizontalLines={false}
+                    fromZero
+                    yAxisInterval={1}
+                    bezier
+                    segments={3}
+                    chartConfig={{
+                      backgroundGradientFrom: 'transparent',
+                      backgroundGradientTo: 'transparent',
 
-                  color: () => '#9333EA',
+                      decimalPlaces: 0,
 
-                  labelColor: () => '#8B93A7',
+                      color: () => '#9333EA',
 
-                  propsForDots: {
-                    r: '6',
-                    strokeWidth: '3',
-                    stroke: '#151A24',
-                    fill: '#9333EA',
-                  },
+                      labelColor: () => '#C084FC',
 
-                  propsForBackgroundLines: {
-                    stroke: 'transparent',
-                  },
-                }}
-                style={{
-                  borderRadius: 24,
-                  marginLeft: -10,
-                }}
-              />
+                      propsForDots: {
+                        r: '6',
+                        strokeWidth: '3',
+                        stroke: '#FFFFFF',
+                        fill: '#9333EA',
+                      },
+
+                      propsForBackgroundLines: {
+                        stroke: 'transparent',
+                      },
+                    }}
+                    style={{
+                      borderRadius: 24,
+                      marginLeft: 0,
+                    }}
+                  />
+                </View>
+              </>
             ) : (
               <View
                 style={{
@@ -459,13 +482,17 @@ export default function TelaDiario() {
                   justifyContent: 'center',
                   alignItems: 'center',
                   borderRadius: 24,
+                  marginVertical: 16,
+                  backgroundColor: '#F9F6FF',
+                  borderWidth: 1,
+                  borderColor: '#E8DFF5',
                 }}
               >
                 <Text
                   style={{
-                    color: '#8B93A7',
+                    color: '#9333EA',
                     fontSize: 16,
-                    fontWeight: '600',
+                    fontWeight: '700',
                     textAlign: 'center',
                   }}
                 >
@@ -473,7 +500,7 @@ export default function TelaDiario() {
                 </Text>
                 <Text
                   style={{
-                    color: '#5F6B7F',
+                    color: '#888',
                     fontSize: 12,
                     marginTop: 8,
                     textAlign: 'center',
@@ -488,20 +515,38 @@ export default function TelaDiario() {
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-around',
-                marginTop: 10,
+                marginTop: 20,
+                paddingTop: 20,
+                borderTopWidth: 1,
+                borderTopColor: '#E8DFF5',
               }}
             >
               <View
                 style={{
                   alignItems: 'center',
+                  flex: 1,
+                  paddingHorizontal: 8,
                 }}
               >
-                <Frown size={18} color="#FF7A2F" />
+                <View
+                  style={{
+                    backgroundColor: '#FFE4E8',
+                    width: 48,
+                    height: 48,
+                    borderRadius: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}
+                >
+                  <Frown size={24} color="#FF7A2F" />
+                </View>
                 <Text
                   style={{
-                    color: '#8B93A7',
-                    marginTop: 5,
+                    color: '#1A1A2E',
+                    marginTop: 4,
                     fontSize: 12,
+                    fontWeight: '700',
                   }}
                 >
                   Triste
@@ -511,14 +556,29 @@ export default function TelaDiario() {
               <View
                 style={{
                   alignItems: 'center',
+                  flex: 1,
+                  paddingHorizontal: 8,
                 }}
               >
-                <Meh size={18} color="#FFD166" />
+                <View
+                  style={{
+                    backgroundColor: '#FFF4D6',
+                    width: 48,
+                    height: 48,
+                    borderRadius: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}
+                >
+                  <Meh size={24} color="#FFD166" />
+                </View>
                 <Text
                   style={{
-                    color: '#8B93A7',
-                    marginTop: 5,
+                    color: '#1A1A2E',
+                    marginTop: 4,
                     fontSize: 12,
+                    fontWeight: '700',
                   }}
                 >
                   Neutro
@@ -528,14 +588,29 @@ export default function TelaDiario() {
               <View
                 style={{
                   alignItems: 'center',
+                  flex: 1,
+                  paddingHorizontal: 8,
                 }}
               >
-                <Smile size={18} color="#52D273" />
+                <View
+                  style={{
+                    backgroundColor: '#E3F5EA',
+                    width: 48,
+                    height: 48,
+                    borderRadius: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    marginBottom: 8,
+                  }}
+                >
+                  <Smile size={24} color="#52D273" />
+                </View>
                 <Text
                   style={{
-                    color: '#8B93A7',
-                    marginTop: 5,
+                    color: '#1A1A2E',
+                    marginTop: 4,
                     fontSize: 12,
+                    fontWeight: '700',
                   }}
                 >
                   Feliz
@@ -674,77 +749,105 @@ export default function TelaDiario() {
             >
               {compareMode
                 ? 'SAIR DA COMPARAÇÃO'
-                : 'COMPARAR HUMOR'}
+                : 'COMPARAR PERÍODOS'}
             </Text>
           </TouchableOpacity>
 
           {compareMode && (
-            <View style={styles.inputCard}>
-              <Text style={styles.labelWhite}>
-                ESCOLHA O SEGUNDO PET
+            <View
+              style={{
+                backgroundColor: '#FFFFFF',
+                padding: 16,
+                borderRadius: 18,
+                borderWidth: 1,
+                borderColor: '#E8DFF5',
+                marginBottom: 18,
+              }}
+            >
+              <Text
+                style={{
+                  color: '#9333EA',
+                  fontSize: 14,
+                  fontWeight: '700',
+                  textAlign: 'center',
+                  marginBottom: 12,
+                }}
+              >
+                📊 Comparando Períodos
               </Text>
-
-              {pets
-                .filter(
-                  (pet) =>
-                    pet.id !==
-                    selectedPet?.id
-                )
-                .map((pet) => (
-                  <TouchableOpacity
-                    key={pet.id}
-                    style={[
-                      styles.selectWhite,
-                      {
-                        marginBottom: 12,
-                        borderWidth: 1,
-                        borderColor:
-                          comparePet?.id ===
-                          pet.id
-                            ? '#FF7A2F'
-                            : 'transparent',
-                      },
-                    ]}
-                    onPress={() =>
-                      setComparePet(pet)
-                    }
-                  >
-                    <Text
-                      style={{
-                        color: '#FFF',
-                        fontWeight: '700',
-                      }}
-                    >
-                      {pet.name}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-
-              {comparePet && (
+              
+              <View style={{ flexDirection: 'row', gap: 12, justifyContent: 'center' }}>
                 <View
                   style={{
-                    marginTop: 12,
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 8,
+                    flex: 1,
+                    backgroundColor: '#F3F0FF',
+                    padding: 10,
+                    borderRadius: 12,
+                    borderLeftWidth: 3,
+                    borderLeftColor: '#9333EA',
                   }}
                 >
-                  <Sparkles
-                    size={16}
-                    color="#FF7A2F"
-                  />
-
                   <Text
                     style={{
-                      color: '#FFF',
+                      color: '#9333EA',
+                      fontSize: 12,
                       fontWeight: '700',
                     }}
                   >
-                    Comparando com{' '}
-                    {comparePet.name}
+                    ESTA SEMANA
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#B380D6',
+                      fontSize: 11,
+                      marginTop: 4,
+                    }}
+                  >
+                    Últimos 7 dias
                   </Text>
                 </View>
-              )}
+                
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: '#FFF4E6',
+                    padding: 10,
+                    borderRadius: 12,
+                    borderLeftWidth: 3,
+                    borderLeftColor: '#FF7A2F',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: '#FF7A2F',
+                      fontSize: 12,
+                      fontWeight: '700',
+                    }}
+                  >
+                    SEMANA PASSADA
+                  </Text>
+                  <Text
+                    style={{
+                      color: '#FFA366',
+                      fontSize: 11,
+                      marginTop: 4,
+                    }}
+                  >
+                    7-14 dias atrás
+                  </Text>
+                </View>
+              </View>
+              
+              <Text
+                style={{
+                  color: '#666',
+                  fontSize: 11,
+                  marginTop: 12,
+                  textAlign: 'center',
+                }}
+              >
+                😢 = Triste | 😐 = Neutro | 😊 = Feliz
+              </Text>
             </View>
           )}
 
@@ -756,7 +859,7 @@ export default function TelaDiario() {
           {registros.length === 0 && (
             <View
               style={{
-                backgroundColor: '#151A24',
+                backgroundColor: '#F5F5F5',
                 padding: 20,
                 borderRadius: 20,
                 alignItems: 'center',
@@ -764,7 +867,7 @@ export default function TelaDiario() {
             >
               <Text
                 style={{
-                  color: '#8B93A7',
+                  color: '#888',
                 }}
               >
                 Nenhum registro ainda.
@@ -777,28 +880,20 @@ export default function TelaDiario() {
               key={item.id}
               style={[
                 styles.historyCard,
-                {
-                  borderLeftWidth: 4,
-                  borderLeftColor:
-                    item.humor === 1
-                      ? '#FF7A2F'
-                      : item.humor === 2
-                      ? '#FFD166'
-                      : '#52D273',
-                },
               ]}
             >
-              {getMoodIcon(item.humor)}
-
               <View style={styles.historyInfo}>
                 <View style={styles.historyHeader}>
-                  <Text
-                    style={
-                      styles.historyName
-                    }
-                  >
-                    {selectedPet?.name}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    {getMoodIcon(item.humor)}
+                    <Text
+                      style={
+                        styles.historyName
+                      }
+                    >
+                      {selectedPet?.name}
+                    </Text>
+                  </View>
 
                   <Text
                     style={

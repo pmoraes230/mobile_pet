@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { 
   View, 
   ScrollView, 
@@ -21,12 +21,32 @@ export default function TelaMeusPets() {
   const [activeTab, setActiveTab] = useState('home');
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchText, setSearchText] = useState('');
 
   // Função para tratar imagem do S3 (Mantendo o padrão do Coração em Patas)
   const getImageUri = (img) => {
     if (!img) return 'https://via.placeholder.com/150';
     return img.startsWith('http') ? img : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${img}`;
   };
+
+  const petsFiltrados = useMemo(() => {
+    if (!searchText.trim()) {
+      return pets;
+    }
+    
+    const searchLower = searchText.toLowerCase().trim();
+    return pets.filter(pet => {
+      const nome = (pet.nome || pet.NOME || '').toLowerCase();
+      const especie = (pet.especie || pet.ESPECIE || '').toLowerCase();
+      const raca = (pet.raca || pet.RACA || '').toLowerCase();
+      
+      return (
+        nome.includes(searchLower) ||
+        especie.includes(searchLower) ||
+        raca.includes(searchLower)
+      );
+    });
+  }, [pets, searchText]);
 
   const handleLogout = () => {
     navigation.reset({
@@ -68,7 +88,9 @@ export default function TelaMeusPets() {
         
         <HeaderHome 
           userName="Rayan" 
-          showSearch={false} 
+          showSearch={true}
+          searchValue={searchText}
+          onSearch={setSearchText}
           showBackButton={true} 
           showGreeting={false} 
           onBackPress={() => navigation.goBack()} 
@@ -101,12 +123,14 @@ export default function TelaMeusPets() {
             <Text style={{ textAlign: 'center', marginTop: 20 }}>
               Carregando pets...
             </Text>
-          ) : pets.length === 0 ? (
-            <Text style={{ textAlign: 'center', marginTop: 20 }}>
-              Você ainda não cadastrou nenhum pet.
+          ) : petsFiltrados.length === 0 ? (
+            <Text style={{ textAlign: 'center', marginTop: 20, color: '#666' }}>
+              {pets.length === 0 
+                ? 'Você ainda não cadastrou nenhum pet.'
+                : 'Nenhum pet encontrado com essa busca.'}
             </Text>
           ) : (
-            pets.map((pet) => (
+            petsFiltrados.map((pet) => (
               <PetCard
                 key={pet.id || pet.ID}
                 pet={{

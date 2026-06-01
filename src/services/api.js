@@ -3,7 +3,7 @@ import { _API_URL_PROD, API_URL } from '../utils/endPoint_Url';
 import { getToken, logout, refreshAccessToken } from './auth';
 
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: `${_API_URL_PROD}/api`,
 });
 
 api.interceptors.request.use(

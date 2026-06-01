@@ -16,6 +16,8 @@ export default function HeaderHome({
   showNotifications = true,
   showGreeting = true,
   userProfileImage = null,
+  onSearch,
+  searchValue = '',
 }) {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -139,6 +141,12 @@ export default function HeaderHome({
               placeholderTextColor="#999"
               style={styles.searchInput}
               accessibilityLabel="Campo de busca"
+              value={searchValue}
+              onChangeText={(text) => {
+                if (onSearch) {
+                  onSearch(text);
+                }
+              }}
             />
             <TouchableOpacity
               style={styles.filterBtn}
