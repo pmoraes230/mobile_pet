@@ -4,7 +4,7 @@ import * as SecureStore from 'expo-secure-store';
 const TOKEN_KEY = "auth_token";
 
 const api = axios.create({
-  baseURL: 'http://api-pet-fmdo.onrender.com/api',
+  baseURL: 'http://10.0.60.229:3000/api',
 });
 
 api.interceptors.request.use(

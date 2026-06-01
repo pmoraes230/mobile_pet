@@ -42,10 +42,12 @@ export default function TelaDetalhesPet({ route }) {
 
   const [vacinas, setVacinas] = useState([]);
   const [medicamentos, setMedicamentos] = useState([]);
+  const [proximaConsulta, setProximaConsulta] = useState(null);
 
   useEffect(() => {
     carregarVacinas();
     carregarMedicamentos();
+    carregarProximaConsulta();
   }, []);
 
   const carregarVacinas = async () => {
@@ -63,6 +65,18 @@ export default function TelaDetalhesPet({ route }) {
       setMedicamentos(response.data || []);
     } catch (error) {
       throw new Error('Erro ao carregar medicamentos: ' + error.message);
+    }
+  };
+
+  const carregarProximaConsulta = async () => {
+    try {
+      const response = await api.get(`/agendamentos/proximo/${pet.id || pet.ID}`);
+      if (response.data) {
+        setProximaConsulta(response.data);
+      }
+    } catch (error) {
+      console.log('Sem consultas agendadas');
+      setProximaConsulta(null);
     }
   };
 
@@ -169,11 +183,26 @@ export default function TelaDetalhesPet({ route }) {
             </View>
           </View>
 
-          <TouchableOpacity activeOpacity={0.9} style={styles.appointmentCard}>
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            style={styles.appointmentCard}
+            onPress={() => navigation.navigate('Agendamento', { petId: pet.id || pet.ID })}
+          >
             <View>
               <Text style={styles.appointmentLabel}>Próxima consulta</Text>
-              <Text style={styles.appointmentDate}>14 - Abr</Text>
-              <Text style={styles.appointmentType}>Consulta Geral</Text>
+              {proximaConsulta ? (
+                <>
+                  <Text style={styles.appointmentDate}>
+                    {new Date(proximaConsulta.dataAgendamento || proximaConsulta.DATA_AGENDAMENTO).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}
+                  </Text>
+                  <Text style={styles.appointmentType}>{proximaConsulta.tipo || proximaConsulta.TIPO || 'Consulta'}</Text>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.appointmentDate}>--</Text>
+                  <Text style={styles.appointmentType}>Clique para agendar</Text>
+                </>
+              )}
             </View>
 
             <View
@@ -294,16 +323,62 @@ export default function TelaDetalhesPet({ route }) {
                 </View>
 
                 {vacinas.length === 0 ? (
-                  <Text style={{ color: '#A0A7BA' }}>
-                    Nenhuma vacina cadastrada.
-                  </Text>
+                  <View
+                    style={{
+                      backgroundColor: '#F5F5F5',
+                      padding: 20,
+                      borderRadius: 15,
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Text style={{ color: '#A0A7BA', fontSize: 14 }}>
+                      Nenhuma vacina cadastrada.
+                    </Text>
+                  </View>
                 ) : (
-                  vacinas.map((vacina) => (
-                    <View key={vacina.id || vacina.ID} style={styles.treatmentSection}>
-                      <Text style={styles.label}>{vacina.nome || vacina.NOME}</Text>
-                      {/* APLICADO O FORMATADOR DE DATA AQUI */}
-                      <Text>Aplicação: {formateDate(vacina.dataAplicacao || vacina.DATA_APLICACAO)}</Text>
-                      <Text>Próxima Dose: {formateDate(vacina.proximaDose || vacina.PROXIMA_DOSE)}</Text>
+                  vacinas.map((vacina, index) => (
+                    <View
+                      key={vacina.id || vacina.ID}
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: 16,
+                        padding: 16,
+                        marginBottom: index !== vacinas.length - 1 ? 12 : 0,
+                        borderLeftWidth: 4,
+                        borderLeftColor: '#9127E1',
+                        elevation: 1,
+                        shadowColor: '#000',
+                        shadowOpacity: 0.05,
+                        shadowRadius: 3,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 'bold',
+                          color: '#0D214F',
+                          marginBottom: 8,
+                        }}
+                      >
+                        {vacina.nome || vacina.NOME}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          color: '#666',
+                          marginBottom: 4,
+                        }}
+                      >
+                        📅 Aplicação: {formateDate(vacina.dataAplicacao || vacina.DATA_APLICACAO)}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          color: '#666',
+                        }}
+                      >
+                        ⏰ Próxima Dose: {formateDate(vacina.proximaDose || vacina.PROXIMA_DOSE)}
+                      </Text>
                     </View>
                   ))
                 )}
@@ -323,11 +398,18 @@ export default function TelaDetalhesPet({ route }) {
                 </View>
 
                 {medicamentos.length === 0 ? (
-                  <View style={styles.treatmentEmpty}>
+                  <View
+                    style={{
+                      backgroundColor: '#F5F5F5',
+                      padding: 20,
+                      borderRadius: 15,
+                      alignItems: 'center',
+                    }}
+                  >
                     <Text
                       style={{
                         color: '#A0A7BA',
-                        fontSize: 13,
+                        fontSize: 14,
                         textAlign: 'center',
                       }}
                     >
@@ -335,11 +417,49 @@ export default function TelaDetalhesPet({ route }) {
                     </Text>
                   </View>
                 ) : (
-                  medicamentos.map((med) => (
-                    <View key={med.id || med.ID} style={styles.treatmentSection}>
-                      <Text style={styles.label}>{med.nome || med.NOME}</Text>
-                      <Text>Dosagem: {med.dosagem || med.DOSAGEM}</Text>
-                      <Text>Frequência: {med.frequencia || med.FREQUENCIA}</Text>
+                  medicamentos.map((med, index) => (
+                    <View
+                      key={med.id || med.ID}
+                      style={{
+                        backgroundColor: '#FFFFFF',
+                        borderRadius: 16,
+                        padding: 16,
+                        marginBottom: index !== medicamentos.length - 1 ? 12 : 0,
+                        borderLeftWidth: 4,
+                        borderLeftColor: '#FF7A2F',
+                        elevation: 1,
+                        shadowColor: '#000',
+                        shadowOpacity: 0.05,
+                        shadowRadius: 3,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 'bold',
+                          color: '#0D214F',
+                          marginBottom: 8,
+                        }}
+                      >
+                        {med.nome || med.NOME}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          color: '#666',
+                          marginBottom: 4,
+                        }}
+                      >
+                        💊 Dosagem: {med.dosagem || med.DOSAGEM}
+                      </Text>
+                      <Text
+                        style={{
+                          fontSize: 13,
+                          color: '#666',
+                        }}
+                      >
+                        ⏱️ Frequência: {med.frequencia || med.FREQUENCIA}
+                      </Text>
                     </View>
                   ))
                 )}
