@@ -45,7 +45,7 @@ const saveSession = async ({ token, accessToken, refreshToken }) => {
 
 export const login = async (email, senha) => {
     try {
-        const response = await axios.post(`${API_URL}/api/tutors/login`, {
+        const response = await axios.post(`${_API_URL_PROD}/api/tutors/login`, {
             email,
             senha,
         });
