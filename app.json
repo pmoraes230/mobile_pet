@@ -4,9 +4,17 @@
     "slug": "mobile_pet",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/pet.svg",
+    "icon": "./assets/pet.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
+    "android": {
+      "package": "com.mobilepet.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/pet.png",
+        "backgroundColor": "#573F94"
+      }
+    },
     "plugins": [
       "expo-router",
       "expo-secure-store",
