@@ -1,23 +1,46 @@
 import axios from 'axios';
-import * as SecureStore from 'expo-secure-store';
-
-const TOKEN_KEY = "auth_token";
+import { _API_URL_PROD, API_URL } from '../utils/endPoint_Url';
+import { getToken, logout, refreshAccessToken } from './auth';
 
 const api = axios.create({
-  baseURL: 'http://10.0.60.229:3000/api',
+  baseURL: `${_API_URL_PROD}/api`,
 });
 
 api.interceptors.request.use(
   async (config) => {
-    const token = await SecureStore.getItemAsync(TOKEN_KEY);
+    const token = await getToken();
 
-    if (token) {
+    if (token && !config.headers?.Authorization) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    const isRefreshRequest = originalRequest?.url?.includes('/auth/refresh');
+
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !isRefreshRequest) {
+      originalRequest._retry = true;
+
+      try {
+        const token = await refreshAccessToken();
+        originalRequest.headers = originalRequest.headers || {};
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        return api(originalRequest);
+      } catch (refreshError) {
+        await logout();
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
 );
 
 export default api;

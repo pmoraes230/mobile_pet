@@ -75,6 +75,12 @@ export const styles = StyleSheet.create({
     color: '#0D214F',
     marginBottom: 20,
   },
+  statusText: {
+    fontSize: 14,
+    color: '#7E869E',
+    textAlign: 'center',
+    marginTop: 20,
+  },
   // AREA DE REGISTRO VAZIO (Tracejada)
   emptyStateContainer: {
     flex: 1,
