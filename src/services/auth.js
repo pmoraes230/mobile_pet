@@ -151,6 +151,103 @@ export const setupAxiosInterceptors = () => {
 );
 };
 
+export const register = async (nome, email, senha, cpfCnpj, dataNascimento, endereco, telefone = '') => {
+    try {
+        // Validações básicas
+        if (!nome || !email || !senha || !cpfCnpj || !dataNascimento || !endereco) {
+            throw new Error("Todos os campos são obrigatórios.");
+        }
+
+        if (senha.length < 8) {
+            throw new Error("A senha deve ter no mínimo 8 caracteres.");
+        }
+
+        if (!/[A-Z]/.test(senha)) {
+            throw new Error("A senha deve conter pelo menos uma letra maiúscula.");
+        }
+
+        if (!/[0-9]/.test(senha)) {
+            throw new Error("A senha deve conter pelo menos um número.");
+        }
+
+        if (!/[@$%]/.test(senha)) {
+            throw new Error("A senha deve conter pelo menos um símbolo (@$%).");
+        }
+
+        // Validação de email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            throw new Error("Email inválido.");
+        }
+
+        // Formatar data (dd/mm/aaaa → yyyy-mm-dd)
+        const [dia, mes, ano] = dataNascimento.split('/');
+        const dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+
+        // Remover caracteres especiais de CPF/CNPJ
+        const cpfLimpo = cpfCnpj.replace(/[^0-9]/g, '');
+
+        const response = await axios.post(`${API_URL || _API_URL_PROD}/api/auth/register`, {
+            nome_tutor: nome,
+            EMAIL: email,
+            senha_tutor: senha,
+            CPF: cpfLimpo,
+            DATA_NASCIMENTO: dataFormatada,
+            ENDERECO: endereco,
+            TELEFONE: telefone,
+        });
+
+        const token = response.data?.token || response.data?.accessToken;
+        const user = response.data?.user || response.data;
+
+        if (token) {
+            await SecureStore.setItemAsync(TOKEN_KEY, token);
+            await AsyncStorage.setItem('@token', token);
+            
+            try {
+                const decoded = jwtDecode(token);
+                if (decoded.id) {
+                    await AsyncStorage.setItem('userId', decoded.id.toString());
+                }
+            } catch (decodeErr) {
+                console.error("Erro ao decodificar token no registro:", decodeErr);
+            }
+        }
+
+        return { token, user };
+
+    } catch (error) {
+        // ==================== TRATAMENTO DE ERROS AMIGÁVEL ====================
+
+        if (error.response) {
+            const status = error.response.status;
+            const serverMessage = error.response.data?.message || 
+                                error.response.data?.error;
+
+            if (status === 400) {
+                throw new Error(serverMessage || "Dados inválidos. Verifique as informações.");
+            }
+
+            if (status === 409) {
+                throw new Error("Este email já está cadastrado. Tente fazer login.");
+            }
+
+            if (status === 500) {
+                throw new Error("Erro ao conectar com o servidor. Tente novamente mais tarde.");
+            }
+
+            throw new Error(serverMessage || `Erro ${status}: Algo deu errado ao cadastrar.`);
+        }
+
+        if (error.request) {
+            throw new Error("Sem conexão com a internet. Verifique sua rede e tente novamente.");
+        }
+
+        // Erros de validação ou outros erros
+        throw error;
+    }
+};
+
 export const logout = async () => {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
     // Limpar também do AsyncStorage

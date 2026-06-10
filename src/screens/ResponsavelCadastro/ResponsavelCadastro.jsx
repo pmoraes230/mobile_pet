@@ -7,11 +7,14 @@ import {
   Image, 
   ScrollView,
   KeyboardAvoidingView,
-  Platform 
+  Platform,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft } from 'lucide-react-native';
 import { styles } from './styles';
+import { register } from '../../services/auth';
 
 export default function ResponsavelCadastro() {
   const navigation = useNavigation();
@@ -22,12 +25,53 @@ export default function ResponsavelCadastro() {
   const [cpfCnpj, setCpfCnpj] = useState('');
   const [dataNascimento, setDataNascimento] = useState('');
   const [endereco, setEndereco] = useState('');
+  const [telefone, setTelefone] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [erro, setErro] = useState('');
 
   // Validações de senha
   const temMinimo8 = senha.length >= 8;
   const temMaiuscula = /[A-Z]/.test(senha);
   const temNumero = /[0-9]/.test(senha);
   const temSimbolo = /[@$%]/.test(senha);
+  
+  const podeRegistrar = temMinimo8 && temMaiuscula && temNumero && temSimbolo && nome && email && cpfCnpj && dataNascimento && endereco;
+
+  const handleCadastro = async () => {
+    if (!podeRegistrar) {
+      setErro('Verifique todos os campos e requisitos de senha.');
+      return;
+    }
+
+    setErro('');
+    setLoading(true);
+
+    try {
+      const resposta = await register(nome, email, senha, cpfCnpj, dataNascimento, endereco, telefone);
+      
+      Alert.alert(
+        'Sucesso!',
+        'Cadastro realizado com sucesso!',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Home' }],
+              });
+            }
+          }
+        ]
+      );
+    } catch (err) {
+      const mensagemErro = err.message || 'Erro ao cadastrar. Tente novamente.';
+      setErro(mensagemErro);
+      Alert.alert('Erro', mensagemErro);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -128,8 +172,32 @@ export default function ResponsavelCadastro() {
             onChangeText={setEndereco}
           />
 
-          <TouchableOpacity style={styles.botao} onPress={() => navigation.navigate('Home')}>
-            <Text style={styles.textoBotao}>Cadastrar</Text>
+          <Text style={styles.labelInput}>TELEFONE (OPCIONAL)</Text>
+          <TextInput
+            placeholder="(11) 99999-9999"
+            placeholderTextColor="#A0A7E6"
+            style={styles.input}
+            value={telefone}
+            onChangeText={setTelefone}
+            keyboardType="phone-pad"
+          />
+
+          {erro ? (
+            <Text style={{ color: '#FF6B6B', marginTop: 10, marginBottom: 10, textAlign: 'center', fontSize: 14 }}>
+              {erro}
+            </Text>
+          ) : null}
+
+          <TouchableOpacity 
+            style={[styles.botao, (!podeRegistrar || loading) && { opacity: 0.6 }]} 
+            onPress={handleCadastro}
+            disabled={!podeRegistrar || loading}
+          >
+            {loading ? (
+              <ActivityIndicator size="small" color="#FFF" />
+            ) : (
+              <Text style={styles.textoBotao}>Cadastrar</Text>
+            )}
           </TouchableOpacity>
 
           <Text style={styles.footerText}>
