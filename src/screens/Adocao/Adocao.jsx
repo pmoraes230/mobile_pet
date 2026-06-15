@@ -7,17 +7,19 @@ import {
   TextInput,
   Modal,
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Alert,
   ActivityIndicator
 } from 'react-native';
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { Search, Megaphone, ChevronDown } from 'lucide-react-native';
 
 import api from '../../services/api';
+import { getUserInfo } from '../../services/auth';
+import { updatePet } from '../../services/updatePet';
 
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
@@ -65,11 +67,14 @@ export default function TelaAdocao() {
 
   const [modalEstadoOpen, setModalEstadoOpen] = useState(false);
   const [modalCidadeOpen, setModalCidadeOpen] = useState(false);
+  const [modalSelecionarPetOpen, setModalSelecionarPetOpen] = useState(false);
 
   const [petsFeed, setPetsFeed] = useState([]);
   const [meusPets, setMeusPets] = useState([]);
 
   const [loading, setLoading] = useState(true);
+  const [announcingPetId, setAnnouncingPetId] = useState(null);
+  const [removingPetId, setRemovingPetId] = useState(null);
 
   // Função para tratar imagem do S3 (Mantendo o padrão do seu projeto)
   const getImageUri = (img) => {
@@ -99,33 +104,26 @@ export default function TelaAdocao() {
 
       setLoading(true);
 
-      const token =
-        await AsyncStorage.getItem('@token');
+      const userInfo = await getUserInfo();
+
+      if (!userInfo?.id) {
+        throw new Error('Usuario nao autenticado.');
+      }
 
       const [
         adoptionResponse,
         petsResponse
       ] = await Promise.all([
-        api.get('/pets/adocao', { // Removido o /api duplicado
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }),
+        api.get('/pets/adocao'),
 
-        api.get('/pets', { // Removido o /api duplicado
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        })
+        api.get(`/pets/tutor/${userInfo.id}`)
       ]);
 
       const adoptionPets =
         adoptionResponse.data || [];
 
       const myPets =
-        (petsResponse.data || []).filter(
-          pet => pet.emAdocao === true || pet.EM_ADOCAO === true
-        );
+        petsResponse.data || [];
 
       setPetsFeed(adoptionPets);
       setMeusPets(myPets);
@@ -144,12 +142,133 @@ export default function TelaAdocao() {
     }
   }
 
+  const getPetId = (pet) =>
+    pet?.id || pet?.ID || pet?.ID_PET || pet?.petId || pet?.id_pet;
+
+  const isPetInAdoption = (pet) =>
+    pet?.emAdocao === true ||
+    pet?.EM_ADOCAO === true ||
+    pet?.em_adocao === true;
+
+  const petsAnunciados = meusPets.filter(isPetInAdoption);
+  const petsDisponiveisParaAnuncio = meusPets.filter((pet) => !isPetInAdoption(pet));
+
+  const getPetUpdatePayload = (pet) => ({
+    DESCRICAO: pet.descricao || pet.DESCRICAO || '',
+    PERSONALIDADE: pet.personalidade || pet.PERSONALIDADE || '',
+    ESPECIE: pet.especie || pet.ESPECIE || '',
+    RACA: pet.raca || pet.RACA || '',
+    PESO: pet.peso || pet.PESO || '0',
+    SEXO: pet.sexo || pet.SEXO || '',
+  });
+
+  const updatePetAdoptionStatus = async (pet, value) => {
+    const petId = getPetId(pet);
+
+    try {
+      await updatePet(petId, {
+        ...getPetUpdatePayload(pet),
+        emAdocao: value,
+      });
+    } catch (firstError) {
+      await updatePet(petId, {
+        ...getPetUpdatePayload(pet),
+        EM_ADOCAO: value,
+      });
+    }
+  };
+
+  const handleOpenPetSelection = () => {
+    if (meusPets.length === 0) {
+      Alert.alert(
+        'Nenhum pet cadastrado',
+        'Cadastre um pet antes de anuncia-lo para adocao.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Cadastrar pet', onPress: () => navigation.navigate('anunciarpet') }
+        ]
+      );
+      return;
+    }
+
+    setModalSelecionarPetOpen(true);
+  };
+
+  const handleAnnouncePet = (pet) => {
+    const petId = getPetId(pet);
+
+    if (!petId) {
+      Alert.alert('Erro', 'Nao foi possivel identificar este pet.');
+      return;
+    }
+
+    Alert.alert(
+      'Adicionar para adocao',
+      `Deseja anunciar ${pet.nome || pet.NOME || 'este pet'} para adocao?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Anunciar',
+          onPress: async () => {
+            try {
+              setAnnouncingPetId(petId);
+              await updatePetAdoptionStatus(pet, true);
+              setModalSelecionarPetOpen(false);
+              await loadData();
+              Alert.alert('Sucesso', 'Pet adicionado para adocao.');
+            } catch (error) {
+              Alert.alert(
+                'Erro',
+                error.message || 'Nao foi possivel adicionar o pet para adocao.'
+              );
+            } finally {
+              setAnnouncingPetId(null);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleRemovePetFromAdoption = (pet) => {
+    const petId = getPetId(pet);
+
+    if (!petId) {
+      Alert.alert('Erro', 'Nao foi possivel identificar este pet.');
+      return;
+    }
+
+    Alert.alert(
+      'Tirar da adocao',
+      `Deseja remover ${pet.nome || pet.NOME || 'este pet'} dos anuncios de adocao?`,
+      [
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Remover',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              setRemovingPetId(petId);
+              await updatePetAdoptionStatus(pet, false);
+              await loadData();
+              Alert.alert('Sucesso', 'Pet removido dos anuncios de adocao.');
+            } catch (error) {
+              Alert.alert(
+                'Erro',
+                error.message || 'Nao foi possivel remover o pet da adocao.'
+              );
+            } finally {
+              setRemovingPetId(null);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleInterest = async (petId) => {
 
     try {
-
-      const token =
-        await AsyncStorage.getItem('@token');
 
       await api.post(
         '/pets/adocao/interesse', // Removido o /api duplicado
@@ -157,11 +276,6 @@ export default function TelaAdocao() {
           ID_PET: petId,
           MENSAGEM_CONTATO:
             'Tenho interesse em adotar este pet.'
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
         }
       );
 
@@ -249,7 +363,7 @@ export default function TelaAdocao() {
 
           <TouchableOpacity
             style={styles.btnAnnounce}
-            onPress={() => navigation.navigate('anunciarpet')}
+            onPress={handleOpenPetSelection}
           >
             <Text style={{
               color: '#9127E1',
@@ -276,7 +390,7 @@ export default function TelaAdocao() {
           </View>
 
           {
-            meusPets.length === 0 ? (
+            petsAnunciados.length === 0 ? (
 
               <View style={styles.emptyBox}>
                 <Text style={styles.emptyText}>
@@ -287,20 +401,20 @@ export default function TelaAdocao() {
             ) : (
 
               <View style={styles.grid}>
-                {meusPets.map((pet) => (
+                {petsAnunciados.map((pet) => (
 
                   <PetCard
-                    key={pet.id || pet.ID_PET}
+                    key={getPetId(pet)}
                     pet={{
-                      id: pet.id || pet.ID_PET,
+                      id: getPetId(pet),
                       nome: pet.nome || pet.NOME,
                       info: `${pet.especie || pet.ESPECIE} • ${pet.raca || pet.RACA}`,
                       tutor: 'Tutor',
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
                     onPress={() => {}}
-                    actionLabel="Em anúncio"
-                    onActionPress={() => {}}
+                    actionLabel={removingPetId === getPetId(pet) ? 'Removendo...' : 'Tirar da adocao'}
+                    onActionPress={() => handleRemovePetFromAdoption(pet)}
                     cardStyle={styles.smallCard}
                   />
                 ))}
@@ -504,6 +618,86 @@ export default function TelaAdocao() {
               >
                 <Text style={styles.modalCloseBtnText}>
                   Fechar
+                </Text>
+              </TouchableOpacity>
+
+            </View>
+          </View>
+        </Modal>
+
+        <Modal
+          visible={modalSelecionarPetOpen}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setModalSelecionarPetOpen(false)}
+        >
+
+          <View style={styles.modalOverlay}>
+
+            <View style={styles.modalContent}>
+
+              <Text style={styles.modalTitle}>
+                Selecione um pet
+              </Text>
+
+              {petsDisponiveisParaAnuncio.length === 0 ? (
+
+                <View style={styles.emptyBox}>
+                  <Text style={styles.emptyText}>
+                    Todos os seus pets ja estao anunciados para adocao.
+                  </Text>
+                </View>
+
+              ) : (
+
+                <FlatList
+                  data={petsDisponiveisParaAnuncio}
+                  keyExtractor={(item, index) => String(getPetId(item) || index)}
+                  renderItem={({ item }) => {
+                    const petId = getPetId(item);
+                    const isAnnouncing = announcingPetId === petId;
+
+                    return (
+                      <TouchableOpacity
+                        style={styles.petModalItem}
+                        onPress={() => handleAnnouncePet(item)}
+                        disabled={isAnnouncing}
+                      >
+                        <Image
+                          source={{ uri: getImageUri(item.imagem || item.IMAGEM) }}
+                          style={styles.petModalImage}
+                        />
+
+                        <View style={styles.petModalInfo}>
+                          <Text style={styles.petModalName}>
+                            {item.nome || item.NOME}
+                          </Text>
+
+                          <Text style={styles.petModalDetails}>
+                            {item.especie || item.ESPECIE || 'Pet'} - {item.raca || item.RACA || 'Sem raca'}
+                          </Text>
+                        </View>
+
+                        {isAnnouncing ? (
+                          <ActivityIndicator size="small" color="#9127E1" />
+                        ) : (
+                          <Text style={styles.petModalAction}>
+                            Adicionar
+                          </Text>
+                        )}
+                      </TouchableOpacity>
+                    );
+                  }}
+                  scrollEnabled={true}
+                />
+              )}
+
+              <TouchableOpacity
+                style={styles.modalCloseBtn}
+                onPress={() => setModalSelecionarPetOpen(false)}
+              >
+                <Text style={styles.modalCloseBtnText}>
+                  Cancelar
                 </Text>
               </TouchableOpacity>
 

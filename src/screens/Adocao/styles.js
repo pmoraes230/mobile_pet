@@ -227,6 +227,40 @@ export const styles = StyleSheet.create({
     color: '#4A5568',
     fontWeight: '500',
   },
+  petModalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E2E8F0',
+  },
+  petModalImage: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    marginRight: 12,
+    backgroundColor: '#F3F5F9',
+  },
+  petModalInfo: {
+    flex: 1,
+  },
+  petModalName: {
+    fontSize: 16,
+    color: '#0D214F',
+    fontWeight: '700',
+  },
+  petModalDetails: {
+    marginTop: 3,
+    fontSize: 12,
+    color: '#7E869E',
+    fontWeight: '600',
+  },
+  petModalAction: {
+    color: '#9127E1',
+    fontSize: 12,
+    fontWeight: '800',
+  },
   modalCloseBtn: {
     marginTop: 15,
     paddingVertical: 12,
