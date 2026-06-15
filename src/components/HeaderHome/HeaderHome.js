@@ -139,7 +139,7 @@ export default function HeaderHome({
             <TextInput
               placeholder="O que deseja procurar"
               placeholderTextColor="#999"
-              style={styles.searchInput}
+lt              style={styles.searchInput}
               accessibilityLabel="Campo de busca"
               value={searchValue}
               onChangeText={(text) => {

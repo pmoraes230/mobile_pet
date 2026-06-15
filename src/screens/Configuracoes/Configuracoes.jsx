@@ -12,6 +12,7 @@ import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 export default function Configuracoes() {
   const navigation = useNavigation();
@@ -19,6 +20,7 @@ export default function Configuracoes() {
   const [notificacoesEmail, setNotificacoesEmail] = useState(true);
   const [lembretesVacinas, setLembretesVacinas] = useState(true);
   const [dicasSemanais, setDicasSemanais] = useState(false);
+  const { isDarkMode, setThemeMode } = useAppTheme();
 
   const handleTabPress = (tabId) => {
     setActiveTab(tabId);
@@ -55,6 +57,30 @@ export default function Configuracoes() {
           <Text style={styles.pageSubtitle}>
             Ajuste seu app do jeito que você prefere.
           </Text>
+
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Aparencia</Text>
+            <Text style={styles.cardDescription}>
+              Ative o modo escuro quando quiser. O app continua claro por padrao.
+            </Text>
+
+            <View style={styles.optionRow}>
+              <View style={styles.optionContent}>
+                <View style={styles.optionHeader}>
+                  <Text style={styles.optionText}>Modo escuro</Text>
+                  <Switch
+                    value={isDarkMode}
+                    onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}
+                    thumbColor={isDarkMode ? '#7C3AED' : '#f4f3f4'}
+                    trackColor={{ false: '#d1d5db', true: '#c4b5fd' }}
+                  />
+                </View>
+                <Text style={styles.optionHint}>
+                  Essa escolha fica salva para as proximas vezes.
+                </Text>
+              </View>
+            </View>
+          </View>
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Idioma</Text>

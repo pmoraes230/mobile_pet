@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
-import { NavigationContainer } from "@react-navigation/native";
+import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { StatusBar } from 'expo-status-bar';
 
 import { setupAxiosInterceptors } from './src/services/auth';
 
@@ -27,8 +28,107 @@ import EsqueciSenha from './src/screens/EsqueciSenha/EsqueciSenha';
 import CodigoSenha from './src/screens/CodigoSenha/CodigoSenha';
 import RedefinirSenha from './src/screens/RedefinirSenha/RedefinirSenha';
 import NotificacoesGerais from './src/screens/NotificacoesGerais/notificacoesgerais';
+import { ThemeProvider, useAppTheme } from './src/theme/ThemeContext';
 
 const Stack = createNativeStackNavigator();
+
+function withThemeRefresh(ScreenComponent) {
+  return function ThemeAwareScreen(props) {
+    const { themeVersion } = useAppTheme();
+    return <ScreenComponent {...props} themeVersion={themeVersion} />;
+  };
+}
+
+const ScreenSplashApp = withThemeRefresh(SplashApp);
+const ScreenResponsavelLogin = withThemeRefresh(ResponsavelLogin);
+const ScreenResponsavelCadastro = withThemeRefresh(ResponsavelCadastro);
+const ScreenEsqueciSenha = withThemeRefresh(EsqueciSenha);
+const ScreenCodigoSenha = withThemeRefresh(CodigoSenha);
+const ScreenRedefinirSenha = withThemeRefresh(RedefinirSenha);
+const ScreenAgendamento = withThemeRefresh(TelaAgendamento);
+const ScreenDiario = withThemeRefresh(TelaDiario);
+const ScreenMeusPets = withThemeRefresh(TelaMeusPets);
+const ScreenDetalhesPet = withThemeRefresh(detalhespet);
+const ScreenProntuario = withThemeRefresh(TelaProntuario);
+const ScreenCupidoPet = withThemeRefresh(TinderPet);
+const ScreenPetDetail = withThemeRefresh(PetDetail);
+const ScreenAdocao = withThemeRefresh(TelaAdocao);
+const ScreenPerfil = withThemeRefresh(Perfil);
+const ScreenEditarPerfil = withThemeRefresh(EditarPerfil);
+const ScreenHome = withThemeRefresh(TelaInicial);
+const ScreenMensagens = withThemeRefresh(Mensagens);
+const ScreenConfiguracoes = withThemeRefresh(Configuracoes);
+const ScreenChatPrivado = withThemeRefresh(ChatPrivado);
+const ScreenNovoAgendamento = withThemeRefresh(novoagendamento);
+const ScreenAnunciarPet = withThemeRefresh(anunciarpet);
+const ScreenNotificacoesGerais = withThemeRefresh(NotificacoesGerais);
+
+const lightNavigationTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: '#9127E1',
+    background: '#F8F9FD',
+    card: '#FFFFFF',
+    text: '#0D214F',
+    border: '#E2E8F0',
+  },
+};
+
+const darkNavigationTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: '#B77CFF',
+    background: '#0F1020',
+    card: '#17182B',
+    text: '#F5F7FF',
+    border: '#2A2D45',
+  },
+};
+
+function AppRoutes() {
+  const { isDarkMode } = useAppTheme();
+  const backgroundColor = isDarkMode ? '#0F1020' : '#F8F9FD';
+
+  return (
+    <>
+      <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor={backgroundColor} />
+      <NavigationContainer theme={isDarkMode ? darkNavigationTheme : lightNavigationTheme}>
+        <Stack.Navigator
+          screenOptions={{ headerShown: false, contentStyle: { backgroundColor } }}
+        >
+          <Stack.Screen name="Splash" component={ScreenSplashApp} />
+          <Stack.Screen name="Login" component={ScreenResponsavelLogin} />
+          <Stack.Screen name="Cadastro" component={ScreenResponsavelCadastro} />
+          <Stack.Screen name="EsqueciSenha" component={ScreenEsqueciSenha} />
+          <Stack.Screen name="CodigoSenha" component={ScreenCodigoSenha} />
+          <Stack.Screen name="RedefinirSenha" component={ScreenRedefinirSenha} />
+          <Stack.Screen name="Agendamento" component={ScreenAgendamento} />
+          <Stack.Screen name="Diario" component={ScreenDiario} />
+          <Stack.Screen name="MeusPets" component={ScreenMeusPets} />
+          <Stack.Screen name="detalhespet" component={ScreenDetalhesPet} />
+          <Stack.Screen name="Prontuario" component={ScreenProntuario} />
+          <Stack.Screen name="Cupidopet" component={ScreenCupidoPet} />
+          <Stack.Screen name="PetDetail" component={ScreenPetDetail} />
+          <Stack.Screen name="Adocao" component={ScreenAdocao} />
+          <Stack.Screen name="Perfil" component={ScreenPerfil} />
+          <Stack.Screen name="EditarPerfil" component={ScreenEditarPerfil} />
+          <Stack.Screen name="Home" component={ScreenHome} />
+          <Stack.Screen name="Mensagens" component={ScreenMensagens} />
+          <Stack.Screen name="Configuracoes" component={ScreenConfiguracoes} />
+          <Stack.Screen name="ChatPrivado" component={ScreenChatPrivado} />
+          <Stack.Screen name="novoagendamento" component={ScreenNovoAgendamento} />
+          <Stack.Screen name="anunciarpet" component={ScreenAnunciarPet} />
+          <Stack.Screen
+            name="NotificacoesGerais"
+            component={ScreenNotificacoesGerais}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </>
+  );
+}
 
 export default function App() {
 
@@ -37,35 +137,8 @@ export default function App() {
   }, []);
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="Splash" component={SplashApp} />
-        <Stack.Screen name="Login" component={ResponsavelLogin} />
-        <Stack.Screen name="Cadastro" component={ResponsavelCadastro} />
-        <Stack.Screen name="EsqueciSenha" component={EsqueciSenha} />
-        <Stack.Screen name="CodigoSenha" component={CodigoSenha} />
-        <Stack.Screen name="RedefinirSenha" component={RedefinirSenha} />
-        <Stack.Screen name="Agendamento" component={TelaAgendamento} />
-        <Stack.Screen name="Diario" component={TelaDiario} />
-        <Stack.Screen name="MeusPets" component={TelaMeusPets} />
-        <Stack.Screen name="detalhespet" component={detalhespet} />
-        <Stack.Screen name="Prontuario" component={TelaProntuario} />
-        <Stack.Screen name="Cupidopet" component={TinderPet} />
-        <Stack.Screen name="PetDetail" component={PetDetail} />
-        <Stack.Screen name="Adocao" component={TelaAdocao} />
-        <Stack.Screen name="Perfil" component={Perfil} />
-        <Stack.Screen name="EditarPerfil" component={EditarPerfil} />
-        <Stack.Screen name="Home" component={TelaInicial} />
-        <Stack.Screen name="Mensagens" component={Mensagens} />
-        <Stack.Screen name="Configuracoes" component={Configuracoes} />
-        <Stack.Screen name="ChatPrivado" component={ChatPrivado} />
-        <Stack.Screen name="novoagendamento" component={novoagendamento} />
-        <Stack.Screen name="anunciarpet" component={anunciarpet} />
-        <Stack.Screen
-          name="NotificacoesGerais"
-          component={NotificacoesGerais}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <ThemeProvider>
+      <AppRoutes />
+    </ThemeProvider>
   );
 }

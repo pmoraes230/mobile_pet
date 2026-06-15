@@ -1,6 +1,5 @@
 import { View, TextInput, Text } from "react-native";
 import { styles } from "./styles";
-import { styles } from "./styles";
 import { useState } from "react";
 
 export function InputEmail({ value, onChangeText, error }) {
