@@ -1,6 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, View, Text, Image } from 'react-native';
 import { styles } from './styles';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 export default function PetCard({
   pet,
@@ -10,7 +11,9 @@ export default function PetCard({
   onActionPress,
   cardStyle,
 }) {
+  const { isDarkMode } = useAppTheme();
   const rawImage = pet?.foto || pet?.imagem;
+  const menuIconColor = isDarkMode ? '#F5F7FF' : '#323232';
 
   const imageUri = rawImage
     ? rawImage.startsWith('http')
@@ -35,8 +38,14 @@ export default function PetCard({
         />
 
         {onMenuPress ? (
-          <TouchableOpacity style={styles.menuBtn} onPress={onMenuPress}>
-            <Text style={styles.menuIcon}>⋮</Text>
+          <TouchableOpacity
+            style={styles.menuBtn}
+            onPress={(event) => {
+              event?.stopPropagation?.();
+              onMenuPress(event);
+            }}
+          >
+            <Text style={[styles.menuIcon, { color: menuIconColor }]}>⋮</Text>
           </TouchableOpacity>
         ) : null}
       </View>

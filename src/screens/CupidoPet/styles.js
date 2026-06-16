@@ -118,11 +118,11 @@ export const styles = StyleSheet.create({
     width: 85,
     height: 85,
     borderRadius: 45,
-    backgroundColor: '#9127E1',
+    backgroundColor: '#8E5CF4',
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 8,
-    shadowColor: '#9127E1',
+    shadowColor: '#8E5CF4',
     shadowOpacity: 0.3,
   },
 
@@ -162,7 +162,7 @@ export const styles = StyleSheet.create({
     gap: 8,
   },
   miniBadge: {
-    backgroundColor: '#F5E6FF',
+    backgroundColor: '#F1EDFF',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
@@ -170,7 +170,7 @@ export const styles = StyleSheet.create({
   miniBadgeText: {
     fontSize: 10,
     fontWeight: '800',
-    color: '#9127E1',
+    color: '#7055C8',
   },
 
   // STORIES AMIGOS
@@ -251,8 +251,8 @@ export const styles = StyleSheet.create({
   },
   // Classe que você vai usar no JS: styles.modalItemSelected
   modalItemSelected: {
-    borderColor: '#9127E1',
-    backgroundColor: '#F9F5FF',
+    borderColor: '#9B7AF5',
+    backgroundColor: '#F4F1FF',
   },
   modalPetImg: {
     width: 50,

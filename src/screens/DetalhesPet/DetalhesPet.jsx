@@ -26,13 +26,48 @@ import { updatePet } from '../../services/updatePet';
 import api from '../../services/api';
 // IMPORTADO O FORMATADOR DE DATA
 import { formateDate } from '../../utils/formatters';
+import { useAppTheme } from '../../theme/ThemeContext';
+
+const DETAILS_THEME = {
+  light: {
+    surface: '#FFFFFF',
+    surfaceAlt: '#F5F5F5',
+    field: '#F9FAFB',
+    text: '#0D214F',
+    subtitle: '#666',
+    muted: '#A0A7BA',
+    border: '#E2E8F0',
+    purple: '#9127E1',
+    purpleSoft: '#E8D5F7',
+    orange: '#FF7A2F',
+    blue: '#4A90E2',
+    blueSoft: '#C6F0FF',
+  },
+  dark: {
+    surface: '#17182B',
+    surfaceAlt: '#202238',
+    field: '#202238',
+    text: '#F5F7FF',
+    subtitle: '#AEB6CC',
+    muted: '#8E98B5',
+    border: '#2A2D45',
+    purple: '#B77CFF',
+    purpleSoft: '#2A1D42',
+    orange: '#FDBA74',
+    blue: '#93C5FD',
+    blueSoft: '#16233B',
+  },
+};
 
 export default function TelaDetalhesPet({ route }) {
   const navigation = useNavigation();
+  const { isDarkMode } = useAppTheme();
+  const p = isDarkMode ? DETAILS_THEME.dark : DETAILS_THEME.light;
   const { pet } = route.params;
 
   const [activeTab, setActiveTab] = useState('Sobre');
 
+  const [nome, setNome] = useState(pet.nome || pet.NOME || '');
   const [descricao, setDescricao] = useState(pet.descricao || pet.DESCRICAO || '');
   const [personalidade, setPersonalidade] = useState(pet.personalidade || pet.PERSONALIDADE || '');
   const [especie, setEspecie] = useState(pet.especie || pet.ESPECIE || '');
@@ -90,6 +125,8 @@ export default function TelaDetalhesPet({ route }) {
   const handleSavePet = async () => {
     try {
       await updatePet(pet.id || pet.ID, {
+        NOME: nome,
+        nome,
         DESCRICAO: descricao,
         PERSONALIDADE: personalidade,
         ESPECIE: especie,
@@ -130,7 +167,7 @@ export default function TelaDetalhesPet({ route }) {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.profileCard}>
+          <View style={[styles.profileCard, { backgroundColor: p.surface, borderWidth: isDarkMode ? 1 : 0, borderColor: p.border }]}>
             <Image
               source={
                 imageUri
@@ -141,44 +178,52 @@ export default function TelaDetalhesPet({ route }) {
             />
 
             <View style={styles.nameWrapper}>
-              <Text style={styles.petName}>{pet.nome || pet.NOME}</Text>
-              <TouchableOpacity>
-                <PencilLine size={20} color="#9127E1" strokeWidth={2.5} />
+              <TextInput
+                value={nome}
+                onChangeText={setNome}
+                placeholder="Nome do pet"
+                placeholderTextColor={p.muted}
+                style={[styles.petName, { color: p.text, textAlign: 'center', paddingVertical: 0, maxWidth: '86%' }]}
+              />
+              <TouchableOpacity activeOpacity={0.7}>
+                <PencilLine size={20} color={p.purple} strokeWidth={2.5} />
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.petBreed}>{raca}</Text>
+            <Text style={[styles.petBreed, { color: p.muted }]}>{raca}</Text>
 
             <View style={styles.statsRow}>
-              <View style={[styles.statBox, { backgroundColor: '#E8D5F7' }]}>
+              <View style={[styles.statBox, { backgroundColor: p.purpleSoft, borderWidth: isDarkMode ? 1 : 0, borderColor: p.border }]}>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.statLabel, { color: '#9127E1' }]}>
+                  <Text style={[styles.statLabel, { color: p.purple }]}>
                     PESO
                   </Text>
                   <TextInput
                     value={peso}
                     onChangeText={setPeso}
                     placeholder="Peso"
+                    placeholderTextColor={p.muted}
                     keyboardType="numeric"
-                    style={[styles.statValue, { color: '#9127E1' }]}
+                    style={[styles.statValue, { color: p.purple }]}
                   />
                 </View>
-                <Scale size={22} color="#9127E1" />
+                <Scale size={22} color={p.purple} />
               </View>
 
-              <View style={[styles.statBox, { backgroundColor: '#C6F0FF' }]}>
+              <View style={[styles.statBox, { backgroundColor: p.blueSoft, borderWidth: isDarkMode ? 1 : 0, borderColor: p.border }]}>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.statLabel, { color: '#4A90E2' }]}>
+                  <Text style={[styles.statLabel, { color: p.blue }]}>
                     SEXO
                   </Text>
                   <TextInput
                     value={sexo}
                     onChangeText={setSexo}
                     placeholder="Macho/Fêmea"
-                    style={[styles.statValue, { color: '#4A90E2' }]}
+                    placeholderTextColor={p.muted}
+                    style={[styles.statValue, { color: p.blue }]}
                   />
                 </View>
-                <Venus size={22} color="#4A90E2" />
+                <Venus size={22} color={p.blue} />
               </View>
             </View>
           </View>
@@ -216,8 +261,8 @@ export default function TelaDetalhesPet({ route }) {
             </View>
           </TouchableOpacity>
 
-          <View style={styles.contentCard}>
-            <View style={styles.tabRow}>
+          <View style={[styles.contentCard, { backgroundColor: p.surface, borderWidth: isDarkMode ? 1 : 0, borderColor: p.border }]}>
+            <View style={[styles.tabRow, { backgroundColor: p.surfaceAlt }]}>
               {['Sobre', 'Vacinas', 'Medicamentos'].map((tab) => (
                 <TouchableOpacity
                   key={tab}
@@ -244,22 +289,24 @@ export default function TelaDetalhesPet({ route }) {
             {activeTab === 'Sobre' ? (
               <View>
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Sobre o {pet.nome || pet.NOME}:</Text>
+                  <Text style={[styles.label, { color: p.text }]}>Sobre o {nome || 'pet'}:</Text>
                   <TextInput
-                    style={[styles.textInput, styles.textArea]}
+                    style={[styles.textInput, styles.textArea, { backgroundColor: p.field, borderColor: p.border, color: p.text }]}
                     value={descricao}
                     onChangeText={setDescricao}
                     multiline
+                    placeholderTextColor={p.muted}
                     placeholder="Escreva uma descrição sobre seu pet..."
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <Text style={styles.label}>Personalidade</Text>
+                  <Text style={[styles.label, { color: p.text }]}>Personalidade</Text>
                   <TextInput
-                    style={styles.textInput}
+                    style={[styles.textInput, { backgroundColor: p.field, borderColor: p.border, color: p.text }]}
                     value={personalidade}
                     onChangeText={setPersonalidade}
+                    placeholderTextColor={p.muted}
                     placeholder="Ex: brincalhão, calmo, carinhoso..."
                   />
                 </View>
@@ -268,9 +315,10 @@ export default function TelaDetalhesPet({ route }) {
                   <View style={{ width: '48%' }}>
                     <Text style={styles.labelUpper}>ESPÉCIE</Text>
                     <TextInput
-                      style={styles.textInput}
+                      style={[styles.textInput, { backgroundColor: p.field, borderColor: p.border, color: p.text }]}
                       value={especie}
                       onChangeText={setEspecie}
+                      placeholderTextColor={p.muted}
                       placeholder="Ex: Gato"
                     />
                   </View>
@@ -278,9 +326,10 @@ export default function TelaDetalhesPet({ route }) {
                   <View style={{ width: '48%' }}>
                     <Text style={styles.labelUpper}>RAÇA</Text>
                     <TextInput
-                      style={styles.textInput}
+                      style={[styles.textInput, { backgroundColor: p.field, borderColor: p.border, color: p.text }]}
                       value={raca}
                       onChangeText={setRaca}
+                      placeholderTextColor={p.muted}
                       placeholder="Ex: Siamês"
                     />
                   </View>
@@ -325,13 +374,15 @@ export default function TelaDetalhesPet({ route }) {
                 {vacinas.length === 0 ? (
                   <View
                     style={{
-                      backgroundColor: '#F5F5F5',
+                      backgroundColor: p.surfaceAlt,
                       padding: 20,
                       borderRadius: 15,
                       alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: p.border,
                     }}
                   >
-                    <Text style={{ color: '#A0A7BA', fontSize: 14 }}>
+                    <Text style={{ color: p.muted, fontSize: 14 }}>
                       Nenhuma vacina cadastrada.
                     </Text>
                   </View>
@@ -340,12 +391,14 @@ export default function TelaDetalhesPet({ route }) {
                     <View
                       key={vacina.id || vacina.ID}
                       style={{
-                        backgroundColor: '#FFFFFF',
+                        backgroundColor: p.surface,
                         borderRadius: 16,
                         padding: 16,
                         marginBottom: index !== vacinas.length - 1 ? 12 : 0,
                         borderLeftWidth: 4,
-                        borderLeftColor: '#9127E1',
+                        borderLeftColor: p.purple,
+                        borderWidth: 1,
+                        borderColor: p.border,
                         elevation: 1,
                         shadowColor: '#000',
                         shadowOpacity: 0.05,
@@ -356,7 +409,7 @@ export default function TelaDetalhesPet({ route }) {
                         style={{
                           fontSize: 16,
                           fontWeight: 'bold',
-                          color: '#0D214F',
+                          color: p.text,
                           marginBottom: 8,
                         }}
                       >
@@ -365,7 +418,7 @@ export default function TelaDetalhesPet({ route }) {
                       <Text
                         style={{
                           fontSize: 13,
-                          color: '#666',
+                          color: p.subtitle,
                           marginBottom: 4,
                         }}
                       >
@@ -374,7 +427,7 @@ export default function TelaDetalhesPet({ route }) {
                       <Text
                         style={{
                           fontSize: 13,
-                          color: '#666',
+                          color: p.subtitle,
                         }}
                       >
                         ⏰ Próxima Dose: {formateDate(vacina.proximaDose || vacina.PROXIMA_DOSE)}
@@ -400,15 +453,17 @@ export default function TelaDetalhesPet({ route }) {
                 {medicamentos.length === 0 ? (
                   <View
                     style={{
-                      backgroundColor: '#F5F5F5',
+                      backgroundColor: p.surfaceAlt,
                       padding: 20,
                       borderRadius: 15,
                       alignItems: 'center',
+                      borderWidth: 1,
+                      borderColor: p.border,
                     }}
                   >
                     <Text
                       style={{
-                        color: '#A0A7BA',
+                        color: p.muted,
                         fontSize: 14,
                         textAlign: 'center',
                       }}
@@ -421,12 +476,14 @@ export default function TelaDetalhesPet({ route }) {
                     <View
                       key={med.id || med.ID}
                       style={{
-                        backgroundColor: '#FFFFFF',
+                        backgroundColor: p.surface,
                         borderRadius: 16,
                         padding: 16,
                         marginBottom: index !== medicamentos.length - 1 ? 12 : 0,
                         borderLeftWidth: 4,
-                        borderLeftColor: '#FF7A2F',
+                        borderLeftColor: p.orange,
+                        borderWidth: 1,
+                        borderColor: p.border,
                         elevation: 1,
                         shadowColor: '#000',
                         shadowOpacity: 0.05,
@@ -437,7 +494,7 @@ export default function TelaDetalhesPet({ route }) {
                         style={{
                           fontSize: 16,
                           fontWeight: 'bold',
-                          color: '#0D214F',
+                          color: p.text,
                           marginBottom: 8,
                         }}
                       >
@@ -446,7 +503,7 @@ export default function TelaDetalhesPet({ route }) {
                       <Text
                         style={{
                           fontSize: 13,
-                          color: '#666',
+                          color: p.subtitle,
                           marginBottom: 4,
                         }}
                       >
@@ -455,7 +512,7 @@ export default function TelaDetalhesPet({ route }) {
                       <Text
                         style={{
                           fontSize: 13,
-                          color: '#666',
+                          color: p.subtitle,
                         }}
                       >
                         ⏱️ Frequência: {med.frequencia || med.FREQUENCIA}

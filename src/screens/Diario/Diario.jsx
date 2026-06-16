@@ -31,13 +31,65 @@ import { styles } from './styles';
 
 import TabBar from '../../components/TabBar';
 import HeaderHome from '../../components/HeaderHome';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 import api from '../../services/api';
 
 const screenWidth = Dimensions.get('window').width;
 
+const DIARIO_THEME = {
+  light: {
+    surface: '#FFFFFF',
+    surfaceAlt: '#F9F6FF',
+    surfaceSoft: '#F5F5F5',
+    text: '#1A1A2E',
+    subtitle: '#8B93A7',
+    muted: '#888',
+    border: '#E8DFF5',
+    accent: '#9333EA',
+    accentSoft: '#F3F0FF',
+    accentMuted: '#B380D6',
+    orangeSoft: '#FFF4E6',
+    orangeMuted: '#FFA366',
+    historyMood: '#C7CDDA',
+    selectedPet: '#F1E4FF',
+    inputPanel: '#9127E1',
+    inputPanelBorder: '#9127E1',
+    inputField: '#FFFFFF',
+    inputFieldText: '#333',
+    inputFieldBorder: 'rgba(255,255,255,0)',
+    inputButton: '#FFFFFF',
+    inputButtonText: '#7C3AED',
+  },
+  dark: {
+    surface: '#17182B',
+    surfaceAlt: '#211936',
+    surfaceSoft: '#202238',
+    text: '#F5F7FF',
+    subtitle: '#AEB6CC',
+    muted: '#8E98B5',
+    border: '#4B3471',
+    accent: '#B77CFF',
+    accentSoft: '#2A1D42',
+    accentMuted: '#D8B4FE',
+    orangeSoft: '#352313',
+    orangeMuted: '#FDBA74',
+    historyMood: '#AEB6CC',
+    selectedPet: '#2A1D42',
+    inputPanel: '#4C1D95',
+    inputPanelBorder: '#7C3AED',
+    inputField: '#2A1D42',
+    inputFieldText: '#F5F7FF',
+    inputFieldBorder: '#68429B',
+    inputButton: '#E9D5FF',
+    inputButtonText: '#4C1D95',
+  },
+};
+
 export default function TelaDiario() {
   const navigation = useNavigation();
+  const { isDarkMode } = useAppTheme();
+  const p = isDarkMode ? DIARIO_THEME.dark : DIARIO_THEME.light;
 
   const [activeTab, setActiveTab] = useState('consultas');
 
@@ -247,7 +299,7 @@ export default function TelaDiario() {
       datasets: [
         {
           data: currentWeekDataWithMinimum,
-          color: () => '#9333EA',
+          color: () => p.accent,
           strokeWidth: 4,
         },
         ...(compareMode
@@ -270,6 +322,7 @@ export default function TelaDiario() {
   }, [
     registros,
     compareMode,
+    p.accent,
   ]);
 
   function getMoodLabel(humor) {
@@ -324,12 +377,12 @@ export default function TelaDiario() {
           {/* HERO DO GRÁFICO */}
           <View
             style={{
-              backgroundColor: '#FFFFFF',
+              backgroundColor: p.surface,
               borderRadius: 32,
               padding: 24,
               marginBottom: 24,
               borderWidth: 2,
-              borderColor: '#E8DFF5',
+              borderColor: p.border,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 2 },
               shadowOpacity: 0.1,
@@ -348,7 +401,7 @@ export default function TelaDiario() {
               <View>
                 <Text
                   style={{
-                    color: '#1A1A2E',
+                    color: p.text,
                     fontSize: 24,
                     fontWeight: '900',
                     letterSpacing: 0.5,
@@ -359,7 +412,7 @@ export default function TelaDiario() {
 
                 <Text
                   style={{
-                    color: '#9333EA',
+                    color: p.accent,
                     marginTop: 6,
                     fontSize: 13,
                     fontWeight: '600',
@@ -410,15 +463,15 @@ export default function TelaDiario() {
                 >
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: '#FF7A2F', fontSize: 18, marginBottom: 4 }}>😢</Text>
-                    <Text style={{ color: '#8B93A7', fontSize: 10 }}>1 = Triste</Text>
+                    <Text style={{ color: p.subtitle, fontSize: 10 }}>1 = Triste</Text>
                   </View>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: '#FFD166', fontSize: 18, marginBottom: 4 }}>😐</Text>
-                    <Text style={{ color: '#8B93A7', fontSize: 10 }}>2 = Neutro</Text>
+                    <Text style={{ color: p.subtitle, fontSize: 10 }}>2 = Neutro</Text>
                   </View>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: '#52D273', fontSize: 18, marginBottom: 4 }}>😊</Text>
-                    <Text style={{ color: '#8B93A7', fontSize: 10 }}>3 = Feliz</Text>
+                    <Text style={{ color: p.subtitle, fontSize: 10 }}>3 = Feliz</Text>
                   </View>
                 </View>
 
@@ -427,9 +480,9 @@ export default function TelaDiario() {
                     marginVertical: 16,
                     paddingVertical: 16,
                     borderRadius: 24,
-                    backgroundColor: '#F9F6FF',
+                    backgroundColor: p.surfaceAlt,
                     borderWidth: 1,
-                    borderColor: '#E8DFF5',
+                    borderColor: p.border,
                     alignItems: 'center',
                     overflow: 'hidden',
                   }}
@@ -453,15 +506,15 @@ export default function TelaDiario() {
 
                       decimalPlaces: 0,
 
-                      color: () => '#9333EA',
+                      color: () => p.accent,
 
-                      labelColor: () => '#C084FC',
+                      labelColor: () => p.accentMuted,
 
                       propsForDots: {
                         r: '6',
                         strokeWidth: '3',
-                        stroke: '#FFFFFF',
-                        fill: '#9333EA',
+                        stroke: isDarkMode ? '#17182B' : '#FFFFFF',
+                        fill: p.accent,
                       },
 
                       propsForBackgroundLines: {
@@ -483,14 +536,14 @@ export default function TelaDiario() {
                   alignItems: 'center',
                   borderRadius: 24,
                   marginVertical: 16,
-                  backgroundColor: '#F9F6FF',
+                  backgroundColor: p.surfaceAlt,
                   borderWidth: 1,
-                  borderColor: '#E8DFF5',
+                  borderColor: p.border,
                 }}
               >
                 <Text
                   style={{
-                    color: '#9333EA',
+                    color: p.accent,
                     fontSize: 16,
                     fontWeight: '700',
                     textAlign: 'center',
@@ -500,7 +553,7 @@ export default function TelaDiario() {
                 </Text>
                 <Text
                   style={{
-                    color: '#888',
+                    color: p.muted,
                     fontSize: 12,
                     marginTop: 8,
                     textAlign: 'center',
@@ -518,7 +571,7 @@ export default function TelaDiario() {
                 marginTop: 20,
                 paddingTop: 20,
                 borderTopWidth: 1,
-                borderTopColor: '#E8DFF5',
+                borderTopColor: p.border,
               }}
             >
               <View
@@ -543,7 +596,7 @@ export default function TelaDiario() {
                 </View>
                 <Text
                   style={{
-                    color: '#1A1A2E',
+                    color: p.text,
                     marginTop: 4,
                     fontSize: 12,
                     fontWeight: '700',
@@ -562,7 +615,7 @@ export default function TelaDiario() {
               >
                 <View
                   style={{
-                    backgroundColor: '#FFF4D6',
+                    backgroundColor: p.orangeSoft,
                     width: 48,
                     height: 48,
                     borderRadius: 12,
@@ -575,7 +628,7 @@ export default function TelaDiario() {
                 </View>
                 <Text
                   style={{
-                    color: '#1A1A2E',
+                    color: p.text,
                     marginTop: 4,
                     fontSize: 12,
                     fontWeight: '700',
@@ -607,7 +660,7 @@ export default function TelaDiario() {
                 </View>
                 <Text
                   style={{
-                    color: '#1A1A2E',
+                    color: p.text,
                     marginTop: 4,
                     fontSize: 12,
                     fontWeight: '700',
@@ -620,7 +673,16 @@ export default function TelaDiario() {
           </View>
 
           {/* CARD INPUT */}
-          <View style={styles.inputCard}>
+          <View
+            style={[
+              styles.inputCard,
+              {
+                backgroundColor: p.inputPanel,
+                borderWidth: isDarkMode ? 1 : 0,
+                borderColor: p.inputPanelBorder,
+              },
+            ]}
+          >
             <View style={styles.emojiRow}>
               <TouchableOpacity
                 style={[
@@ -684,12 +746,19 @@ export default function TelaDiario() {
             </Text>
 
             <TouchableOpacity
-              style={styles.selectWhite}
+              style={[
+                styles.selectWhite,
+                {
+                  backgroundColor: p.inputField,
+                  borderWidth: isDarkMode ? 1 : 0,
+                  borderColor: p.inputFieldBorder,
+                },
+              ]}
               onPress={() =>
                 setModalPetOpen(true)
               }
             >
-              <Text style={{ color: '#FFF' }}>
+              <Text style={{ color: p.inputFieldText, fontWeight: '700' }}>
                 {selectedPet?.name ||
                   'Selecione'}
               </Text>
@@ -700,7 +769,15 @@ export default function TelaDiario() {
             </Text>
 
             <TextInput
-              style={styles.inputWhite}
+              style={[
+                styles.inputWhite,
+                {
+                  backgroundColor: p.inputField,
+                  color: p.inputFieldText,
+                  borderWidth: isDarkMode ? 1 : 0,
+                  borderColor: p.inputFieldBorder,
+                },
+              ]}
               placeholder="Como foi o dia dele?"
               placeholderTextColor="#A0A7BA"
               multiline
@@ -709,10 +786,10 @@ export default function TelaDiario() {
             />
 
             <TouchableOpacity
-              style={styles.btnFull}
+              style={[styles.btnFull, { backgroundColor: p.inputButton }]}
               onPress={salvarRegistro}
             >
-              <Text style={styles.btnFullText}>
+              <Text style={[styles.btnFullText, { color: p.inputButtonText }]}>
                 SALVAR REGISTRO
               </Text>
             </TouchableOpacity>
@@ -756,17 +833,17 @@ export default function TelaDiario() {
           {compareMode && (
             <View
               style={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: p.surface,
                 padding: 16,
                 borderRadius: 18,
                 borderWidth: 1,
-                borderColor: '#E8DFF5',
+                borderColor: p.border,
                 marginBottom: 18,
               }}
             >
               <Text
                 style={{
-                  color: '#9333EA',
+                  color: p.accent,
                   fontSize: 14,
                   fontWeight: '700',
                   textAlign: 'center',
@@ -780,16 +857,16 @@ export default function TelaDiario() {
                 <View
                   style={{
                     flex: 1,
-                    backgroundColor: '#F3F0FF',
+                    backgroundColor: p.accentSoft,
                     padding: 10,
                     borderRadius: 12,
                     borderLeftWidth: 3,
-                    borderLeftColor: '#9333EA',
+                    borderLeftColor: p.accent,
                   }}
                 >
                   <Text
                     style={{
-                      color: '#9333EA',
+                      color: p.accent,
                       fontSize: 12,
                       fontWeight: '700',
                     }}
@@ -798,7 +875,7 @@ export default function TelaDiario() {
                   </Text>
                   <Text
                     style={{
-                      color: '#B380D6',
+                      color: p.accentMuted,
                       fontSize: 11,
                       marginTop: 4,
                     }}
@@ -810,7 +887,7 @@ export default function TelaDiario() {
                 <View
                   style={{
                     flex: 1,
-                    backgroundColor: '#FFF4E6',
+                    backgroundColor: p.orangeSoft,
                     padding: 10,
                     borderRadius: 12,
                     borderLeftWidth: 3,
@@ -828,7 +905,7 @@ export default function TelaDiario() {
                   </Text>
                   <Text
                     style={{
-                      color: '#FFA366',
+                      color: p.orangeMuted,
                       fontSize: 11,
                       marginTop: 4,
                     }}
@@ -840,7 +917,7 @@ export default function TelaDiario() {
               
               <Text
                 style={{
-                  color: '#666',
+                  color: p.subtitle,
                   fontSize: 11,
                   marginTop: 12,
                   textAlign: 'center',
@@ -859,15 +936,17 @@ export default function TelaDiario() {
           {registros.length === 0 && (
             <View
               style={{
-                backgroundColor: '#F5F5F5',
+                backgroundColor: p.surfaceSoft,
                 padding: 20,
                 borderRadius: 20,
                 alignItems: 'center',
+                borderWidth: 1,
+                borderColor: p.border,
               }}
             >
               <Text
                 style={{
-                  color: '#888',
+                  color: p.muted,
                 }}
               >
                 Nenhum registro ainda.
@@ -910,7 +989,7 @@ export default function TelaDiario() {
 
                 <Text
                   style={{
-                    color: '#C7CDDA',
+                    color: p.historyMood,
                     fontSize: 12,
                     marginBottom: 6,
                   }}
@@ -959,7 +1038,7 @@ export default function TelaDiario() {
                       selectedPet?.id ===
                         item.id && {
                         backgroundColor:
-                          '#F1E4FF',
+                          p.selectedPet,
                       },
                     ]}
                     onPress={() => {

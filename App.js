@@ -29,6 +29,7 @@ import CodigoSenha from './src/screens/CodigoSenha/CodigoSenha';
 import RedefinirSenha from './src/screens/RedefinirSenha/RedefinirSenha';
 import NotificacoesGerais from './src/screens/NotificacoesGerais/notificacoesgerais';
 import { ThemeProvider, useAppTheme } from './src/theme/ThemeContext';
+import { AppAlertProvider } from './src/components/AppAlert';
 
 const Stack = createNativeStackNavigator();
 
@@ -138,7 +139,9 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <AppRoutes />
+      <AppAlertProvider>
+        <AppRoutes />
+      </AppAlertProvider>
     </ThemeProvider>
   );
 }

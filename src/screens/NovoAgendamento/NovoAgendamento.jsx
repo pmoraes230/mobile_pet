@@ -8,10 +8,45 @@ import { useNavigation } from '@react-navigation/native';
 import { X } from 'lucide-react-native';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
+import { useAppTheme } from '../../theme/ThemeContext';
 import {
   getAgendaSemanal, criarAgendamento,
   getAgendaDisponivelDates, getAgendaDisponivelTimes,
 } from '../../services/agendamentoService';
+
+const NOVO_AGENDAMENTO_THEME = {
+  light: {
+    background: '#f9fafb',
+    surface: '#fff',
+    surfaceAlt: '#f3f4f6',
+    text: '#111827',
+    subtitle: '#6b7280',
+    muted: '#9ca3af',
+    border: '#e5e7eb',
+    softBorder: '#f3f4f6',
+    accent: '#9333ea',
+    accentText: '#9333ea',
+    fieldText: '#374151',
+  },
+  dark: {
+    background: '#0F1020',
+    surface: '#17182B',
+    surfaceAlt: '#202238',
+    text: '#F5F7FF',
+    subtitle: '#AEB6CC',
+    muted: '#8E98B5',
+    border: '#2A2D45',
+    softBorder: '#30334F',
+    accent: '#B77CFF',
+    accentText: '#D8B4FE',
+    fieldText: '#F5F7FF',
+  },
+};
+
+function useNovoAgendamentoTheme() {
+  const { isDarkMode } = useAppTheme();
+  return isDarkMode ? NOVO_AGENDAMENTO_THEME.dark : NOVO_AGENDAMENTO_THEME.light;
+}
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 const getItemLabel = (item) =>
@@ -23,27 +58,30 @@ const getItemId = (item) =>
 
 // ─── select field ─────────────────────────────────────────────────────────────
 function SelectField({ label, value, placeholder, onPress, isStep = false }) {
+  const p = useNovoAgendamentoTheme();
+
   return (
     <View style={{ marginBottom: 16 }}>
       <Text style={{
         fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
         textTransform: 'uppercase', marginBottom: 8,
-        color: isStep ? '#9333ea' : '#9ca3af',
+        color: isStep ? p.accentText : p.muted,
       }}>
         {label}
       </Text>
       <TouchableOpacity
         onPress={onPress}
         style={{
-          backgroundColor: '#f3f4f6', borderRadius: 16,
+          backgroundColor: p.surfaceAlt, borderRadius: 16,
           paddingVertical: 16, paddingHorizontal: 16,
           flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+          borderWidth: 1, borderColor: p.border,
         }}
       >
-        <Text style={{ fontWeight: '700', color: value ? '#374151' : '#9ca3af', fontSize: 14 }}>
+        <Text style={{ fontWeight: '700', color: value ? p.fieldText : p.muted, fontSize: 14 }}>
           {value || placeholder}
         </Text>
-        <Text style={{ color: '#9ca3af', fontSize: 12 }}>▼</Text>
+        <Text style={{ color: p.muted, fontSize: 12 }}>▼</Text>
       </TouchableOpacity>
     </View>
   );
@@ -51,16 +89,18 @@ function SelectField({ label, value, placeholder, onPress, isStep = false }) {
 
 // ─── chips de dia ─────────────────────────────────────────────────────────────
 function ChipsDias({ datas, selectedDate, onSelect, loading }) {
+  const p = useNovoAgendamentoTheme();
+
   if (loading) {
     return (
       <View style={{ marginBottom: 16 }}>
         <Text style={{
           fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
-          textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+          textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
         }}>
           Escolha o Dia
         </Text>
-        <ActivityIndicator color="#9333ea" style={{ marginTop: 8 }} />
+        <ActivityIndicator color={p.accent} style={{ marginTop: 8 }} />
       </View>
     );
   }
@@ -69,7 +109,7 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
     <View style={{ marginBottom: 16 }}>
       <Text style={{
         fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
-        textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+        textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
       }}>
         Escolha o Dia
       </Text>
@@ -85,13 +125,13 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
                 style={{
                   width: '30%', paddingVertical: 12, paddingHorizontal: 4,
                   borderRadius: 14, borderWidth: 2, alignItems: 'center',
-                  backgroundColor: ativo ? '#9333ea' : '#fff',
-                  borderColor: ativo ? '#9333ea' : '#f3f4f6',
+                  backgroundColor: ativo ? '#9333ea' : p.surface,
+                  borderColor: ativo ? '#9333ea' : p.border,
                 }}
               >
                 <Text style={{
                   fontSize: 11, fontWeight: '900', textTransform: 'uppercase',
-                  letterSpacing: 0.5, color: ativo ? '#fff' : '#374151',
+                  letterSpacing: 0.5, color: ativo ? '#fff' : p.fieldText,
                 }}>
                   {item.dateLabel}
                 </Text>
@@ -101,17 +141,17 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
         </View>
       ) : (
         <View style={{
-          backgroundColor: '#f3f4f6',
+          backgroundColor: p.surfaceAlt,
           padding: 20,
           borderRadius: 16,
           alignItems: 'center',
           borderWidth: 1,
-          borderColor: '#e5e7eb',
+          borderColor: p.border,
         }}>
-          <Text style={{ color: '#6b7280', fontWeight: '600', textAlign: 'center' }}>
+          <Text style={{ color: p.subtitle, fontWeight: '600', textAlign: 'center' }}>
             Nenhuma data disponível para este veterinário no momento.
           </Text>
-          <Text style={{ color: '#9ca3af', fontSize: 13, marginTop: 4, textAlign: 'center' }}>
+          <Text style={{ color: p.muted, fontSize: 13, marginTop: 4, textAlign: 'center' }}>
             Tente selecionar outro veterinário.
           </Text>
         </View>
@@ -122,25 +162,27 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
 
 // ─── chips de horário ─────────────────────────────────────────────────────────
 function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
+  const p = useNovoAgendamentoTheme();
+
   if (loading) {
-    return <ActivityIndicator color="#9333ea" style={{ marginTop: 8, marginBottom: 16 }} />;
+    return <ActivityIndicator color={p.accent} style={{ marginTop: 8, marginBottom: 16 }} />;
   }
   if (!slots.length) {
     return (
       <View style={{ marginBottom: 16 }}>
         <Text style={{
           fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
-          textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+          textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
         }}>
           Horários Disponíveis
         </Text>
         <View style={{
-          backgroundColor: '#f3f4f6',
+          backgroundColor: p.surfaceAlt,
           padding: 20,
           borderRadius: 16,
           alignItems: 'center',
         }}>
-          <Text style={{ color: '#6b7280', textAlign: 'center' }}>
+          <Text style={{ color: p.subtitle, textAlign: 'center' }}>
             Nenhum horário disponível para esta data.
           </Text>
         </View>
@@ -152,7 +194,7 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
     <View style={{ marginBottom: 16 }}>
       <Text style={{
         fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
-        textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+        textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
       }}>
         Horários Disponíveis
       </Text>
@@ -166,8 +208,8 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
               style={{
                 width: '22%', paddingVertical: 10, alignItems: 'center',
                 borderRadius: 12, borderWidth: 2,
-                backgroundColor: ativo ? '#9333ea' : '#fff',
-                borderColor: ativo ? '#9333ea' : '#f3f4f6',
+                backgroundColor: ativo ? '#9333ea' : p.surface,
+                borderColor: ativo ? '#9333ea' : p.border,
                 shadowColor: ativo ? '#9333ea' : 'transparent',
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: ativo ? 0.3 : 0,
@@ -177,7 +219,7 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
             >
               <Text style={{
                 fontSize: 12, fontWeight: '900',
-                color: ativo ? '#fff' : '#374151',
+                color: ativo ? '#fff' : p.fieldText,
               }}>
                 {slot.hora}
               </Text>
@@ -191,23 +233,25 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
 
 // ─── modal de seleção ─────────────────────────────────────────────────────────
 function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
+  const p = useNovoAgendamentoTheme();
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }}>
         <View style={{
-          backgroundColor: '#fff', borderTopLeftRadius: 28, borderTopRightRadius: 28,
-          maxHeight: '60%', paddingBottom: 24,
+          backgroundColor: p.surface, borderTopLeftRadius: 28, borderTopRightRadius: 28,
+          maxHeight: '60%', paddingBottom: 24, borderWidth: 1, borderColor: p.border,
         }}>
           <View style={{
             flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-            padding: 24, borderBottomWidth: 1, borderBottomColor: '#f3f4f6',
+            padding: 24, borderBottomWidth: 1, borderBottomColor: p.border,
           }}>
-            <Text style={{ fontSize: 18, fontWeight: '900', color: '#111827' }}>{titulo}</Text>
+            <Text style={{ fontSize: 18, fontWeight: '900', color: p.text }}>{titulo}</Text>
             <TouchableOpacity
               onPress={onClose}
-              style={{ backgroundColor: '#f3f4f6', borderRadius: 20, padding: 6 }}
+              style={{ backgroundColor: p.surfaceAlt, borderRadius: 20, padding: 6 }}
             >
-              <X size={18} color="#6b7280" />
+              <X size={18} color={p.subtitle} />
             </TouchableOpacity>
           </View>
 
@@ -219,10 +263,10 @@ function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
                 onPress={() => onSelect(item)}
                 style={{
                   paddingVertical: 14, paddingHorizontal: 24,
-                  borderBottomWidth: 1, borderBottomColor: '#f9fafb',
+                  borderBottomWidth: 1, borderBottomColor: p.border,
                 }}
               >
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#374151' }}>
+                <Text style={{ fontSize: 15, fontWeight: '700', color: p.fieldText }}>
                   {getItemLabel(item)}
                 </Text>
               </TouchableOpacity>
@@ -237,6 +281,7 @@ function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
 // ─── tela principal ───────────────────────────────────────────────────────────
 export default function TelaNovoAgendamento() {
   const navigation = useNavigation();
+  const p = useNovoAgendamentoTheme();
 
   const [selectedPet, setSelectedPet] = useState(null);
   const [selectedVeterinario, setSelectedVeterinario] = useState(null);
@@ -408,7 +453,7 @@ export default function TelaNovoAgendamento() {
 
   return (
     <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={{ flex: 1, backgroundColor: '#f9fafb' }}>
+      <View style={{ flex: 1, backgroundColor: p.background }}>
 
         <HeaderHome
           userName="Rayan"
@@ -421,7 +466,7 @@ export default function TelaNovoAgendamento() {
         {agendaCarregando ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color="#9333ea" />
-            <Text style={{ marginTop: 12, color: '#6b7280', fontSize: 14 }}>Carregando...</Text>
+            <Text style={{ marginTop: 12, color: p.subtitle, fontSize: 14 }}>Carregando...</Text>
           </View>
         ) : (
           <ScrollView
@@ -430,10 +475,10 @@ export default function TelaNovoAgendamento() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={{ marginBottom: 24 }}>
-              <Text style={{ fontSize: 24, fontWeight: '900', color: '#111827', letterSpacing: -0.5 }}>
+              <Text style={{ fontSize: 24, fontWeight: '900', color: p.text, letterSpacing: -0.5 }}>
                 Novo Agendamento
               </Text>
-              <Text style={{ color: '#6b7280', fontWeight: '500', fontSize: 14, marginTop: 4 }}>
+              <Text style={{ color: p.subtitle, fontWeight: '500', fontSize: 14, marginTop: 4 }}>
                 Escolha o veterinário, dia e horário
               </Text>
             </View>
@@ -469,7 +514,7 @@ export default function TelaNovoAgendamento() {
               <View style={{ marginBottom: 16 }}>
                 <Text style={{
                   fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
-                  textTransform: 'uppercase', marginBottom: 8, color: '#9333ea',
+                  textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
                 }}>
                   Data Selecionada
                 </Text>
@@ -514,19 +559,20 @@ export default function TelaNovoAgendamento() {
             <View style={{ marginBottom: 16 }}>
               <Text style={{
                 fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
-                textTransform: 'uppercase', marginBottom: 8, color: '#9ca3af',
+                textTransform: 'uppercase', marginBottom: 8, color: p.muted,
               }}>
                 Observações
               </Text>
               <TextInput
                 style={{
-                  backgroundColor: '#f3f4f6', borderRadius: 16,
+                  backgroundColor: p.surfaceAlt, borderRadius: 16,
                   paddingVertical: 14, paddingHorizontal: 16,
-                  fontWeight: '700', color: '#374151', fontSize: 14,
+                  fontWeight: '700', color: p.fieldText, fontSize: 14,
                   minHeight: 90, textAlignVertical: 'top',
+                  borderWidth: 1, borderColor: p.border,
                 }}
                 placeholder="Descreva brevemente..."
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={p.muted}
                 multiline
                 value={obs}
                 onChangeText={setObs}
@@ -543,10 +589,11 @@ export default function TelaNovoAgendamento() {
                 disabled={isSubmitting}
                 style={{
                   flex: 1, paddingVertical: 16, borderRadius: 16,
-                  backgroundColor: '#f3f4f6', alignItems: 'center',
+                  backgroundColor: p.surfaceAlt, alignItems: 'center',
+                  borderWidth: 1, borderColor: p.border,
                 }}
               >
-                <Text style={{ fontWeight: '900', color: '#6b7280', fontSize: 14 }}>Cancelar</Text>
+                <Text style={{ fontWeight: '900', color: p.subtitle, fontSize: 14 }}>Cancelar</Text>
               </TouchableOpacity>
 
               <TouchableOpacity

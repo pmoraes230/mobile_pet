@@ -195,6 +195,36 @@ export const styles = StyleSheet.create({
     color: '#666',
   },
 
+  healthGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+
+  healthItem: {
+    width: '48%',
+    backgroundColor: '#F8F9FA',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#E8E8E8',
+  },
+
+  healthLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#999',
+    textTransform: 'uppercase',
+    marginBottom: 6,
+  },
+
+  healthValue: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#333',
+    lineHeight: 18,
+  },
+
   // TUTOR CARD
   tutorCard: {
     marginHorizontal: 16,

@@ -9,6 +9,7 @@ import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { getAgendaTutor, excluirConsulta, excluirVacina } from '../../services/agendamentoService';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 // ─── helpers de cor por status ───────────────────────────────────────────────
 const STATUS_COLORS = {
@@ -18,6 +19,66 @@ const STATUS_COLORS = {
   Concluido:  { bg: '#faf5ff', text: '#7e22ce', border: '#e9d5ff' },
   Agendada:   { bg: '#eff6ff', text: '#1d4ed8', border: '#bfdbfe' },
 };
+
+const STATUS_COLORS_DARK = {
+  Confirmado: { bg: '#14301F', text: '#86EFAC', border: '#1F5B35' },
+  Pendente:   { bg: '#332B12', text: '#FDE68A', border: '#6B5417' },
+  Cancelado:  { bg: '#351923', text: '#FDA4AF', border: '#743244' },
+  Concluido:  { bg: '#2A1D42', text: '#D8B4FE', border: '#68429B' },
+  Agendada:   { bg: '#16233B', text: '#93C5FD', border: '#2F4E85' },
+};
+
+const AGENDA_THEME = {
+  light: {
+    surface: '#fff',
+    surfaceAlt: '#f9fafb',
+    surfaceMuted: '#f3f4f6',
+    surfaceHistory: '#fafafa',
+    text: '#111827',
+    subtitle: '#6b7280',
+    muted: '#9ca3af',
+    border: '#e5e7eb',
+    softBorder: '#f3f4f6',
+    accent: '#9333ea',
+    accentSoft: '#f3e8ff',
+    accentSofter: '#faf5ff',
+    accentBorder: '#d8b4fe',
+    accentBadge: '#ede9fe',
+    accentText: '#7e22ce',
+    dangerSoft: '#fef2f2',
+    warningSoft: '#fefce8',
+    warningBorder: '#fde68a',
+    warningText: '#a16207',
+    emptyIcon: '#d1d5db',
+  },
+  dark: {
+    surface: '#17182B',
+    surfaceAlt: '#202238',
+    surfaceMuted: '#262842',
+    surfaceHistory: '#141528',
+    text: '#F5F7FF',
+    subtitle: '#AEB6CC',
+    muted: '#8E98B5',
+    border: '#2A2D45',
+    softBorder: '#30334F',
+    accent: '#B77CFF',
+    accentSoft: '#2A1D42',
+    accentSofter: '#211936',
+    accentBorder: '#68429B',
+    accentBadge: '#3A285B',
+    accentText: '#D8B4FE',
+    dangerSoft: '#351923',
+    warningSoft: '#332B12',
+    warningBorder: '#6B5417',
+    warningText: '#FDE68A',
+    emptyIcon: '#596174',
+  },
+};
+
+function useAgendaTheme() {
+  const { isDarkMode } = useAppTheme();
+  return isDarkMode ? AGENDA_THEME.dark : AGENDA_THEME.light;
+}
 
 const normalizarDataHora = (item) => {
   const data = item?.data_consulta || item?.data_aplicacao;
@@ -42,14 +103,16 @@ const isSameDay = (a, b) => (
 );
 
 function SectionHeader({ title, count, subtitle }) {
+  const p = useAgendaTheme();
+
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 14, marginTop: 4 }}>
       <View style={{ flex: 1, paddingRight: 12 }}>
-        <Text style={{ fontSize: 20, fontWeight: '900', color: '#111827' }}>{title}</Text>
-        {!!subtitle && <Text style={{ color: '#6b7280', fontSize: 13, fontWeight: '500', marginTop: 2 }}>{subtitle}</Text>}
+        <Text style={{ fontSize: 20, fontWeight: '900', color: p.text }}>{title}</Text>
+        {!!subtitle && <Text style={{ color: p.subtitle, fontSize: 13, fontWeight: '500', marginTop: 2 }}>{subtitle}</Text>}
       </View>
-      <View style={{ backgroundColor: '#f3e8ff', borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
-        <Text style={{ color: '#7e22ce', fontSize: 12, fontWeight: '900' }}>{count}</Text>
+      <View style={{ backgroundColor: p.accentSoft, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 5 }}>
+        <Text style={{ color: p.accentText, fontSize: 12, fontWeight: '900' }}>{count}</Text>
       </View>
     </View>
   );
@@ -83,6 +146,7 @@ function CalendarioCompletoModal({
   onChangeYear,
   onToday,
 }) {
+  const p = useAgendaTheme();
   const diasMes = gerarDiasMes(dataVisualizada);
   const hoje = new Date();
   const tituloMes = dataVisualizada.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
@@ -91,43 +155,43 @@ function CalendarioCompletoModal({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(17,24,39,0.55)', justifyContent: 'center', padding: 16 }}>
-        <View style={{ backgroundColor: '#fff', borderRadius: 26, padding: 18, width: '100%', maxWidth: 460, alignSelf: 'center' }}>
+        <View style={{ backgroundColor: p.surface, borderRadius: 26, padding: 18, width: '100%', maxWidth: 460, alignSelf: 'center', borderWidth: 1, borderColor: p.border }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text style={{ fontSize: 19, fontWeight: '900', color: '#111827', textTransform: 'capitalize' }}>{tituloMes}</Text>
-              <Text style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>Escolha uma data no mes ou navegue por ano.</Text>
+              <Text style={{ fontSize: 19, fontWeight: '900', color: p.text, textTransform: 'capitalize' }}>{tituloMes}</Text>
+              <Text style={{ fontSize: 13, color: p.subtitle, marginTop: 2 }}>Escolha uma data no mes ou navegue por ano.</Text>
             </View>
             <TouchableOpacity
               onPress={onClose}
-              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#f3f4f6', justifyContent: 'center', alignItems: 'center' }}
+              style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: p.surfaceMuted, justifyContent: 'center', alignItems: 'center' }}
               accessibilityRole="button"
               accessibilityLabel="Fechar calendário"
             >
-              <X size={18} color="#6b7280" />
+              <X size={18} color={p.subtitle} />
             </TouchableOpacity>
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
-            <TouchableOpacity onPress={() => onChangeYear(-1)} style={{ flex: 1, backgroundColor: '#f9fafb', borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Ano anterior">
-              <Text style={{ color: '#6b7280', fontWeight: '900' }}>- ano</Text>
+            <TouchableOpacity onPress={() => onChangeYear(-1)} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Ano anterior">
+              <Text style={{ color: p.subtitle, fontWeight: '900' }}>- ano</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onChangeMonth(-1)} style={{ width: 44, backgroundColor: '#f3e8ff', borderRadius: 14, justifyContent: 'center', alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Mês anterior">
-              <ChevronLeft size={20} color="#9333ea" />
+            <TouchableOpacity onPress={() => onChangeMonth(-1)} style={{ width: 44, backgroundColor: p.accentSoft, borderRadius: 14, justifyContent: 'center', alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Mês anterior">
+              <ChevronLeft size={20} color={p.accent} />
             </TouchableOpacity>
             <TouchableOpacity onPress={onToday} style={{ flex: 1, backgroundColor: '#9333ea', borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Ir para hoje">
               <Text style={{ color: '#fff', fontWeight: '900' }}>Hoje</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onChangeMonth(1)} style={{ width: 44, backgroundColor: '#f3e8ff', borderRadius: 14, justifyContent: 'center', alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Próximo mês">
-              <ChevronRight size={20} color="#9333ea" />
+            <TouchableOpacity onPress={() => onChangeMonth(1)} style={{ width: 44, backgroundColor: p.accentSoft, borderRadius: 14, justifyContent: 'center', alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Próximo mês">
+              <ChevronRight size={20} color={p.accent} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onChangeYear(1)} style={{ flex: 1, backgroundColor: '#f9fafb', borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Próximo ano">
-              <Text style={{ color: '#6b7280', fontWeight: '900' }}>+ ano</Text>
+            <TouchableOpacity onPress={() => onChangeYear(1)} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Próximo ano">
+              <Text style={{ color: p.subtitle, fontWeight: '900' }}>+ ano</Text>
             </TouchableOpacity>
           </View>
 
           <View style={{ flexDirection: 'row', marginBottom: 8 }}>
             {semana.map((dia, index) => (
-              <Text key={`${dia}-${index}`} style={{ width: `${100 / 7}%`, textAlign: 'center', color: '#9ca3af', fontSize: 12, fontWeight: '900' }}>
+              <Text key={`${dia}-${index}`} style={{ width: `${100 / 7}%`, textAlign: 'center', color: p.muted, fontSize: 12, fontWeight: '900' }}>
                 {dia}
               </Text>
             ))}
@@ -158,22 +222,22 @@ function CalendarioCompletoModal({
                     borderRadius: 14,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    backgroundColor: selecionado ? '#9333ea' : atual ? '#faf5ff' : '#fff',
+                    backgroundColor: selecionado ? '#9333ea' : atual ? p.accentSofter : p.surfaceAlt,
                     borderWidth: 1,
-                    borderColor: selecionado ? '#9333ea' : totalDia > 0 ? '#d8b4fe' : '#f3f4f6',
+                    borderColor: selecionado ? '#9333ea' : totalDia > 0 ? p.accentBorder : p.softBorder,
                   }}>
-                    <Text style={{ fontSize: 15, fontWeight: '900', color: selecionado ? '#fff' : '#111827' }}>{dia.dia}</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '900', color: selecionado ? '#fff' : p.text }}>{dia.dia}</Text>
                     <View style={{ height: 12, marginTop: 2 }}>
                       {totalDia > 0 && (
                         <View style={{
                           minWidth: 14,
                           height: 14,
                           borderRadius: 7,
-                          backgroundColor: selecionado ? 'rgba(255,255,255,0.22)' : '#ede9fe',
+                          backgroundColor: selecionado ? 'rgba(255,255,255,0.22)' : p.accentBadge,
                           alignItems: 'center',
                           justifyContent: 'center',
                         }}>
-                          <Text style={{ fontSize: 8, color: selecionado ? '#fff' : '#7e22ce', fontWeight: '900' }}>{totalDia}</Text>
+                          <Text style={{ fontSize: 8, color: selecionado ? '#fff' : p.accentText, fontWeight: '900' }}>{totalDia}</Text>
                         </View>
                       )}
                     </View>
@@ -189,7 +253,11 @@ function CalendarioCompletoModal({
 }
 
 function StatusBadge({ status }) {
-  const c = STATUS_COLORS[status] || { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' };
+  const { isDarkMode } = useAppTheme();
+  const colors = isDarkMode ? STATUS_COLORS_DARK : STATUS_COLORS;
+  const c = colors[status] || (isDarkMode
+    ? { bg: '#202238', text: '#DDE3F5', border: '#2A2D45' }
+    : { bg: '#f3f4f6', text: '#374151', border: '#e5e7eb' });
   return (
     <View style={{
       backgroundColor: c.bg, borderColor: c.border, borderWidth: 1,
@@ -204,11 +272,13 @@ function StatusBadge({ status }) {
 
 // ─── modal de detalhes (espelha o da web) ────────────────────────────────────
 function ModalDetalhes({ visible, data, onClose }) {
+  const p = useAgendaTheme();
+
   if (!data) return null;
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
-        <View style={{ backgroundColor: '#fff', borderRadius: 28, width: '100%', maxWidth: 440, overflow: 'hidden' }}>
+        <View style={{ backgroundColor: p.surface, borderRadius: 28, width: '100%', maxWidth: 440, overflow: 'hidden', borderWidth: 1, borderColor: p.border }}>
           {/* header roxo */}
           <View style={{ backgroundColor: '#9333ea', padding: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <View>
@@ -224,21 +294,21 @@ function ModalDetalhes({ visible, data, onClose }) {
             {/* pet + vet */}
             <View style={{ flexDirection: 'row', gap: 16 }}>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 10, fontWeight: '900', color: '#9ca3af', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>Paciente</Text>
+                <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>Paciente</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <View style={{ width: 32, height: 32, backgroundColor: '#f3e8ff', borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
-                    <Dog size={16} color="#9333ea" />
+                  <View style={{ width: 32, height: 32, backgroundColor: p.accentSoft, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
+                    <Dog size={16} color={p.accent} />
                   </View>
-                  <Text style={{ fontWeight: '700', color: '#374151', fontSize: 15 }}>{data.pet}</Text>
+                  <Text style={{ fontWeight: '700', color: p.text, fontSize: 15 }}>{data.pet}</Text>
                 </View>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 10, fontWeight: '900', color: '#9ca3af', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>Veterinário</Text>
+                <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>Veterinário</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <View style={{ width: 32, height: 32, backgroundColor: '#dbeafe', borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
+                  <View style={{ width: 32, height: 32, backgroundColor: p.surfaceAlt, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
                     <User size={16} color="#2563eb" />
                   </View>
-                  <Text style={{ fontWeight: '700', color: '#374151', fontSize: 15 }}>{data.vet}</Text>
+                  <Text style={{ fontWeight: '700', color: p.text, fontSize: 15 }}>{data.vet}</Text>
                 </View>
               </View>
             </View>
@@ -250,23 +320,23 @@ function ModalDetalhes({ visible, data, onClose }) {
                 { label: 'Horário', value: data.hora },
                 { label: 'Status', value: data.status },
               ].map(({ label, value }) => (
-                <View key={label} style={{ flex: 1, backgroundColor: '#f9fafb', borderRadius: 14, padding: 12 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '900', color: '#9ca3af', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 4 }}>{label}</Text>
-                  <Text style={{ fontWeight: '900', color: '#111827', fontSize: 15, fontStyle: 'italic' }}>{value || '—'}</Text>
+                <View key={label} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, padding: 12 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 4 }}>{label}</Text>
+                  <Text style={{ fontWeight: '900', color: p.text, fontSize: 15, fontStyle: 'italic' }}>{value || '—'}</Text>
                 </View>
               ))}
             </View>
 
             {/* observações */}
             <View>
-              <Text style={{ fontSize: 10, fontWeight: '900', color: '#9ca3af', letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>Observações / Sintomas</Text>
-              <View style={{ backgroundColor: 'rgba(147,51,234,0.05)', borderColor: 'rgba(147,51,234,0.1)', borderWidth: 1, borderRadius: 16, padding: 16 }}>
-                <Text style={{ color: '#4b5563', lineHeight: 22, fontStyle: 'italic', fontSize: 14 }}>{data.obs || 'Nenhuma observação informada.'}</Text>
+              <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>Observações / Sintomas</Text>
+              <View style={{ backgroundColor: p.accentSofter, borderColor: p.accentBorder, borderWidth: 1, borderRadius: 16, padding: 16 }}>
+                <Text style={{ color: p.subtitle, lineHeight: 22, fontStyle: 'italic', fontSize: 14 }}>{data.obs || 'Nenhuma observação informada.'}</Text>
               </View>
             </View>
 
-            <TouchableOpacity onPress={onClose} style={{ backgroundColor: '#f3f4f6', borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 4 }}>
-              <Text style={{ fontWeight: '900', color: '#6b7280', fontSize: 14 }}>Fechar</Text>
+            <TouchableOpacity onPress={onClose} style={{ backgroundColor: p.surfaceMuted, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 4 }}>
+              <Text style={{ fontWeight: '900', color: p.subtitle, fontSize: 14 }}>Fechar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -277,17 +347,19 @@ function ModalDetalhes({ visible, data, onClose }) {
 
 // ─── modal de exclusão ────────────────────────────────────────────────────────
 function ModalExcluir({ visible, tipo, onConfirm, onClose }) {
+  const p = useAgendaTheme();
+
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
-        <View style={{ backgroundColor: '#fff', borderRadius: 28, padding: 32, width: '100%', maxWidth: 400 }}>
-          <Text style={{ fontSize: 20, fontWeight: '900', color: '#111827', textAlign: 'center', marginBottom: 10 }}>Confirmar exclusão</Text>
-          <Text style={{ color: '#6b7280', textAlign: 'center', marginBottom: 28, fontSize: 14, lineHeight: 20 }}>
+        <View style={{ backgroundColor: p.surface, borderRadius: 28, padding: 32, width: '100%', maxWidth: 400, borderWidth: 1, borderColor: p.border }}>
+          <Text style={{ fontSize: 20, fontWeight: '900', color: p.text, textAlign: 'center', marginBottom: 10 }}>Confirmar exclusão</Text>
+          <Text style={{ color: p.subtitle, textAlign: 'center', marginBottom: 28, fontSize: 14, lineHeight: 20 }}>
             Tem certeza que deseja excluir {tipo ? `este(a) ${tipo.toLowerCase()}` : 'este agendamento'}? Esta ação não pode ser desfeita.
           </Text>
           <View style={{ flexDirection: 'row', gap: 12 }}>
-            <TouchableOpacity onPress={onClose} style={{ flex: 1, backgroundColor: '#f3f4f6', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
-              <Text style={{ fontWeight: '900', color: '#6b7280' }}>Cancelar</Text>
+            <TouchableOpacity onPress={onClose} style={{ flex: 1, backgroundColor: p.surfaceMuted, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
+              <Text style={{ fontWeight: '900', color: p.subtitle }}>Cancelar</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onConfirm} style={{ flex: 1, backgroundColor: '#dc2626', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
               <Text style={{ fontWeight: '900', color: '#fff' }}>Sim, excluir</Text>
@@ -301,6 +373,7 @@ function ModalExcluir({ visible, tipo, onConfirm, onClose }) {
 
 // ─── card de consulta (espelha o da web) ─────────────────────────────────────
 function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
+  const p = useAgendaTheme();
   const d = consulta.data_consulta ? new Date(consulta.data_consulta) : null;
   const diaStr = d ? `${String(d.getUTCDate()).padStart(2,'0')} ${d.toLocaleString('pt-BR',{month:'short',timeZone:'UTC'})}` : '--';
   const horaStr = consulta.horario_consulta?.slice(0, 5) || '--:--';
@@ -311,41 +384,41 @@ function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
       onPress={onPress}
       activeOpacity={0.85}
       style={{
-        backgroundColor: isHistory ? '#fafafa' : '#fff', borderRadius: 22, padding: 18,
+        backgroundColor: isHistory ? p.surfaceHistory : p.surface, borderRadius: 22, padding: 18,
         flexDirection: 'row', gap: 16, alignItems: 'flex-start',
-        borderWidth: 1, borderColor: isHistory ? '#e5e7eb' : '#ede9fe', marginBottom: 12,
+        borderWidth: 1, borderColor: isHistory ? p.border : p.accentBorder, marginBottom: 12,
         opacity: isHistory ? 0.88 : 1,
       }}
     >
       {/* coluna de hora */}
-      <View style={{ minWidth: 64, alignItems: 'center', paddingRight: 16, borderRightWidth: 1, borderRightColor: '#f3f4f6' }}>
-        <Text style={{ fontSize: 11, fontWeight: '900', color: '#9ca3af', letterSpacing: 1, textTransform: 'uppercase' }}>{diaStr}</Text>
-        <Text style={{ fontSize: 22, fontWeight: '900', color: '#111827', marginTop: 4 }}>{horaStr}</Text>
-        {isHistory && <Text style={{ fontSize: 10, color: '#9ca3af', fontWeight: '800', marginTop: 3 }}>feito</Text>}
+      <View style={{ minWidth: 64, alignItems: 'center', paddingRight: 16, borderRightWidth: 1, borderRightColor: p.softBorder }}>
+        <Text style={{ fontSize: 11, fontWeight: '900', color: p.muted, letterSpacing: 1, textTransform: 'uppercase' }}>{diaStr}</Text>
+        <Text style={{ fontSize: 22, fontWeight: '900', color: p.text, marginTop: 4 }}>{horaStr}</Text>
+        {isHistory && <Text style={{ fontSize: 10, color: p.muted, fontWeight: '800', marginTop: 3 }}>feito</Text>}
       </View>
 
       {/* corpo */}
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <Text style={{ fontSize: 17, fontWeight: '900', color: '#111827', flexShrink: 1 }}>{consulta.tipo_de_consulta}</Text>
+          <Text style={{ fontSize: 17, fontWeight: '900', color: p.text, flexShrink: 1 }}>{consulta.tipo_de_consulta}</Text>
           <StatusBadge status={consulta.status} />
         </View>
 
         <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <Dog size={14} color="#9333ea" />
-            <Text style={{ fontSize: 13, color: '#9333ea', fontWeight: '600' }}>@{consulta.pet?.nome}</Text>
+            <Dog size={14} color={p.accent} />
+            <Text style={{ fontSize: 13, color: p.accent, fontWeight: '600' }}>@{consulta.pet?.nome}</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-            <User size={14} color="#6b7280" />
-            <Text style={{ fontSize: 13, color: '#6b7280' }}>Vet: {consulta.veterinario?.nome}</Text>
+            <User size={14} color={p.subtitle} />
+            <Text style={{ fontSize: 13, color: p.subtitle }}>Vet: {consulta.veterinario?.nome}</Text>
           </View>
         </View>
 
         {/* aviso pendente */}
         {consulta.status === 'Pendente' && (
-          <View style={{ marginTop: 10, backgroundColor: '#fefce8', borderColor: '#fde68a', borderWidth: 1, borderRadius: 12, padding: 10 }}>
-            <Text style={{ fontSize: 12, color: '#a16207', fontStyle: 'italic' }}>
+          <View style={{ marginTop: 10, backgroundColor: p.warningSoft, borderColor: p.warningBorder, borderWidth: 1, borderRadius: 12, padding: 10 }}>
+            <Text style={{ fontSize: 12, color: p.warningText, fontStyle: 'italic' }}>
               Aguardando confirmação do veterinário
             </Text>
           </View>
@@ -354,14 +427,14 @@ function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
 
       {/* ícone + excluir */}
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <View style={{ backgroundColor: isHistory ? '#f3f4f6' : '#f3e8ff', borderRadius: 16, padding: 14 }}>
-          <Calendar size={20} color={isHistory ? '#6b7280' : '#9333ea'} />
+        <View style={{ backgroundColor: isHistory ? p.surfaceMuted : p.accentSoft, borderRadius: 16, padding: 14 }}>
+          <Calendar size={20} color={isHistory ? p.subtitle : p.accent} />
         </View>
         {!isHistory && (
           <TouchableOpacity
             onPress={onDelete}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={{ padding: 6, borderRadius: 8, backgroundColor: '#fef2f2' }}
+            style={{ padding: 6, borderRadius: 8, backgroundColor: p.dangerSoft }}
           >
             <Trash2 size={16} color="#ef4444" />
           </TouchableOpacity>
@@ -373,6 +446,7 @@ function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
 
 // ─── card de vacina ───────────────────────────────────────────────────────────
 function CardVacina({ vacina, onPress, onDelete, variant = 'upcoming' }) {
+  const p = useAgendaTheme();
   const d = vacina.data_aplicacao ? new Date(vacina.data_aplicacao) : null;
   const diaStr = d ? `${String(d.getUTCDate()).padStart(2,'0')} ${d.toLocaleString('pt-BR',{month:'short',timeZone:'UTC'})}` : '--';
   const isHistory = variant === 'history';
@@ -382,34 +456,34 @@ function CardVacina({ vacina, onPress, onDelete, variant = 'upcoming' }) {
       onPress={onPress}
       activeOpacity={0.85}
       style={{
-        backgroundColor: isHistory ? '#fafafa' : '#fff', borderRadius: 22, padding: 18,
+        backgroundColor: isHistory ? p.surfaceHistory : p.surface, borderRadius: 22, padding: 18,
         flexDirection: 'row', gap: 16, alignItems: 'flex-start',
-        borderWidth: 1, borderColor: isHistory ? '#e5e7eb' : '#fee2e2', marginBottom: 12,
+        borderWidth: 1, borderColor: isHistory ? p.border : p.dangerSoft, marginBottom: 12,
         opacity: isHistory ? 0.88 : 1,
       }}
     >
-      <View style={{ minWidth: 60, alignItems: 'center', paddingRight: 16, borderRightWidth: 1, borderRightColor: '#f3f4f6' }}>
-        <Text style={{ fontSize: 11, fontWeight: '900', color: '#9ca3af', letterSpacing: 1, textTransform: 'uppercase' }}>{diaStr}</Text>
-        <Text style={{ fontSize: 16, fontWeight: '900', color: '#111827', marginTop: 4 }}>Vacina</Text>
+      <View style={{ minWidth: 60, alignItems: 'center', paddingRight: 16, borderRightWidth: 1, borderRightColor: p.softBorder }}>
+        <Text style={{ fontSize: 11, fontWeight: '900', color: p.muted, letterSpacing: 1, textTransform: 'uppercase' }}>{diaStr}</Text>
+        <Text style={{ fontSize: 16, fontWeight: '900', color: p.text, marginTop: 4 }}>Vacina</Text>
       </View>
 
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 18, fontWeight: '900', color: '#111827', marginBottom: 6 }}>{vacina.nome}</Text>
+        <Text style={{ fontSize: 18, fontWeight: '900', color: p.text, marginBottom: 6 }}>{vacina.nome}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
-          <Dog size={14} color="#9333ea" />
-          <Text style={{ fontSize: 13, color: '#9333ea', fontWeight: '600' }}>@{vacina.pet?.nome}</Text>
+          <Dog size={14} color={p.accent} />
+          <Text style={{ fontSize: 13, color: p.accent, fontWeight: '600' }}>@{vacina.pet?.nome}</Text>
         </View>
       </View>
 
       <View style={{ alignItems: 'center', gap: 8 }}>
-        <View style={{ backgroundColor: isHistory ? '#f3f4f6' : '#fef2f2', borderRadius: 16, padding: 14 }}>
-          <Syringe size={20} color={isHistory ? '#6b7280' : '#ef4444'} />
+        <View style={{ backgroundColor: isHistory ? p.surfaceMuted : p.dangerSoft, borderRadius: 16, padding: 14 }}>
+          <Syringe size={20} color={isHistory ? p.subtitle : '#ef4444'} />
         </View>
         {!isHistory && (
           <TouchableOpacity
             onPress={onDelete}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={{ padding: 6, borderRadius: 8, backgroundColor: '#fef2f2' }}
+            style={{ padding: 6, borderRadius: 8, backgroundColor: p.dangerSoft }}
           >
             <Trash2 size={16} color="#ef4444" />
           </TouchableOpacity>
@@ -422,6 +496,7 @@ function CardVacina({ vacina, onPress, onDelete, variant = 'upcoming' }) {
 // ─── tela principal ───────────────────────────────────────────────────────────
 export default function TelaAgendamento() {
   const navigation = useNavigation();
+  const p = useAgendaTheme();
   const [agenda, setAgenda] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [dataAtual, setDataAtual] = useState(new Date());
@@ -592,15 +667,15 @@ export default function TelaAgendamento() {
         {carregando ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color="#9333ea" />
-            <Text style={{ marginTop: 12, color: '#6b7280', fontSize: 14 }}>Carregando agenda...</Text>
+            <Text style={{ marginTop: 12, color: p.subtitle, fontSize: 14 }}>Carregando agenda...</Text>
           </View>
         ) : (
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
             {/* header */}
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 28, fontWeight: '900', color: '#111827', letterSpacing: -0.5 }}>Agendamentos</Text>
-              <Text style={{ color: '#6b7280', fontWeight: '500', fontSize: 14, marginTop: 2 }}>Próximos compromissos e histórico</Text>
+              <Text style={{ fontSize: 28, fontWeight: '900', color: p.text, letterSpacing: -0.5 }}>Agendamentos</Text>
+              <Text style={{ color: p.subtitle, fontWeight: '500', fontSize: 14, marginTop: 2 }}>Próximos compromissos e histórico</Text>
             </View>
 
             {/* botão novo */}
@@ -618,15 +693,15 @@ export default function TelaAgendamento() {
 
             {/* calendário strip – espelha o da web */}
             <View style={{
-              backgroundColor: '#fff', borderRadius: 24, padding: 18,
-              borderWidth: 1, borderColor: '#ede9fe', marginBottom: 22,
+              backgroundColor: p.surface, borderRadius: 24, padding: 18,
+              borderWidth: 1, borderColor: p.accentBorder, marginBottom: 22,
             }}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
                 <View style={{ flex: 1, paddingRight: 12 }}>
-                  <Text style={{ fontSize: 20, fontWeight: '900', color: '#111827' }}>
+                  <Text style={{ fontSize: 20, fontWeight: '900', color: p.text }}>
                     {mesCapitalizado} {dataAtual.getFullYear()}
                   </Text>
-                  <Text style={{ color: '#6b7280', fontSize: 13, fontWeight: '600', marginTop: 2 }}>
+                  <Text style={{ color: p.subtitle, fontSize: 13, fontWeight: '600', marginTop: 2 }}>
                     {dataSelecionadaTexto}
                   </Text>
                 </View>
@@ -648,11 +723,11 @@ export default function TelaAgendamento() {
                       d.setDate(d.getDate() - 7);
                       selecionarData(d);
                     }}
-                    style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#f9fafb', justifyContent: 'center', alignItems: 'center' }}
+                    style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: p.surfaceAlt, justifyContent: 'center', alignItems: 'center' }}
                     accessibilityRole="button"
                     accessibilityLabel="Semana anterior"
                   >
-                    <ChevronLeft size={21} color="#6b7280" />
+                    <ChevronLeft size={21} color={p.subtitle} />
                   </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => {
@@ -660,11 +735,11 @@ export default function TelaAgendamento() {
                       d.setDate(d.getDate() + 7);
                       selecionarData(d);
                     }}
-                    style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#f9fafb', justifyContent: 'center', alignItems: 'center' }}
+                    style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: p.surfaceAlt, justifyContent: 'center', alignItems: 'center' }}
                     accessibilityRole="button"
                     accessibilityLabel="Próxima semana"
                   >
-                    <ChevronRight size={21} color="#6b7280" />
+                    <ChevronRight size={21} color={p.subtitle} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -682,8 +757,8 @@ export default function TelaAgendamento() {
                     style={{
                         flex: 1, alignItems: 'center', paddingVertical: 12, paddingHorizontal: 4,
                         borderRadius: 18, borderWidth: 1,
-                        backgroundColor: isSelected ? '#9333ea' : isHoje ? '#faf5ff' : '#f9fafb',
-                        borderColor: isSelected ? '#9333ea' : isHoje ? '#d8b4fe' : '#f3f4f6',
+                        backgroundColor: isSelected ? '#9333ea' : isHoje ? p.accentSofter : p.surfaceAlt,
+                        borderColor: isSelected ? '#9333ea' : isHoje ? p.accentBorder : p.softBorder,
                         minHeight: 78,
                       }}
                       accessibilityRole="button"
@@ -692,25 +767,25 @@ export default function TelaAgendamento() {
                     >
                       <Text style={{
                         fontSize: 9, fontWeight: '900',
-                        textTransform: 'uppercase', color: isSelected ? '#fff' : isHoje ? '#9333ea' : '#9ca3af',
+                        textTransform: 'uppercase', color: isSelected ? '#fff' : isHoje ? p.accent : p.muted,
                         marginBottom: 4,
                       }}>
                         {dia.nome}
                       </Text>
-                      <Text style={{ fontSize: 20, fontWeight: '900', color: isSelected ? '#fff' : '#111827' }}>
+                      <Text style={{ fontSize: 20, fontWeight: '900', color: isSelected ? '#fff' : p.text }}>
                         {dia.num}
                       </Text>
                       <View style={{ height: 14, justifyContent: 'center', alignItems: 'center', marginTop: 2 }}>
                         {totalDia > 0 ? (
                           <View style={{
                             minWidth: 16, height: 16, borderRadius: 8,
-                            backgroundColor: isSelected ? 'rgba(255,255,255,0.22)' : '#ede9fe',
+                            backgroundColor: isSelected ? 'rgba(255,255,255,0.22)' : p.accentBadge,
                             justifyContent: 'center', alignItems: 'center',
                           }}>
-                            <Text style={{ fontSize: 9, fontWeight: '900', color: isSelected ? '#fff' : '#7e22ce' }}>{totalDia}</Text>
+                            <Text style={{ fontSize: 9, fontWeight: '900', color: isSelected ? '#fff' : p.accentText }}>{totalDia}</Text>
                           </View>
                         ) : isHoje ? (
-                          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: isSelected ? '#fff' : '#9333ea' }} />
+                          <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: isSelected ? '#fff' : p.accent }} />
                         ) : null}
                       </View>
                     </TouchableOpacity>
@@ -719,19 +794,19 @@ export default function TelaAgendamento() {
               </View>
 
               <View style={{ flexDirection: 'row', gap: 10, marginTop: 14 }}>
-                <View style={{ flex: 1, backgroundColor: '#f9fafb', borderRadius: 16, padding: 12 }}>
+                <View style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 16, padding: 12 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <CalendarCheck size={16} color="#9333ea" />
-                    <Text style={{ color: '#111827', fontWeight: '900', fontSize: 16 }}>{proximos.length}</Text>
+                    <CalendarCheck size={16} color={p.accent} />
+                    <Text style={{ color: p.text, fontWeight: '900', fontSize: 16 }}>{proximos.length}</Text>
                   </View>
-                  <Text style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>proximos</Text>
+                  <Text style={{ color: p.subtitle, fontSize: 12, marginTop: 2 }}>proximos</Text>
                 </View>
-                <View style={{ flex: 1, backgroundColor: '#f9fafb', borderRadius: 16, padding: 12 }}>
+                <View style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 16, padding: 12 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Clock size={16} color="#6b7280" />
-                    <Text style={{ color: '#111827', fontWeight: '900', fontSize: 16 }}>{historico.length}</Text>
+                    <Clock size={16} color={p.subtitle} />
+                    <Text style={{ color: p.text, fontWeight: '900', fontSize: 16 }}>{historico.length}</Text>
                   </View>
-                  <Text style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>historico</Text>
+                  <Text style={{ color: p.subtitle, fontSize: 12, marginTop: 2 }}>historico</Text>
                 </View>
               </View>
             </View>
@@ -751,12 +826,12 @@ export default function TelaAgendamento() {
             {!compromissosSelecionados.length && (
               <View style={{
                 alignItems: 'center', paddingVertical: 34, paddingHorizontal: 20,
-                backgroundColor: '#fff', borderRadius: 22,
-                borderWidth: 1, borderStyle: 'dashed', borderColor: '#e5e7eb',
+                backgroundColor: p.surface, borderRadius: 22,
+                borderWidth: 1, borderStyle: 'dashed', borderColor: p.border,
                 marginBottom: 22,
               }}>
-                <CalendarX size={36} color="#d1d5db" strokeWidth={1.5} />
-                <Text style={{ color: '#6b7280', fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
+                <CalendarX size={36} color={p.emptyIcon} strokeWidth={1.5} />
+                <Text style={{ color: p.subtitle, fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
                   Nenhum compromisso neste dia.
                 </Text>
               </View>
@@ -773,12 +848,12 @@ export default function TelaAgendamento() {
             {!proximos.length && (
               <View style={{
                 alignItems: 'center', paddingVertical: 34, paddingHorizontal: 20,
-                backgroundColor: '#fff', borderRadius: 22,
-                borderWidth: 1, borderStyle: 'dashed', borderColor: '#e5e7eb',
+                backgroundColor: p.surface, borderRadius: 22,
+                borderWidth: 1, borderStyle: 'dashed', borderColor: p.border,
                 marginBottom: 22,
               }}>
-                <CalendarX size={36} color="#d1d5db" strokeWidth={1.5} />
-                <Text style={{ color: '#6b7280', fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
+                <CalendarX size={36} color={p.emptyIcon} strokeWidth={1.5} />
+                <Text style={{ color: p.subtitle, fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
                   Nenhum compromisso futuro.
                 </Text>
               </View>
@@ -795,11 +870,11 @@ export default function TelaAgendamento() {
             {!historico.length && (
               <View style={{
                 alignItems: 'center', paddingVertical: 28, paddingHorizontal: 20,
-                backgroundColor: '#fff', borderRadius: 22,
-                borderWidth: 1, borderStyle: 'dashed', borderColor: '#e5e7eb',
+                backgroundColor: p.surface, borderRadius: 22,
+                borderWidth: 1, borderStyle: 'dashed', borderColor: p.border,
               }}>
-                <Clock size={32} color="#d1d5db" strokeWidth={1.5} />
-                <Text style={{ color: '#6b7280', fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
+                <Clock size={32} color={p.emptyIcon} strokeWidth={1.5} />
+                <Text style={{ color: p.subtitle, fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
                   Nenhum histÃ³rico encontrado.
                 </Text>
               </View>

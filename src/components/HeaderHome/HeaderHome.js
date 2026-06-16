@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, Check, Pill, Star, ChevronLeft, SlidersHorizontal, X } from 'lucide-react-native';
 import { styles } from './styles';
 import { getUserInfo } from '../../services/auth';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 const TUTOR_IMAGE = require('../../assets/user_default.png');
 
@@ -18,9 +19,15 @@ export default function HeaderHome({
   userProfileImage = null,
   onSearch,
   searchValue = '',
+  searchPlaceholder = 'O que deseja procurar',
+  onFilterPress,
+  filterActive = false,
 }) {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { isDarkMode } = useAppTheme();
+  const headerIconColor = isDarkMode ? '#F5F7FF' : '#0D214F';
+  const notificationIconColor = isDarkMode ? '#E9D5FF' : '#333';
   const [showNotifModal, setShowNotifModal] = useState(false);
   const [notificationCount] = useState(3);
   const [userData, setUserData] = useState(null);
@@ -77,7 +84,7 @@ export default function HeaderHome({
                 accessibilityLabel="Voltar"
                 accessibilityHint="Retorna para a tela anterior"
               >
-                <ChevronLeft size={24} color="#0D214F" strokeWidth={2.5} />
+                <ChevronLeft size={24} color={headerIconColor} strokeWidth={2.5} />
               </TouchableOpacity>
             ) : null}
 
@@ -104,7 +111,7 @@ export default function HeaderHome({
                 accessibilityLabel="Abrir notificações"
                 accessibilityHint="Exibe a central de notificações"
               >
-                <Bell size={20} color="#333" />
+                <Bell size={20} color={notificationIconColor} />
                 {notificationCount > 0 && (
                   <View style={styles.badge}>
                     <Text style={styles.badgeText}>{notificationCount}</Text>
@@ -136,25 +143,42 @@ export default function HeaderHome({
 
         {showSearch && (
           <View style={styles.searchContainer}>
-            <TextInput
-              placeholder="O que deseja procurar"
-              placeholderTextColor="#999"
-lt              style={styles.searchInput}
-              accessibilityLabel="Campo de busca"
-              value={searchValue}
-              onChangeText={(text) => {
-                if (onSearch) {
-                  onSearch(text);
-                }
-              }}
-            />
+            <View style={styles.searchField}>
+              <TextInput
+                placeholder={searchPlaceholder}
+                placeholderTextColor="#999"
+                style={styles.searchInput}
+                accessibilityLabel="Campo de busca"
+                value={searchValue}
+                returnKeyType="search"
+                blurOnSubmit
+                onChangeText={(text) => {
+                  if (onSearch) {
+                    onSearch(text);
+                  }
+                }}
+              />
+
+              {searchValue ? (
+                <TouchableOpacity
+                  style={styles.clearSearchBtn}
+                  onPress={() => onSearch?.('')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Limpar pesquisa"
+                >
+                  <X size={16} color="#7E869E" strokeWidth={2.5} />
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
             <TouchableOpacity
-              style={styles.filterBtn}
+              style={[styles.filterBtn, filterActive && styles.filterBtnActive]}
+              onPress={onFilterPress}
               accessibilityRole="button"
               accessibilityLabel="Filtrar busca"
               accessibilityHint="Abre filtros de pesquisa"
             >
-              <SlidersHorizontal size={18} color="#9127E1" strokeWidth={2.2} />
+              <SlidersHorizontal size={18} color={filterActive ? '#FFF' : '#9127E1'} strokeWidth={2.2} />
             </TouchableOpacity>
           </View>
         )}
@@ -176,7 +200,7 @@ lt              style={styles.searchInput}
                 accessibilityLabel="Fechar notificações"
                 accessibilityHint="Fecha a central de notificações"
               >
-                <X size={22} color="#7E869E" strokeWidth={2.5} />
+                <X size={22} color={isDarkMode ? '#AEB6CC' : '#7E869E'} strokeWidth={2.5} />
               </TouchableOpacity>
             </View>
 

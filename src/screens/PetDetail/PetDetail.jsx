@@ -16,17 +16,173 @@ import { ChevronLeft } from 'lucide-react-native/icons';
 import { styles } from './styles';
 import TabBar from '../../components/TabBar';
 import api from '../../services/api';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 const TUTOR_DEFAULT = require('../../assets/user_default.png');
+
+const PET_DETAIL_THEME = {
+  light: {
+    background: '#f5f5f5',
+    surface: '#FFF',
+    surfaceAlt: '#F8F9FA',
+    text: '#333',
+    subtitle: '#666',
+    muted: '#999',
+    border: '#E8E8E8',
+    softBorder: '#F0F0F0',
+    accent: '#A855F7',
+    accentSoft: '#F3E8FF',
+    tutorSurface: '#F5F0FF',
+    tutorBorder: '#E8D5F7',
+  },
+  dark: {
+    background: '#0F1020',
+    surface: '#17182B',
+    surfaceAlt: '#202238',
+    text: '#F5F7FF',
+    subtitle: '#AEB6CC',
+    muted: '#8E98B5',
+    border: '#2A2D45',
+    softBorder: '#30334F',
+    accent: '#B77CFF',
+    accentSoft: '#2A1D42',
+    tutorSurface: '#211936',
+    tutorBorder: '#4B3471',
+  },
+};
+
+const parsePetDate = (value) => {
+  if (!value) return null;
+
+  const text = String(value);
+  const brDateMatch = text.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+
+  if (brDateMatch) {
+    const [, day, month, year] = brDateMatch;
+    const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  const parsed = new Date(text);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const formatAgeFromDate = (value) => {
+  const birthDate = parsePetDate(value);
+  if (!birthDate) return null;
+
+  const today = new Date();
+  let totalMonths =
+    (today.getFullYear() - birthDate.getFullYear()) * 12 +
+    (today.getMonth() - birthDate.getMonth());
+
+  if (today.getDate() < birthDate.getDate()) {
+    totalMonths -= 1;
+  }
+
+  if (totalMonths < 0) return null;
+
+  const years = Math.floor(totalMonths / 12);
+  const months = totalMonths % 12;
+
+  if (years === 0) {
+    return `${totalMonths} ${totalMonths === 1 ? 'mes' : 'meses'}`;
+  }
+
+  if (months === 0) {
+    return `${years} ${years === 1 ? 'ano' : 'anos'}`;
+  }
+
+  return `${years} ${years === 1 ? 'ano' : 'anos'} e ${months} ${months === 1 ? 'mes' : 'meses'}`;
+};
+
+const formatWeight = (value) => {
+  if (value === null || value === undefined || value === '') return '-- kg';
+  const text = String(value);
+  return text.toLowerCase().includes('kg') ? text : `${text} kg`;
+};
+
+const firstValue = (...values) =>
+  values.find((value) => value !== undefined && value !== null && value !== '');
+
+const getTutorIdFromPet = (rawData = {}) =>
+  firstValue(
+    rawData.idTutor,
+    rawData.ID_TUTOR,
+    rawData.tutorId,
+    rawData.TUTOR_ID,
+    rawData.id_tutor,
+    rawData.tutor_id,
+    rawData.IDTUTOR,
+    rawData.idResponsavel,
+    rawData.ID_RESPONSAVEL,
+    rawData.responsavelId,
+    rawData.tutor?.id,
+    rawData.tutor?.ID,
+    rawData.TUTOR?.id,
+    rawData.TUTOR?.ID,
+    rawData.responsavel?.id,
+    rawData.responsavel?.ID
+  );
+
+const getTutorNameFromPet = (rawData = {}) =>
+  firstValue(
+    rawData.nomeTutor,
+    rawData.NOME_TUTOR,
+    rawData.tutorNome,
+    rawData.TUTOR_NOME,
+    rawData.nome_tutor,
+    rawData.tutor_nome,
+    rawData.nomeResponsavel,
+    rawData.NOME_RESPONSAVEL,
+    rawData.responsavelNome,
+    rawData.tutor?.nome,
+    rawData.tutor?.NOME,
+    rawData.tutor?.nome_tutor,
+    rawData.TUTOR?.nome,
+    rawData.TUTOR?.NOME,
+    rawData.responsavel?.nome,
+    rawData.responsavel?.NOME,
+    rawData.tutor
+  );
+
+const getTutorImageFromPet = (rawData = {}) =>
+  firstValue(
+    rawData.imagemTutor,
+    rawData.IMAGEM_TUTOR,
+    rawData.tutorImagem,
+    rawData.TUTOR_IMAGEM,
+    rawData.imagem_tutor,
+    rawData.fotoTutor,
+    rawData.FOTO_TUTOR,
+    rawData.tutor?.imagem,
+    rawData.tutor?.IMAGEM,
+    rawData.tutor?.imagem_perfil_tutor,
+    rawData.TUTOR?.imagem,
+    rawData.TUTOR?.IMAGEM,
+    rawData.responsavel?.imagem,
+    rawData.responsavel?.IMAGEM
+  );
+
+const formatTutorImage = (image) => {
+  if (!image || typeof image !== 'string') return TUTOR_DEFAULT;
+  return {
+    uri: image.startsWith('http')
+      ? image
+      : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${image}`,
+  };
+};
 
 export default function PetDetail() {
   const navigation = useNavigation();
   const route = useRoute();
+  const { isDarkMode } = useAppTheme();
+  const p = isDarkMode ? PET_DETAIL_THEME.dark : PET_DETAIL_THEME.light;
   const [activeTab, setActiveTab] = useState('home');
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
   const [petData, setPetData] = useState(null);
+  const [vaccines, setVaccines] = useState([]);
 
   // Normaliza dados do pet para formato padrão
   const normalizePetData = (rawData) => {
@@ -50,6 +206,9 @@ export default function PetDetail() {
     const sexo = (rawData.sexo || rawData.SEXO || '♂').toLowerCase();
     const genero = sexoMap[sexo] || '♂';
 
+    const tutorName = getTutorNameFromPet(rawData);
+    const tutorImage = getTutorImageFromPet(rawData);
+
     // Trata castrado (pode vir como string ou boolean)
     let castrated = 'Não';
     const castradoValue = rawData.castrado || rawData.CASTRADO;
@@ -62,19 +221,23 @@ export default function PetDetail() {
     }
 
     const normalized = {
-      id: rawData.id || rawData.ID_PET,
+      id: rawData.id || rawData.ID || rawData.ID_PET,
       name: rawData.nome || rawData.NOME || 'Pet',
       especie: rawData.especie || rawData.ESPECIE || 'Não informado',
       breed: rawData.raca || rawData.RACA || 'Não informado',
-      age: String(rawData.idade || rawData.IDADE || '0'),
-      weight: rawData.peso || rawData.PESO || '-- kg',
+      age: formatAgeFromDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO) ||
+        (rawData.idade || rawData.IDADE ? `${rawData.idade || rawData.IDADE} ${Number(rawData.idade || rawData.IDADE) === 1 ? 'ano' : 'anos'}` : 'Nao informado'),
+      birthDate: parsePetDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO)?.toLocaleDateString('pt-BR') || 'Nao informada',
+      weight: formatWeight(rawData.peso || rawData.PESO),
       castrated: castrated,
+      sexo: rawData.sexo || rawData.SEXO || 'Nao informado',
       description: rawData.descricao || rawData.DESCRICAO || rawData.biografiaAdocao || 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
       personality: rawData.personalidade || rawData.PERSONALIDADE || 'Nenhuma característica informada.',
-      tutor: 'Carregando...',
-      tutorImage: TUTOR_DEFAULT,
+      tutor: typeof tutorName === 'string' ? tutorName : 'Tutor nao informado',
+      tutorImage: formatTutorImage(tutorImage),
       image: getImageUri(rawData.imagem || rawData.IMAGEM),
-      genero: genero
+      genero: genero,
+      vaccines: rawData.vacinas || rawData.VACINAS || [],
     };
 
     return normalized;
@@ -94,35 +257,66 @@ export default function PetDetail() {
         // Normaliza os dados recebidos
         let normalized = normalizePetData(incomingPet);
         setPetData(normalized);
+        setVaccines(Array.isArray(normalized.vaccines) ? normalized.vaccines : []);
+
+        if (normalized.id) {
+          try {
+            const response = await api.get(`/vacinas/pet/${normalized.id}`);
+            setVaccines(Array.isArray(response.data) ? response.data : []);
+          } catch (error) {
+            setVaccines(Array.isArray(normalized.vaccines) ? normalized.vaccines : []);
+          }
+        }
+
+        // Se o feed veio resumido, tenta buscar o pet completo para achar tutor.
+        let petWithTutor = incomingPet;
+        let tutorId = getTutorIdFromPet(petWithTutor);
+
+        if (!tutorId && normalized.id) {
+          try {
+            const petResponse = await api.get(`/pets/${normalized.id}`);
+            const fullPetData = petResponse.data?.pet || petResponse.data?.data || petResponse.data || {};
+            petWithTutor = { ...incomingPet, ...fullPetData };
+            tutorId = getTutorIdFromPet(petWithTutor);
+            normalized = {
+              ...normalizePetData(petWithTutor),
+              vaccines: normalized.vaccines,
+            };
+            setPetData(normalized);
+          } catch (error) {
+            tutorId = null;
+          }
+        }
 
         // Se temos o ID do tutor, busca os dados dele
-        const tutorId = incomingPet.idTutor || incomingPet.ID_TUTOR;
         if (tutorId) {
           try {
             setLoading(true);
-            const token = await AsyncStorage.getItem('@token');
-            
-            const response = await api.get(`/tutors/${tutorId}`, {
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            });
+            const response = await api.get(`/tutors/${tutorId}`);
 
             if (response.data) {       
               // Atualiza os dados do tutor
-              normalized.tutor = response.data.nome || response.data.NOME || 'Tutor';
-              normalized.tutorImage = response.data.imagem || response.data.IMAGEM 
-                ? { uri: (response.data.imagem || response.data.IMAGEM).startsWith('http') 
-                    ? (response.data.imagem || response.data.IMAGEM)
-                    : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${response.data.imagem || response.data.IMAGEM}`
-                  }
-                : TUTOR_DEFAULT;
+              normalized.tutor =
+                response.data.nome ||
+                response.data.NOME ||
+                response.data.nome_tutor ||
+                response.data.NOME_TUTOR ||
+                normalized.tutor ||
+                'Tutor';
+              normalized.tutorImage = formatTutorImage(
+                response.data.imagem ||
+                response.data.IMAGEM ||
+                response.data.imagem_perfil_tutor ||
+                response.data.IMAGEM_PERFIL_TUTOR
+              );
               
               setPetData(normalized);
             }
           } catch (error) {
-            throw new Error("Erro ao carregar dados do tutor: " + (error.response?.data?.error || error.message));
-            // Continua com os dados que já temos
+            setPetData({
+              ...normalized,
+              tutor: normalized.tutor || 'Tutor nao informado',
+            });
           } finally {
             setLoading(false);
           }
@@ -130,7 +324,6 @@ export default function PetDetail() {
           setLoading(false);
         }
       } catch (error) {
-        throw new Error("Erro ao carregar detalhes do pet: " + error.message);
         setLoading(false);
       }
     };
@@ -142,8 +335,10 @@ export default function PetDetail() {
   const pet = petData || {
     name: 'Niça',
     breed: 'Branco',
-    age: '11',
+    age: '11 anos',
+    birthDate: 'Nao informada',
     weight: '-- kg',
+    sexo: 'Macho',
     castrated: 'Não',
     description: 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
     personality: 'Nenhuma característica informada.',
@@ -168,24 +363,31 @@ export default function PetDetail() {
     Alert.alert('Compartilhar', 'Compartilhando perfil do ' + pet.name);
   };
 
+  const vaccineNames = vaccines
+    .map((vaccine) => vaccine.nome || vaccine.NOME || vaccine.name || vaccine.descricao || vaccine.DESCRICAO)
+    .filter(Boolean);
+  const vaccineSummary = vaccineNames.length > 0
+    ? vaccineNames.join(', ')
+    : 'Nenhuma vacina informada';
+
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: p.background }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.container}>
+      <View style={[styles.container, { backgroundColor: p.background }]}>
         
         {/* HEADER PERSONALIZADO */}
-        <View style={styles.header}>
+        <View style={[styles.header, { backgroundColor: p.surface, borderBottomColor: p.softBorder }]}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <ChevronLeft size={24} color="#333" />
-            <Text style={styles.backText}>Voltar</Text>
+            <ChevronLeft size={24} color={p.text} />
+            <Text style={[styles.backText, { color: p.muted }]}>Voltar</Text>
           </TouchableOpacity>
           
-          <Text style={styles.headerTitle}>{pet.name}</Text>
+          <Text style={[styles.headerTitle, { color: p.text }]}>{pet.name}</Text>
           
           <TouchableOpacity 
             style={styles.favoriteButton}
@@ -193,7 +395,7 @@ export default function PetDetail() {
           >
             <Heart 
               size={24} 
-              color={isFavorite ? '#FF6B9D' : '#CCC'} 
+              color={isFavorite ? '#FF6B9D' : p.muted} 
               fill={isFavorite ? '#FF6B9D' : 'none'}
             />
           </TouchableOpacity>
@@ -209,12 +411,12 @@ export default function PetDetail() {
           {loading ? (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
               <ActivityIndicator size="large" color="#9127E1" />
-              <Text style={{ marginTop: 10, color: '#666' }}>Carregando informações...</Text>
+              <Text style={{ marginTop: 10, color: p.subtitle }}>Carregando informações...</Text>
             </View>
           ) : (
           <>
           {/* PET IMAGE */}
-          <View style={styles.imageContainer}>
+          <View style={[styles.imageContainer, { backgroundColor: p.surface }]}>
             <Image 
               source={{ uri: pet.image }} 
               style={styles.petImage} 
@@ -226,23 +428,23 @@ export default function PetDetail() {
           </View>
 
           {/* PET NAME AND BREED */}
-          <View style={styles.petHeaderSection}>
-            <Text style={styles.petName}>{pet.name}</Text>
-            <View style={styles.petBreedBadge}>
-              <Text style={styles.petBreedText}>{pet.breed}</Text>
+          <View style={[styles.petHeaderSection, { backgroundColor: p.surface, borderBottomColor: p.softBorder }]}>
+            <Text style={[styles.petName, { color: p.text }]}>{pet.name}</Text>
+            <View style={[styles.petBreedBadge, { backgroundColor: p.accentSoft }]}>
+              <Text style={[styles.petBreedText, { color: p.accent }]}>{pet.breed}</Text>
             </View>
           </View>
 
           {/* TUTOR RESPONSÁVEL */}
-          <View style={styles.tutorCard}>
-            <Text style={styles.tutorLabel}>TUTOR RESPONSÁVEL</Text>
+          <View style={[styles.tutorCard, { backgroundColor: p.tutorSurface, borderColor: p.tutorBorder }]}>
+            <Text style={[styles.tutorLabel, { color: p.muted }]}>TUTOR RESPONSÁVEL</Text>
             <View style={styles.tutorContent}>
               <Image 
                 source={pet.tutorImage} 
                 style={styles.tutorImage} 
               />
               <View style={styles.tutorInfo}>
-                <Text style={styles.tutorName}>{pet.tutor}</Text>
+                <Text style={[styles.tutorName, { color: p.text }]}>{pet.tutor}</Text>
               </View>
               <TouchableOpacity 
                 style={styles.messageButton}
@@ -254,39 +456,66 @@ export default function PetDetail() {
           </View>
 
           {/* PET INFO CARDS */}
-          <View style={styles.infoCardsContainer}>
-            <View style={styles.infoCard}>
-              <Text style={styles.infoLabel}>IDADE</Text>
-              <Text style={styles.infoValue}>{pet.age} anos</Text>
+          <View style={[styles.infoCardsContainer, { backgroundColor: p.surface }]}>
+            <View style={[styles.infoCard, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
+              <Text style={[styles.infoLabel, { color: p.muted }]}>IDADE</Text>
+              <Text style={[styles.infoValue, { color: p.text }]}>{pet.age}</Text>
             </View>
-            <View style={styles.infoCard}>
-              <Text style={styles.infoLabel}>PESO</Text>
-              <Text style={styles.infoValue}>{pet.weight}</Text>
+            <View style={[styles.infoCard, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
+              <Text style={[styles.infoLabel, { color: p.muted }]}>PESO</Text>
+              <Text style={[styles.infoValue, { color: p.text }]}>{pet.weight}</Text>
             </View>
-            <View style={styles.infoCard}>
-              <Text style={styles.infoLabel}>CASTRADO</Text>
-              <Text style={styles.infoValue}>{pet.castrated}</Text>
+            <View style={[styles.infoCard, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
+              <Text style={[styles.infoLabel, { color: p.muted }]}>CASTRADO</Text>
+              <Text style={[styles.infoValue, { color: p.text }]}>{pet.castrated}</Text>
+            </View>
+          </View>
+
+          {/* SAUDE E CUIDADOS */}
+          <View style={[styles.section, { backgroundColor: p.surface }]}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.emojiIcon}>+</Text>
+              <Text style={[styles.sectionTitle, { color: p.text }]}>Saude e cuidados</Text>
+            </View>
+
+            <View style={styles.healthGrid}>
+              <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>Nascimento</Text>
+                <Text style={[styles.healthValue, { color: p.text }]}>{pet.birthDate}</Text>
+              </View>
+              <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>Sexo</Text>
+                <Text style={[styles.healthValue, { color: p.text }]}>{pet.sexo}</Text>
+              </View>
+              <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>Especie</Text>
+                <Text style={[styles.healthValue, { color: p.text }]}>{pet.especie}</Text>
+              </View>
+              <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>Vacinas</Text>
+                <Text style={[styles.healthValue, { color: p.text }]}>{vaccineSummary}</Text>
+              </View>
             </View>
           </View>
 
           {/* CONHEÇA O PET */}
-          <View style={styles.section}>
+          <View style={[styles.section, { backgroundColor: p.surface }]}>
             <View style={styles.sectionHeader}>
-              <View style={styles.sectionBorder} />
-              <Text style={styles.sectionTitle}>Conheça o {pet.name}</Text>
+              <View style={[styles.sectionBorder, { backgroundColor: p.accent }]} />
+              <Text style={[styles.sectionTitle, { color: p.text }]}>Conheça o {pet.name}</Text>
             </View>
-            <Text style={styles.sectionDescription}>
+            <Text style={[styles.sectionDescription, { color: p.subtitle }]}>
               {pet.description}
             </Text>
           </View>
 
           {/* PERSONALIDADE */}
-          <View style={styles.section}>
+          <View style={[styles.section, { backgroundColor: p.surface }]}>
             <View style={styles.sectionHeader}>
               <Text style={styles.emojiIcon}>✨</Text>
-              <Text style={styles.sectionTitle}>Personalidade</Text>
+              <Text style={[styles.sectionTitle, { color: p.text }]}>Personalidade</Text>
             </View>
-            <Text style={styles.sectionDescription}>
+            <Text style={[styles.sectionDescription, { color: p.subtitle }]}>
               {pet.personality}
             </Text>
           </View>
@@ -294,11 +523,11 @@ export default function PetDetail() {
           {/* ACTION BUTTONS */}
           <View style={styles.actionButtons}>
             <TouchableOpacity 
-              style={styles.shareButton}
+              style={[styles.shareButton, { backgroundColor: p.surface, borderColor: p.border }]}
               onPress={handleShare}
             >
-              <Share2 size={18} color="#A0A7BA" />
-              <Text style={styles.shareButtonText}>Compartilhar</Text>
+              <Share2 size={18} color={p.muted} />
+              <Text style={[styles.shareButtonText, { color: p.muted }]}>Compartilhar</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 

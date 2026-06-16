@@ -26,7 +26,7 @@ export default function TabBar({ onLogout, activeTab, onTabPress }) {
   const handleTabPress = (tabId) => {
     if (tabId === 'geral') {
       setShowSidebar(true);
-    } else if (activeKey !== tabId.toLowerCase()) {
+    } else if (currentRouteKey !== tabId.toLowerCase()) {
       navigation.navigate(tabId);
     }
 
@@ -35,7 +35,8 @@ export default function TabBar({ onLogout, activeTab, onTabPress }) {
     }
   };
 
-  const activeKey = String(activeTab || route.name || '').toLowerCase();
+  const currentRouteKey = String(route.name || '').toLowerCase();
+  const activeKey = currentRouteKey || String(activeTab || '').toLowerCase();
 
   return (
     <>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   ScrollView,
@@ -15,7 +15,7 @@ import {
   Easing,
 } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import {
   PawPrint,
   X,
@@ -33,6 +33,7 @@ import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import api from '../../services/api';
 import { getUserInfo } from '../../services/auth';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 // SONS DE LIKE (PETCH)
 const MIAU_SOUND = require('../../assets/miau.mp3');
@@ -44,6 +45,8 @@ const CACHORRO_ROSNA = require('../../assets/cachorrorosna.mp3'); // <--- ADICIO
 
 const MISSY_IMAGE = require('../../assets/default-pet.png'); 
 
+const getPetId = (pet) => String(pet?.id || pet?.ID || '');
+
 const ESTADOS_CIDADES = {
   'Acre': ['Rio Branco', 'Cruzeiro do Sul'],
   'Pará': ['Belém', 'Ananindeua', 'Parauapebas', 'Marabá'],
@@ -53,6 +56,32 @@ const ESTADOS_CIDADES = {
 
 export default function TinderPet() {
   const navigation = useNavigation();
+  const { isDarkMode } = useAppTheme();
+  const theme = isDarkMode
+    ? {
+        background: '#0F1020',
+        surface: '#17182B',
+        surfaceAlt: '#202238',
+        border: '#30334F',
+        text: '#F5F7FF',
+        muted: '#AEB6CC',
+        overlay: 'rgba(5, 7, 18, 0.78)',
+        accent: '#B77CFF',
+        accentSoft: '#2A1D42',
+        orangeSoft: '#3A2419',
+      }
+    : {
+        background: '#F5F5F5',
+        surface: '#FFFFFF',
+        surfaceAlt: '#F8F9FA',
+        border: '#F0F0F5',
+        text: '#0D214F',
+        muted: '#7E869E',
+        overlay: 'rgba(13, 33, 79, 0.7)',
+        accent: '#7055C8',
+        accentSoft: '#F1EDFF',
+        orangeSoft: '#FFF4EE',
+      };
 
   // Estados de Modais
   const [modalEstadoOpen, setModalEstadoOpen] = useState(false);
@@ -77,6 +106,29 @@ export default function TinderPet() {
   const btnScale = useRef(new Animated.Value(1)).current;
   const [hearts, setHearts] = useState([]);
 
+  const carregarMeusPets = useCallback(async (currentUser = user) => {
+    if (!currentUser?.id) return;
+
+    const response = await api.get(`/pets/tutor/${currentUser.id}`);
+    const petsDisponiveis = Array.isArray(response.data) ? response.data : [];
+
+    setMeusPets(petsDisponiveis);
+
+    if (petsDisponiveis.length === 0) {
+      setPetAtual(null);
+      setCandidatos([]);
+      setAmigosRecentes([]);
+    }
+
+    setPetLogado((currentPet) => {
+      if (currentPet && petsDisponiveis.some((pet) => getPetId(pet) === getPetId(currentPet))) {
+        return currentPet;
+      }
+
+      return petsDisponiveis[0] || null;
+    });
+  }, [user]);
+
   // 1. Carregar tutor e pets dele ao iniciar
   useEffect(() => {
     async function init() {
@@ -84,18 +136,19 @@ export default function TinderPet() {
         const userInfo = await getUserInfo();
         if (!userInfo) return;
         setUser(userInfo);
-
-        const response = await api.get(`/pets/tutor/${userInfo.id}`);
-        if (response.data?.length > 0) {
-          setMeusPets(response.data);
-          setPetLogado(response.data[0]); 
-        }
+        await carregarMeusPets(userInfo);
       } catch (error) {
         throw new Error('Erro ao carregar dados iniciais: ' + error.message)
       }
     }
     init();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      carregarMeusPets();
+    }, [carregarMeusPets])
+  );
 
   // 2. Sempre que o Pet Logado mudar, recarrega Feed e Matches
   useEffect(() => {
@@ -243,8 +296,8 @@ export default function TinderPet() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-      <View style={styles.container}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+      <View style={[styles.container, { backgroundColor: theme.background }]}>
         
         <HeaderHome 
           userName={user?.nome || 'Usuário'} 
@@ -256,19 +309,19 @@ export default function TinderPet() {
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           
           <View style={styles.filterRow}>
-            <TouchableOpacity style={styles.filterButton} onPress={() => setModalEstadoOpen(true)}>
-              <MapPin size={14} color="#9127E1" />
-              <Text style={styles.filterText}>{selectedEstado?.name || 'Estado'}</Text>
+            <TouchableOpacity style={[styles.filterButton, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={() => setModalEstadoOpen(true)}>
+              <MapPin size={14} color={theme.accent} />
+              <Text style={[styles.filterText, { color: theme.muted }]}>{selectedEstado?.name || 'Estado'}</Text>
               <ChevronDown size={14} color="#A0A7BA" />
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={[styles.filterButton, !selectedEstado && { opacity: 0.5 }]} 
+              style={[styles.filterButton, { backgroundColor: theme.surface, borderColor: theme.border }, !selectedEstado && { opacity: 0.5 }]} 
               disabled={!selectedEstado} 
               onPress={() => setModalCidadeOpen(true)}
             >
-              <MapPin size={14} color="#9127E1" />
-              <Text style={styles.filterText}>{selectedCidade?.name || 'Cidade'}</Text>
+              <MapPin size={14} color={theme.accent} />
+              <Text style={[styles.filterText, { color: theme.muted }]}>{selectedCidade?.name || 'Cidade'}</Text>
               <ChevronDown size={14} color="#A0A7BA" />
             </TouchableOpacity>
           </View>
@@ -294,7 +347,7 @@ export default function TinderPet() {
               </View>
 
               <View style={styles.actionsRow}>
-                <TouchableOpacity style={styles.btnSmall} onPress={onDislike}>
+                <TouchableOpacity style={[styles.btnSmall, { backgroundColor: theme.surface }]} onPress={onDislike}>
                   <X size={28} color="#FF7A2F" strokeWidth={3} />
                 </TouchableOpacity>
 
@@ -316,7 +369,7 @@ export default function TinderPet() {
                   </View>
                 </View>
 
-                <TouchableOpacity style={styles.btnSmall} onPress={() => navigation.navigate('PetDetail', { pet: petAtual })}>
+                <TouchableOpacity style={[styles.btnSmall, { backgroundColor: theme.surface }]} onPress={() => navigation.navigate('PetDetail', { pet: petAtual })}>
                   <Info size={28} color="#4A90E2" strokeWidth={3} />
                 </TouchableOpacity>
               </View>
@@ -326,27 +379,27 @@ export default function TinderPet() {
           )}
 
           {/* 4. SEU PET WIDGET */}
-          <View style={styles.activePetWidget}>
+          <View style={[styles.activePetWidget, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Image source={(petLogado?.imagem || petLogado?.IMAGEM) ? { uri: getImageUri(petLogado?.imagem || petLogado?.IMAGEM) } : MISSY_IMAGE} style={styles.activePetImg} />
             <View style={styles.activePetInfo}>
-              <Text style={styles.activePetName}>{petLogado?.nome || petLogado?.NOME || 'Seu Pet'} (Você)</Text>
+              <Text style={[styles.activePetName, { color: theme.text }]}>{petLogado?.nome || petLogado?.NOME || 'Seu Pet'} (Você)</Text>
               <View style={styles.badgeRow}>
-                <View style={styles.miniBadge}>
-                  <Text style={styles.miniBadgeText}>{getPetEmoji(petLogado?.especie || petLogado?.ESPECIE)} {petLogado?.especie || petLogado?.ESPECIE || 'Pet'}</Text>
+                <View style={[styles.miniBadge, { backgroundColor: theme.accentSoft }]}>
+                  <Text style={[styles.miniBadgeText, { color: theme.accent }]}>{getPetEmoji(petLogado?.especie || petLogado?.ESPECIE)} {petLogado?.especie || petLogado?.ESPECIE || 'Pet'}</Text>
                 </View>
-                <View style={[styles.miniBadge, { backgroundColor: '#FFF4EE' }]}>
+                <View style={[styles.miniBadge, { backgroundColor: theme.orangeSoft }]}>
                   <Text style={[styles.miniBadgeText, { color: '#FF7A2F' }]}>🐾 No Tinder</Text>
                 </View>
               </View>
             </View>
             <TouchableOpacity onPress={() => setModalTrocarPetOpen(true)}>
-              <RefreshCw size={18} color="#9127E1" />
+              <RefreshCw size={18} color={theme.accent} />
             </TouchableOpacity>
           </View>
 
           {/* 5. AMIGOS RECENTES */}
           <View style={styles.friendsHeader}>
-            <Text style={styles.sectionTitle}>Amigos recentes</Text>
+            <Text style={[styles.sectionTitle, { color: theme.muted }]}>Amigos recentes</Text>
             <Zap size={14} color="#FF7A2F" fill="#FF7A2F" />
           </View>
 
@@ -357,7 +410,7 @@ export default function TinderPet() {
                   <TouchableOpacity style={styles.haloEffect} onPress={() => navigation.navigate('Chat', { amigo })}>
                     <Image source={{ uri: getImageUri(amigo.imagem || amigo.IMAGEM) }} style={styles.friendImg} />
                   </TouchableOpacity>
-                  <Text style={styles.friendName}>{amigo.nome || amigo.NOME}</Text>
+                  <Text style={[styles.friendName, { color: theme.text }]}>{amigo.nome || amigo.NOME}</Text>
                 </View>
               ))
             ) : (
@@ -368,24 +421,31 @@ export default function TinderPet() {
 
         {/* MODAL TROCAR PET */}
         <Modal visible={modalTrocarPetOpen} transparent animationType="slide">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Seus Pets</Text>
+          <View style={[styles.modalOverlay, { backgroundColor: theme.overlay }]}>
+            <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Seus Pets</Text>
               <FlatList
                 data={meusPets}
                 keyExtractor={item => (item.id || item.ID).toString()}
                 renderItem={({ item }) => (
                   <TouchableOpacity 
-                    style={[styles.modalItem, (petLogado?.id === item.id || petLogado?.ID === item.ID) && { backgroundColor: '#F0E6FF' }]} 
+                    style={[
+                      styles.modalItem,
+                      { backgroundColor: theme.surfaceAlt, borderColor: theme.border },
+                      (petLogado?.id === item.id || petLogado?.ID === item.ID) && {
+                        backgroundColor: theme.accentSoft,
+                        borderColor: theme.accent,
+                      },
+                    ]} 
                     onPress={() => { setPetLogado(item); setModalTrocarPetOpen(false); }}
                   >
                     <Image source={{ uri: getImageUri(item.imagem || item.IMAGEM) }} style={{width: 40, height: 40, borderRadius: 20, marginRight: 10}} />
-                    <Text style={styles.modalItemText}>{item.nome || item.NOME}</Text>
+                    <Text style={[styles.modalItemText, { color: theme.text }]}>{item.nome || item.NOME}</Text>
                   </TouchableOpacity>
                 )}
               />
-              <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setModalTrocarPetOpen(false)}>
-                <Text style={styles.modalCloseBtnText}>Cancelar</Text>
+              <TouchableOpacity style={[styles.modalCloseBtn, { backgroundColor: theme.surfaceAlt }]} onPress={() => setModalTrocarPetOpen(false)}>
+                <Text style={[styles.modalCloseBtnText, { color: theme.muted }]}>Cancelar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -393,15 +453,15 @@ export default function TinderPet() {
 
         {/* MODAIS ESTADO/CIDADE (Mantidos conforme original) */}
         <Modal visible={modalEstadoOpen} transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selecione um Estado</Text>
+          <View style={[styles.modalOverlay, { backgroundColor: theme.overlay }]}>
+            <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Selecione um Estado</Text>
               <FlatList
                 data={Object.keys(ESTADOS_CIDADES).map((n, i) => ({ id: i, name: n }))}
                 keyExtractor={item => item.id.toString()}
                 renderItem={({ item }) => (
-                  <TouchableOpacity style={styles.modalItem} onPress={() => { setSelectedEstado(item); setSelectedCidade(null); setModalEstadoOpen(false); }}>
-                    <Text style={styles.modalItemText}>{item.name}</Text>
+                  <TouchableOpacity style={[styles.modalItem, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]} onPress={() => { setSelectedEstado(item); setSelectedCidade(null); setModalEstadoOpen(false); }}>
+                    <Text style={[styles.modalItemText, { color: theme.text }]}>{item.name}</Text>
                   </TouchableOpacity>
                 )}
               />
@@ -410,15 +470,15 @@ export default function TinderPet() {
         </Modal>
 
         <Modal visible={modalCidadeOpen} transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selecione uma Cidade</Text>
+          <View style={[styles.modalOverlay, { backgroundColor: theme.overlay }]}>
+            <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Selecione uma Cidade</Text>
               <FlatList
                 data={selectedEstado ? ESTADOS_CIDADES[selectedEstado.name].map((n, i) => ({ id: i, name: n })) : []}
                 keyExtractor={item => item.id.toString()}
                 renderItem={({ item }) => (
-                  <TouchableOpacity style={styles.modalItem} onPress={() => { setSelectedCidade(item); setModalCidadeOpen(false); }}>
-                    <Text style={styles.modalItemText}>{item.name}</Text>
+                  <TouchableOpacity style={[styles.modalItem, { backgroundColor: theme.surfaceAlt, borderColor: theme.border }]} onPress={() => { setSelectedCidade(item); setModalCidadeOpen(false); }}>
+                    <Text style={[styles.modalItemText, { color: theme.text }]}>{item.name}</Text>
                   </TouchableOpacity>
                 )}
               />

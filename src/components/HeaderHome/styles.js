@@ -151,16 +151,35 @@ export const styles = StyleSheet.create({
     minHeight: 48,
   },
 
-  searchInput: {
+  searchField: {
     flex: 1,
     height: 48,
     backgroundColor: '#FFF',
-    paddingHorizontal: 16,
     borderRadius: 15,
-    fontSize: 14,
-    color: '#4A5568',
     borderColor: '#F0F0F0',
     borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingLeft: 16,
+    paddingRight: 8,
+  },
+
+  searchInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 14,
+    color: '#4A5568',
+    paddingVertical: 0,
+    paddingRight: 8,
+  },
+
+  clearSearchBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F3F5F9',
   },
 
   filterBtn: {
@@ -172,6 +191,11 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E9D7FF',
+  },
+
+  filterBtnActive: {
+    backgroundColor: '#9127E1',
+    borderColor: '#9127E1',
   },
 
   // MODAL DE NOTIFICAÇÕES

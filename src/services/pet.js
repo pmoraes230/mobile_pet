@@ -59,3 +59,49 @@ export const getPetsByTutor = async () => {
         throw new Error("Ocorreu um erro inesperado.");
     }
 };
+
+export const deletePet = async (petId) => {
+    try {
+        const token = await getToken();
+
+        if (!token) {
+            throw new Error("UsuÃ¡rio nÃ£o autenticado. FaÃ§a login para continuar.");
+        }
+
+        const response = await axios.delete(
+            `${_API_URL_PROD}/api/pets/${petId}`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        return response.data;
+    } catch (error) {
+        if (error.response) {
+            const serverMessage =
+                error.response.data?.message ||
+                error.response.data?.error ||
+                "NÃ£o foi possÃ­vel excluir este pet.";
+
+            if (error.response.status === 401) {
+                throw new Error("Sua sessÃ£o expirou. FaÃ§a login novamente.");
+            }
+
+            if (error.response.status === 404) {
+                throw new Error("Pet nÃ£o encontrado.");
+            }
+
+            const deleteError = new Error(serverMessage);
+            deleteError.status = error.response.status;
+            throw deleteError;
+        }
+
+        if (error.request) {
+            throw new Error("Sem conexÃ£o com a internet.");
+        }
+
+        throw new Error("Ocorreu um erro inesperado.");
+    }
+};

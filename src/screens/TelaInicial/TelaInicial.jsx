@@ -150,7 +150,7 @@ export default function TelaInicial() {
     >
       <View style={styles.container}>
         {/* HEADER */}
-        <HeaderHome userName="Rayan" />
+        <HeaderHome userName="Rayan" showSearch={false} />
 
         {/* SCROLL CARDS */}
         <ScrollView

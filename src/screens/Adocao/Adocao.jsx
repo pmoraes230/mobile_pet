@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -14,12 +14,12 @@ import {
   ActivityIndicator
 } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Search, Megaphone, ChevronDown } from 'lucide-react-native';
 
 import api from '../../services/api';
-import { getUserInfo } from '../../services/auth';
 import { updatePet } from '../../services/updatePet';
+import { getPetsByTutor } from '../../services/pet';
 
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
@@ -98,46 +98,35 @@ export default function TelaAdocao() {
     loadData();
   }, []);
 
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [])
+  );
+
   async function loadData() {
 
+    setLoading(true);
+
     try {
-
-      setLoading(true);
-
-      const userInfo = await getUserInfo();
-
-      if (!userInfo?.id) {
-        throw new Error('Usuario nao autenticado.');
-      }
-
-      const [
-        adoptionResponse,
-        petsResponse
-      ] = await Promise.all([
-        api.get('/pets/adocao'),
-
-        api.get(`/pets/tutor/${userInfo.id}`)
-      ]);
-
-      const adoptionPets =
-        adoptionResponse.data || [];
-
-      const myPets =
-        petsResponse.data || [];
-
-      setPetsFeed(adoptionPets);
-      setMeusPets(myPets);
-
+      const myPets = await getPetsByTutor();
+      setMeusPets(Array.isArray(myPets) ? myPets : []);
     } catch (error) {
+      setMeusPets([]);
+    }
 
+    try {
+      const adoptionResponse = await api.get('/pets/adocao');
+      const adoptionPets =
+        adoptionResponse.data?.pets ||
+        adoptionResponse.data?.data ||
+        adoptionResponse.data ||
+        [];
 
-      Alert.alert(
-        'Erro',
-        'Não foi possível carregar os pets.'
-      );
-
+      setPetsFeed(Array.isArray(adoptionPets) ? adoptionPets : []);
+    } catch (error) {
+      setPetsFeed([]);
     } finally {
-
       setLoading(false);
     }
   }
