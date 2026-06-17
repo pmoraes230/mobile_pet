@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -6,78 +6,253 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { Bell, CalendarCheck, HandHeart, Heart, PawPrint, Pill, Syringe } from 'lucide-react-native';
 import { styles } from './style';
 import TabBar from '../../components/TabBar';
 import HeaderHome from '../../components/HeaderHome';
+import {
+  getNotificacoes,
+  marcarNotificacaoComoLida,
+  marcarTodasNotificacoesComoLidas,
+} from '../../services/notificacoes';
+import { useAppTheme } from '../../theme/ThemeContext';
+
+const getNotificationMeta = (tipo = '') => {
+  const normalizedType = String(tipo).toLowerCase();
+
+  if (normalizedType.includes('match')) {
+    return { titulo: 'Novo match', icon: Heart, color: '#EC4899' };
+  }
+
+  if (normalizedType.includes('adoc')) {
+    return { titulo: 'Adocao', icon: HandHeart, color: '#14B8A6' };
+  }
+
+  if (normalizedType.includes('vacina')) {
+    return { titulo: 'Vacina', icon: Syringe, color: '#0EA5E9' };
+  }
+
+  if (normalizedType.includes('medic')) {
+    return { titulo: 'Medicamento', icon: Pill, color: '#F59E0B' };
+  }
+
+  if (normalizedType.includes('consulta') || normalizedType.includes('agenda')) {
+    return { titulo: 'Agendamento', icon: CalendarCheck, color: '#10B981' };
+  }
+
+  return { titulo: 'Notificacao', icon: PawPrint, color: '#536DFE' };
+};
+
+const formatNotificationDate = (date) => {
+  if (!date) return 'Agora';
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return 'Agora';
+  }
+
+  return parsedDate.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const normalizeNotification = (item) => {
+  const meta = getNotificationMeta(item?.tipo);
+
+  return {
+    id: item.id,
+    titulo: meta.titulo,
+    descricao: item.mensagem || 'Você tem uma nova notificação.',
+    data: formatNotificationDate(item.data_criacao),
+    lida: Boolean(item.lida),
+    icon: meta.icon,
+    color: meta.color,
+  };
+};
 
 const NotificacoesGerais = () => {
   const navigation = useNavigation();
+  const { isDarkMode } = useAppTheme();
   const [showAll, setShowAll] = useState(false);
+  const [notificacoes, setNotificacoes] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
 
-  const [notificacoes] = useState([
-    { id: '1', titulo: 'Nova mensagem', descricao: 'Você recebeu uma nova mensagem do voluntário.', data: '2026-04-10' },
-    { id: '2', titulo: 'Adoção aprovada', descricao: 'Parabéns! Sua solicitação de adoção foi aprovada.', data: '2026-04-09' },
-    { id: '3', titulo: 'Evento amanhã', descricao: 'Não esqueça do evento de adoção amanhã às 10h.', data: '2026-04-08' },
-    { id: '4', titulo: 'Atualização disponível', descricao: 'Uma nova versão do app está disponível na loja.', data: '2026-04-07' },
-    { id: '5', titulo: 'Agradecimento', descricao: 'Obrigado por sua doação ao abrigo local.', data: '2026-04-06' },
-  ]);
+  const loadNotificacoes = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await getNotificacoes({ limit: showAll ? 60 : 20 });
+      setNotificacoes(data.notificacoes.map(normalizeNotification));
+      setUnreadCount(data.unreadCount);
+    } catch (error) {
+      console.log('Erro ao carregar notificações:', error?.response?.data || error?.message);
+      setNotificacoes([]);
+      setUnreadCount(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [showAll]);
 
-  const previewItems = notificacoes.slice(0, 3);
-  const itemsToShow = showAll ? notificacoes : previewItems;
+  useFocusEffect(
+    useCallback(() => {
+      loadNotificacoes();
+    }, [loadNotificacoes])
+  );
+
+  const handleMarkAsRead = async (item) => {
+    if (!item?.id || item.lida) return;
+
+    setNotificacoes((current) =>
+      current.map((notificacao) => (notificacao.id === item.id ? { ...notificacao, lida: true } : notificacao))
+    );
+    setUnreadCount((current) => Math.max(current - 1, 0));
+
+    try {
+      await marcarNotificacaoComoLida(item.id);
+    } catch (error) {
+      console.log('Erro ao marcar notificação como lida:', error?.response?.data || error?.message);
+      loadNotificacoes();
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    if (unreadCount <= 0) return;
+
+    setNotificacoes((current) => current.map((item) => ({ ...item, lida: true })));
+    setUnreadCount(0);
+
+    try {
+      await marcarTodasNotificacoesComoLidas();
+    } catch (error) {
+      console.log('Erro ao marcar notificações como lidas:', error?.response?.data || error?.message);
+      loadNotificacoes();
+    }
+  };
+
+  const itemsToShow = showAll ? notificacoes : notificacoes.slice(0, 8);
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.container}>
-        
-        {/* HEADER */}
+      <View style={[styles.container, isDarkMode && styles.containerDark]}>
         <HeaderHome
           showSearch={false}
           showGreeting={false}
           showBackButton={true}
+          showNotifications={false}
           onBackPress={() => navigation.goBack()}
         />
 
-        <ScrollView 
-          style={styles.scrollView} 
+        <ScrollView
+          style={styles.scrollView}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.notificacoesArea}>
             <View style={styles.headerRow}>
-              <Text style={styles.sectionTitle}>Todas as Notificações</Text>
-              <TouchableOpacity
-                style={styles.verTudoButton}
-                onPress={() => setShowAll(prev => !prev)}
-              >
-                <Text style={styles.verTudoText}>
-                  {showAll ? 'Mostrar menos' : 'Ver tudo'}
+              <View>
+                <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
+                  Todas as Notificações
                 </Text>
-              </TouchableOpacity>
+                <Text style={[styles.sectionSubtitle, isDarkMode && styles.sectionSubtitleDark]}>
+                  {unreadCount > 0 ? `${unreadCount} não lida${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia'}
+                </Text>
+              </View>
+
+              {unreadCount > 0 ? (
+                <TouchableOpacity
+                  style={styles.verTudoButton}
+                  onPress={handleMarkAllAsRead}
+                  accessibilityRole="button"
+                  accessibilityLabel="Marcar todas as notificações como lidas"
+                >
+                  <Text style={styles.verTudoText}>Marcar lidas</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
 
-            {itemsToShow.length > 0 ? (
-              itemsToShow.map(item => (
-                <View key={item.id} style={styles.notificacaoItem}>
-                  <View style={styles.notificacaoRow}>
-                    <Text style={styles.notificacaoTitulo}>{item.titulo}</Text>
-                    <Text style={styles.notificacaoData}>{item.data}</Text>
-                  </View>
-                  <Text style={styles.notificacaoDescricao}>{item.descricao}</Text>
-                </View>
-              ))
+            {loading ? (
+              <View style={styles.loadingArea}>
+                <ActivityIndicator color="#9127E1" />
+                <Text style={[styles.noNotificacoes, isDarkMode && styles.noNotificacoesDark]}>
+                  Carregando notificações...
+                </Text>
+              </View>
+            ) : itemsToShow.length > 0 ? (
+              <>
+                {itemsToShow.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[
+                        styles.notificacaoItem,
+                        isDarkMode && styles.notificacaoItemDark,
+                        !item.lida && styles.notificacaoItemUnread,
+                        isDarkMode && !item.lida && styles.notificacaoItemUnreadDark,
+                      ]}
+                      onPress={() => handleMarkAsRead(item)}
+                      activeOpacity={0.78}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${item.titulo}. ${item.descricao}. ${item.data}`}
+                    >
+                      <View style={[styles.iconWrap, { backgroundColor: item.color }]}>
+                        <Icon size={18} color="#FFF" />
+                      </View>
+
+                      <View style={styles.notificacaoContent}>
+                        <View style={styles.notificacaoRow}>
+                          <Text
+                            style={[styles.notificacaoTitulo, isDarkMode && styles.notificacaoTituloDark]}
+                            numberOfLines={1}
+                          >
+                            {item.titulo}
+                          </Text>
+                          {!item.lida ? <View style={styles.unreadDot} /> : null}
+                        </View>
+                        <Text style={[styles.notificacaoDescricao, isDarkMode && styles.notificacaoDescricaoDark]}>
+                          {item.descricao}
+                        </Text>
+                        <Text style={[styles.notificacaoData, isDarkMode && styles.notificacaoDataDark]}>
+                          {item.data}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  );
+                })}
+
+                {notificacoes.length > 8 ? (
+                  <TouchableOpacity
+                    style={[styles.toggleButton, isDarkMode && styles.toggleButtonDark]}
+                    onPress={() => setShowAll((prev) => !prev)}
+                  >
+                    <Text style={styles.toggleButtonText}>{showAll ? 'Mostrar menos' : 'Ver tudo'}</Text>
+                  </TouchableOpacity>
+                ) : null}
+              </>
             ) : (
-              <Text style={styles.noNotificacoes}>Nenhuma notificação disponível.</Text>
+              <View style={[styles.emptyCard, isDarkMode && styles.emptyCardDark]}>
+                <Bell size={26} color={isDarkMode ? '#A78BFA' : '#9127E1'} />
+                <Text style={[styles.noNotificacoes, isDarkMode && styles.noNotificacoesDark]}>
+                  Nenhuma notificação disponível.
+                </Text>
+              </View>
             )}
           </View>
         </ScrollView>
 
-        {/* TAB BAR */}
         <TabBar />
       </View>
     </KeyboardAvoidingView>

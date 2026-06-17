@@ -99,7 +99,12 @@ export default function ResponsavelLogin() {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity onPress={() => navigation.navigate('EsqueciSenha')}>
+          <TouchableOpacity
+            onPress={() => {
+              const typedEmail = email.trim().toLowerCase();
+              navigation.navigate('EsqueciSenha', typedEmail ? { email: typedEmail } : undefined);
+            }}
+          >
             <Text style={styles.esqueci}>Esqueci minha senha</Text>
           </TouchableOpacity>
 

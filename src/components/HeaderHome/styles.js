@@ -213,6 +213,10 @@ export const styles = StyleSheet.create({
     maxHeight: '80%',
   },
 
+  modalContentDark: {
+    backgroundColor: '#172033',
+  },
+
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -223,10 +227,41 @@ export const styles = StyleSheet.create({
     borderBottomColor: '#F3F5F9',
   },
 
+  modalHeaderDark: {
+    borderBottomColor: '#2A3650',
+  },
+
+  modalActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    columnGap: 12,
+  },
+
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#0D214F',
+  },
+
+  modalTitleDark: {
+    color: '#F8FAFC',
+  },
+
+  markAllBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 999,
+    backgroundColor: '#F5E6FF',
+  },
+
+  markAllBtnDark: {
+    backgroundColor: '#2B2144',
+  },
+
+  markAllText: {
+    color: '#9127E1',
+    fontSize: 12,
+    fontWeight: '700',
   },
 
   notificationItem: {
@@ -238,12 +273,38 @@ export const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#F9FAFB',
   },
+
+  notificationItemDark: {
+    borderBottomColor: '#2A3650',
+  },
+
+  notificationItemUnread: {
+    backgroundColor: '#F8F2FF',
+    borderRadius: 16,
+    borderBottomColor: 'transparent',
+    marginBottom: 6,
+  },
+
+  notificationItemUnreadDark: {
+    backgroundColor: '#241A3D',
+  },
+
+  notifTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    columnGap: 8,
+  },
   
   notifTitle: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#1A1A1B',
     lineHeight: 18,
+  },
+
+  notifTitleDark: {
+    color: '#F8FAFC',
   },
 
   notifMessage: {
@@ -253,10 +314,18 @@ export const styles = StyleSheet.create({
     lineHeight: 17,
   },
 
+  notifMessageDark: {
+    color: '#D6DBE8',
+  },
+
   notifTime: {
     fontSize: 11,
     color: '#B0B8C5',
     marginTop: 4,
+  },
+
+  notifTimeDark: {
+    color: '#9CA8C2',
   },
 
   notificationsList: {
@@ -277,12 +346,37 @@ export const styles = StyleSheet.create({
     minWidth: 0,
   },
 
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#9127E1',
+  },
+
+  notificationEmpty: {
+    minHeight: 130,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 24,
+    rowGap: 10,
+  },
+
+  notificationEmptyText: {
+    color: '#7E869E',
+    fontSize: 14,
+    textAlign: 'center',
+  },
+
   seeAllBtn: {
     paddingVertical: 15,
     paddingHorizontal: 25,
     borderTopWidth: 1,
     borderTopColor: '#F3F5F9',
     alignItems: 'center',
+  },
+
+  seeAllBtnDark: {
+    borderTopColor: '#2A3650',
   },
 
   seeAllBtnText: {

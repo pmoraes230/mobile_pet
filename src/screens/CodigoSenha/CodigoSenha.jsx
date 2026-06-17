@@ -1,22 +1,83 @@
-import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
+import React, { useRef, useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
-  Platform 
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { ChevronLeft } from 'lucide-react-native';
 import { styles } from './styles';
+import {
+  solicitarCodigoRecuperacao,
+  verificarCodigoRecuperacao,
+} from '../../services/recuperacaoSenha';
+import { useAppAlert } from '../../components/AppAlert';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 export default function CodigoSenha() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const alert = useAppAlert();
+  const { isDarkMode } = useAppTheme();
+  const hiddenInputRef = useRef(null);
+  const email = route.params?.email || '';
   const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [resending, setResending] = useState(false);
 
   const digits = code.split('');
+
+  const handleChangeCode = (value) => {
+    setCode(value.replace(/[^0-9]/g, '').slice(0, 5));
+  };
+
+  const handleSubmit = async () => {
+    if (!email) {
+      alert?.showAlert('E-mail nao encontrado', 'Volte e informe o e-mail novamente.');
+      navigation.goBack();
+      return;
+    }
+
+    if (code.length !== 5) {
+      alert?.showAlert('Codigo incompleto', 'Digite os 5 numeros enviados para o seu e-mail.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await verificarCodigoRecuperacao({ email, codigo: code });
+      navigation.navigate('RedefinirSenha', { email, codigo: code });
+    } catch (error) {
+      alert?.showAlert(
+        'Codigo invalido',
+        error?.response?.data?.error || error?.response?.data?.message || 'Confira o codigo e tente novamente.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!email || resending) return;
+
+    try {
+      setResending(true);
+      await solicitarCodigoRecuperacao(email);
+      alert?.showAlert('Codigo enviado', 'Enviamos um novo codigo para o seu e-mail.');
+    } catch (error) {
+      alert?.showAlert(
+        'Nao foi possivel reenviar',
+        error?.response?.data?.error || error?.response?.data?.message || 'Tente novamente em alguns instantes.'
+      );
+    } finally {
+      setResending(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -25,51 +86,85 @@ export default function CodigoSenha() {
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.screenContainer}
+        contentContainerStyle={[styles.screenContainer, isDarkMode && styles.screenContainerDark]}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.card}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+        <View style={[styles.card, isDarkMode && styles.cardDark]}>
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => navigation.goBack()}
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
           >
-            <ChevronLeft size={20} color="#6B7280" strokeWidth={2.5} />
+            <ChevronLeft size={18} color={isDarkMode ? '#FFFFFF' : '#26344D'} strokeWidth={2.4} />
+            <Text style={[styles.backText, isDarkMode && styles.backTextDark]}>Voltar</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Insira o código</Text>
-          <Text style={styles.subtitle}>
-            Enviamos um código de segurança para o seu e-mail. Digite-o para continuar.
+          <Text style={[styles.title, isDarkMode && styles.titleDark]}>Insira o codigo</Text>
+          <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+            Se houver uma conta para este e-mail, enviamos um codigo para continuar.
           </Text>
 
-          {/* Caixas de Código */}
-          <View style={styles.codeRow}>
+          <TouchableOpacity
+            style={styles.codeRow}
+            activeOpacity={1}
+            onPress={() => hiddenInputRef.current?.focus()}
+            accessibilityRole="button"
+            accessibilityLabel="Digitar codigo de verificacao"
+          >
             {[...Array(5)].map((_, index) => (
-              <View key={index} style={styles.codeBox}>
-                <Text style={styles.codeText}>{digits[index] ?? ''}</Text>
+              <View
+                key={index}
+                style={[
+                  styles.codeBox,
+                  isDarkMode && styles.codeBoxDark,
+                  digits[index] && styles.codeBoxFilled,
+                  isDarkMode && digits[index] && styles.codeBoxFilledDark,
+                ]}
+              >
+                <Text style={[styles.codeText, isDarkMode && styles.codeTextDark]}>
+                  {digits[index] ?? ''}
+                </Text>
               </View>
             ))}
-          </View>
+          </TouchableOpacity>
 
-          {/* Input oculto para digitação */}
           <TextInput
+            ref={hiddenInputRef}
             value={code}
-            onChangeText={(value) => setCode(value.replace(/[^0-9]/g, ''))}
+            onChangeText={handleChangeCode}
             keyboardType="number-pad"
             maxLength={5}
             style={styles.hiddenInput}
             autoFocus
+            textContentType="oneTimeCode"
           />
 
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={() => navigation.navigate('RedefinirSenha')}
+          <TouchableOpacity
+            style={styles.resendButton}
+            onPress={handleResend}
+            disabled={resending}
+            accessibilityRole="button"
+            accessibilityLabel="Solicitar novo codigo"
           >
-            <Text style={styles.buttonText}>Confirmar código</Text>
+            <Text style={[styles.resendText, isDarkMode && styles.resendTextDark]}>
+              {resending ? 'Enviando...' : 'Solicitar novo codigo'}
+            </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity>
-            <Text style={styles.resendText}>Reenviar código</Text>
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSubmit}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Enviar codigo"
+          >
+            {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Enviar</Text>}
           </TouchableOpacity>
+
+          <Text style={[styles.footerText, isDarkMode && styles.footerTextDark]}>
+            Caso nao encontre o e-mail na caixa de entrada, verifique a pasta de spam.
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

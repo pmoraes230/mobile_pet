@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -13,6 +13,7 @@ import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { getUserInfo } from '../../services/auth';
 
 export default function Configuracoes() {
   const navigation = useNavigation();
@@ -20,7 +21,22 @@ export default function Configuracoes() {
   const [notificacoesEmail, setNotificacoesEmail] = useState(true);
   const [lembretesVacinas, setLembretesVacinas] = useState(true);
   const [dicasSemanais, setDicasSemanais] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
   const { isDarkMode, setThemeMode } = useAppTheme();
+
+  useEffect(() => {
+    let mounted = true;
+
+    getUserInfo().then((info) => {
+      if (mounted) {
+        setUserEmail(info?.email || '');
+      }
+    });
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleTabPress = (tabId) => {
     setActiveTab(tabId);
@@ -150,7 +166,12 @@ export default function Configuracoes() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Privacidade</Text>
             <Text style={styles.cardDescription}>Controle quem vê seus dados.</Text>
-            <TouchableOpacity style={styles.actionButton}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={() => navigation.navigate('EsqueciSenha', userEmail ? { email: userEmail } : undefined)}
+              accessibilityRole="button"
+              accessibilityLabel="Redefinir minha senha"
+            >
               <Text style={styles.actionButtonText}>Redefinir minha senha</Text>
             </TouchableOpacity>
             <Text style={styles.comingSoon}>Autenticação 2 Fatores em breve</Text>

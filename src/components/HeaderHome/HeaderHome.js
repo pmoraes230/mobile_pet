@@ -1,10 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Image, ActivityIndicator } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, Check, Pill, Star, ChevronLeft, SlidersHorizontal, X } from 'lucide-react-native';
+import {
+  Bell,
+  CalendarCheck,
+  ChevronLeft,
+  HandHeart,
+  Heart,
+  PawPrint,
+  Pill,
+  SlidersHorizontal,
+  Syringe,
+  X,
+} from 'lucide-react-native';
 import { styles } from './styles';
 import { getUserInfo } from '../../services/auth';
+import {
+  getNotificacoes,
+  marcarNotificacaoComoLida,
+  marcarTodasNotificacoesComoLidas,
+} from '../../services/notificacoes';
+import { registerForPushNotificationsAsync } from '../../services/pushNotifications';
 import { useAppTheme } from '../../theme/ThemeContext';
 
 const TUTOR_IMAGE = require('../../assets/user_default.png');
@@ -29,8 +46,83 @@ export default function HeaderHome({
   const headerIconColor = isDarkMode ? '#F5F7FF' : '#0D214F';
   const notificationIconColor = isDarkMode ? '#E9D5FF' : '#333';
   const [showNotifModal, setShowNotifModal] = useState(false);
-  const [notificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [notifications, setNotifications] = useState([]);
+  const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [userData, setUserData] = useState(null);
+
+  const getNotificationMeta = (tipo = '') => {
+    const normalizedType = String(tipo).toLowerCase();
+
+    if (normalizedType.includes('match')) {
+      return { title: 'Novo match', icon: Heart, color: '#EC4899' };
+    }
+
+    if (normalizedType.includes('adoc')) {
+      return { title: 'Adocao', icon: HandHeart, color: '#14B8A6' };
+    }
+
+    if (normalizedType.includes('vacina')) {
+      return { title: 'Vacina', icon: Syringe, color: '#0EA5E9' };
+    }
+
+    if (normalizedType.includes('medic')) {
+      return { title: 'Medicamento', icon: Pill, color: '#F59E0B' };
+    }
+
+    if (normalizedType.includes('consulta') || normalizedType.includes('agenda')) {
+      return { title: 'Agendamento', icon: CalendarCheck, color: '#10B981' };
+    }
+
+    return { title: 'Notificacao', icon: PawPrint, color: '#536DFE' };
+  };
+
+  const formatNotificationDate = (date) => {
+    if (!date) return 'Agora';
+
+    const parsedDate = new Date(date);
+
+    if (Number.isNaN(parsedDate.getTime())) {
+      return 'Agora';
+    }
+
+    return parsedDate.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
+  const normalizeNotification = (item) => {
+    const meta = getNotificationMeta(item?.tipo);
+
+    return {
+      id: item.id,
+      title: meta.title,
+      message: item.mensagem || 'Você tem uma nova notificação.',
+      time: formatNotificationDate(item.data_criacao),
+      read: Boolean(item.lida),
+      icon: meta.icon,
+      color: meta.color,
+    };
+  };
+
+  const loadNotifications = useCallback(async ({ showLoading = false } = {}) => {
+    try {
+      if (showLoading) {
+        setLoadingNotifications(true);
+      }
+
+      const data = await getNotificacoes({ limit: 5 });
+      setNotifications(data.notificacoes.map(normalizeNotification));
+      setNotificationCount(data.unreadCount);
+    } catch (error) {
+      console.log('Erro ao carregar notificações:', error?.response?.data || error?.message);
+    } finally {
+      setLoadingNotifications(false);
+    }
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -44,32 +136,49 @@ export default function HeaderHome({
     };
   }, []);
 
-  const notifications = [
-    {
-      id: 1,
-      title: 'Consulta Confirmada',
-      message: 'Sua consulta com o Dr. Silva foi confirmada para amanhã às 14h',
-      time: '2h atrás',
-      icon: Check,
-      color: '#10B981',
-    },
-    {
-      id: 2,
-      title: 'Lembrete de Medicação',
-      message: 'Hora de dar o remédio para a Missy',
-      time: '5h atrás',
-      icon: Pill,
-      color: '#F59E0B',
-    },
-    {
-      id: 3,
-      title: 'Novo Recurso',
-      message: 'Confira o novo recurso de Tinder Pet!',
-      time: '1d atrás',
-      icon: Star,
-      color: '#8B5CF6',
-    },
-  ];
+  useFocusEffect(
+    useCallback(() => {
+      if (showNotifications) {
+        loadNotifications();
+        registerForPushNotificationsAsync();
+      }
+    }, [loadNotifications, showNotifications])
+  );
+
+  const openNotifications = () => {
+    setShowNotifModal(true);
+    loadNotifications({ showLoading: true });
+  };
+
+  const handleMarkAsRead = async (notification) => {
+    if (!notification?.id || notification.read) return;
+
+    setNotifications((current) =>
+      current.map((item) => (item.id === notification.id ? { ...item, read: true } : item))
+    );
+    setNotificationCount((current) => Math.max(current - 1, 0));
+
+    try {
+      await marcarNotificacaoComoLida(notification.id);
+    } catch (error) {
+      console.log('Erro ao marcar notificação como lida:', error?.response?.data || error?.message);
+      loadNotifications();
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    if (notificationCount <= 0) return;
+
+    setNotifications((current) => current.map((item) => ({ ...item, read: true })));
+    setNotificationCount(0);
+
+    try {
+      await marcarTodasNotificacoesComoLidas();
+    } catch (error) {
+      console.log('Erro ao marcar notificações como lidas:', error?.response?.data || error?.message);
+      loadNotifications();
+    }
+  };
 
   return (
     <>
@@ -106,7 +215,7 @@ export default function HeaderHome({
             <View style={styles.rightContainer}>
               <TouchableOpacity
                 style={styles.notificationBtn}
-                onPress={() => setShowNotifModal(true)}
+                onPress={openNotifications}
                 accessibilityRole="button"
                 accessibilityLabel="Abrir notificações"
                 accessibilityHint="Exibe a central de notificações"
@@ -191,42 +300,75 @@ export default function HeaderHome({
         onRequestClose={() => setShowNotifModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Notificações</Text>
-              <TouchableOpacity
-                onPress={() => setShowNotifModal(false)}
-                accessibilityRole="button"
-                accessibilityLabel="Fechar notificações"
-                accessibilityHint="Fecha a central de notificações"
-              >
-                <X size={22} color={isDarkMode ? '#AEB6CC' : '#7E869E'} strokeWidth={2.5} />
-              </TouchableOpacity>
+          <View style={[styles.modalContent, isDarkMode && styles.modalContentDark]}>
+            <View style={[styles.modalHeader, isDarkMode && styles.modalHeaderDark]}>
+              <Text style={[styles.modalTitle, isDarkMode && styles.modalTitleDark]}>Notificações</Text>
+              <View style={styles.modalActions}>
+                {notificationCount > 0 ? (
+                  <TouchableOpacity
+                    style={[styles.markAllBtn, isDarkMode && styles.markAllBtnDark]}
+                    onPress={handleMarkAllAsRead}
+                    accessibilityRole="button"
+                    accessibilityLabel="Marcar todas as notificações como lidas"
+                  >
+                    <Text style={styles.markAllText}>Marcar lidas</Text>
+                  </TouchableOpacity>
+                ) : null}
+
+                <TouchableOpacity
+                  onPress={() => setShowNotifModal(false)}
+                  accessibilityRole="button"
+                  accessibilityLabel="Fechar notificações"
+                  accessibilityHint="Fecha a central de notificações"
+                >
+                  <X size={22} color={isDarkMode ? '#AEB6CC' : '#7E869E'} strokeWidth={2.5} />
+                </TouchableOpacity>
+              </View>
             </View>
 
             <ScrollView style={styles.notificationsList}>
-              {notifications.map((notif) => (
-                <View
-                  key={notif.id}
-                  style={styles.notificationItem}
-                  accessible
-                  accessibilityRole="text"
-                  accessibilityLabel={`${notif.title}. ${notif.message}. ${notif.time}`}
-                >
-                  <View style={[styles.notifIcon, { backgroundColor: notif.color }]}>
-                    <notif.icon size={16} color="white" />
-                  </View>
-                  <View style={styles.notifContent}>
-                    <Text style={styles.notifTitle}>{notif.title}</Text>
-                    <Text style={styles.notifMessage}>{notif.message}</Text>
-                    <Text style={styles.notifTime}>{notif.time}</Text>
-                  </View>
+              {loadingNotifications ? (
+                <View style={styles.notificationEmpty}>
+                  <ActivityIndicator color="#9127E1" />
+                  <Text style={styles.notificationEmptyText}>Carregando notificações...</Text>
                 </View>
-              ))}
+              ) : notifications.length > 0 ? (
+                notifications.map((notif) => (
+                  <TouchableOpacity
+                    key={notif.id}
+                    style={[
+                      styles.notificationItem,
+                      isDarkMode && styles.notificationItemDark,
+                      !notif.read && styles.notificationItemUnread,
+                      isDarkMode && !notif.read && styles.notificationItemUnreadDark,
+                    ]}
+                    onPress={() => handleMarkAsRead(notif)}
+                    activeOpacity={0.75}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${notif.title}. ${notif.message}. ${notif.time}`}
+                  >
+                    <View style={[styles.notifIcon, { backgroundColor: notif.color }]}>
+                      <notif.icon size={16} color="white" />
+                    </View>
+                    <View style={styles.notifContent}>
+                      <View style={styles.notifTitleRow}>
+                        <Text style={[styles.notifTitle, isDarkMode && styles.notifTitleDark]}>{notif.title}</Text>
+                        {!notif.read ? <View style={styles.unreadDot} /> : null}
+                      </View>
+                      <Text style={[styles.notifMessage, isDarkMode && styles.notifMessageDark]}>{notif.message}</Text>
+                      <Text style={[styles.notifTime, isDarkMode && styles.notifTimeDark]}>{notif.time}</Text>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={styles.notificationEmpty}>
+                  <Text style={styles.notificationEmptyText}>Nenhuma notificação por enquanto.</Text>
+                </View>
+              )}
             </ScrollView>
 
             <TouchableOpacity
-              style={styles.seeAllBtn}
+              style={[styles.seeAllBtn, isDarkMode && styles.seeAllBtnDark]}
               onPress={() => {
                 setShowNotifModal(false);
                 setTimeout(() => navigation.navigate('NotificacoesGerais'), 300);

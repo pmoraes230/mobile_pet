@@ -7,8 +7,10 @@ import {
   Image, 
   TextInput,
   KeyboardAvoidingView,
-  Platform 
+  Platform,
+  ActivityIndicator
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import {
   PencilLine,
@@ -16,7 +18,8 @@ import {
   Venus,
   Calendar,
   Plus,
-  Pill
+  Pill,
+  Camera
 } from 'lucide-react-native';
 
 import HeaderHome from '../../components/HeaderHome';
@@ -24,6 +27,7 @@ import TabBar from '../../components/TabBar';
 import { styles } from './styles';
 import { updatePet } from '../../services/updatePet';
 import api from '../../services/api';
+import { uploadPetPhoto } from '../../services/uploadImages';
 // IMPORTADO O FORMATADOR DE DATA
 import { formateDate } from '../../utils/formatters';
 import { useAppTheme } from '../../theme/ThemeContext';
@@ -74,6 +78,8 @@ export default function TelaDetalhesPet({ route }) {
   const [raca, setRaca] = useState(pet.raca || pet.RACA || '');
   const [peso, setPeso] = useState(pet.peso || pet.PESO ? String(pet.peso || pet.PESO) : '');
   const [sexo, setSexo] = useState(pet.sexo || pet.SEXO || '');
+  const [petImageUri, setPetImageUri] = useState(null);
+  const [uploadingPetPhoto, setUploadingPetPhoto] = useState(false);
 
   const [vacinas, setVacinas] = useState([]);
   const [medicamentos, setMedicamentos] = useState([]);
@@ -141,12 +147,52 @@ export default function TelaDetalhesPet({ route }) {
     }
   };
 
-  const rawImage = pet.imagem || pet.IMAGEM;
-  const imageUri = rawImage
-    ? rawImage.startsWith('http')
-      ? rawImage
-      : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${rawImage}`
-    : null;
+  const resolvePetImageUri = (value) => {
+    if (!value) return null;
+    return value.startsWith('http') || value.startsWith('file:') || value.startsWith('content:') || value.startsWith('data:')
+      ? value
+      : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${value}`;
+  };
+
+  const rawImage = petImageUri || pet.imagem || pet.IMAGEM;
+  const imageUri = resolvePetImageUri(rawImage);
+
+  const handlePickPetImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        alert('Permita acesso a galeria para alterar a foto do pet.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.85,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+
+      const uri = result.assets[0].uri;
+      const petId = pet.id || pet.ID;
+
+      setUploadingPetPhoto(true);
+      setPetImageUri(uri);
+      const response = await uploadPetPhoto(petId, uri);
+      const nextImage = response?.imagem || response?.IMAGEM || response?.urls?.[0] || uri;
+      setPetImageUri(resolvePetImageUri(nextImage) || uri);
+      pet.imagem = nextImage;
+      pet.IMAGEM = nextImage;
+      alert('Foto do pet atualizada!');
+    } catch (error) {
+      console.error(error);
+      alert(error?.message || 'Nao foi possivel alterar a foto do pet.');
+    } finally {
+      setUploadingPetPhoto(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -168,14 +214,30 @@ export default function TelaDetalhesPet({ route }) {
           keyboardShouldPersistTaps="handled"
         >
           <View style={[styles.profileCard, { backgroundColor: p.surface, borderWidth: isDarkMode ? 1 : 0, borderColor: p.border }]}>
-            <Image
-              source={
-                imageUri
-                  ? { uri: imageUri }
-                  : require('../../assets/default-pet.png')
-              }
-              style={styles.petImg}
-            />
+            <TouchableOpacity
+              style={styles.petImageWrapper}
+              activeOpacity={0.9}
+              onPress={handlePickPetImage}
+              disabled={uploadingPetPhoto}
+              accessibilityRole="button"
+              accessibilityLabel="Alterar foto do pet"
+            >
+              <Image
+                source={
+                  imageUri
+                    ? { uri: imageUri }
+                    : require('../../assets/default-pet.png')
+                }
+                style={styles.petImg}
+              />
+              <View style={styles.petCameraBadge}>
+                {uploadingPetPhoto ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Camera size={17} color="#fff" />
+                )}
+              </View>
+            </TouchableOpacity>
 
             <View style={styles.nameWrapper}>
               <TextInput

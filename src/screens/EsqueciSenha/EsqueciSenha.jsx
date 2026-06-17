@@ -1,19 +1,55 @@
-import React from 'react';
-import { 
-  View, 
-  Text, 
-  TextInput, 
-  TouchableOpacity, 
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
-  Platform 
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { ChevronLeft } from 'lucide-react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { ChevronLeft, KeyRound } from 'lucide-react-native';
 import { styles } from './styles';
+import { solicitarCodigoRecuperacao } from '../../services/recuperacaoSenha';
+import { useAppAlert } from '../../components/AppAlert';
+import { useAppTheme } from '../../theme/ThemeContext';
 
 export default function EsqueciSenha() {
   const navigation = useNavigation();
+  const route = useRoute();
+  const alert = useAppAlert();
+  const { isDarkMode } = useAppTheme();
+  const [email, setEmail] = useState(route.params?.email || '');
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async () => {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      alert?.showAlert('E-mail obrigatorio', 'Informe seu e-mail para receber o codigo.');
+      return;
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
+      alert?.showAlert('E-mail invalido', 'Digite um e-mail valido para continuar.');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await solicitarCodigoRecuperacao(normalizedEmail);
+      navigation.navigate('CodigoSenha', { email: normalizedEmail });
+    } catch (error) {
+      alert?.showAlert(
+        'Nao foi possivel enviar',
+        error?.response?.data?.error || error?.response?.data?.message || 'Verifique o e-mail e tente novamente.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <KeyboardAvoidingView
@@ -22,39 +58,62 @@ export default function EsqueciSenha() {
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.screenContainer}
+        contentContainerStyle={[styles.screenContainer, isDarkMode && styles.screenContainerDark]}
         keyboardShouldPersistTaps="handled"
       >
-        <View style={styles.card}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+        <View style={[styles.card, isDarkMode && styles.cardDark]}>
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => navigation.goBack()}
+            accessibilityRole="button"
+            accessibilityLabel="Voltar"
           >
-            <ChevronLeft size={20} color="#6B7280" strokeWidth={2.5} />
+            <ChevronLeft size={18} color={isDarkMode ? '#FFFFFF' : '#26344D'} strokeWidth={2.4} />
+            <Text style={[styles.backText, isDarkMode && styles.backTextDark]}>Voltar</Text>
           </TouchableOpacity>
 
-          <Text style={styles.title}>Esqueci minha senha</Text>
-          <Text style={styles.subtitle}>
-            Enviamos um código para o seu e-mail. Digite o endereço cadastrado para continuar.
+          <View style={styles.iconCircle}>
+            <KeyRound size={27} color="#FFF" strokeWidth={2.6} />
+          </View>
+
+          <Text style={[styles.title, isDarkMode && styles.titleDark]}>Recuperar senha</Text>
+          <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
+            Informe seu e-mail para receber as instrucoes.
           </Text>
 
+          <Text style={[styles.label, isDarkMode && styles.labelDark]}>EMAIL</Text>
           <TextInput
-            placeholder="Digite seu e-mail"
-            placeholderTextColor="#A0A7E6"
+            placeholder="seu@email.com"
+            placeholderTextColor={isDarkMode ? '#D6DEFF' : '#98A1B3'}
             keyboardType="email-address"
             autoCapitalize="none"
-            style={styles.input}
+            autoCorrect={false}
+            style={[
+              styles.input,
+              isDarkMode && styles.inputDark,
+              { color: isDarkMode ? '#FFFFFF' : '#172033' },
+            ]}
+            selectionColor={isDarkMode ? '#C084FC' : '#8B13DB'}
+            cursorColor={isDarkMode ? '#C084FC' : '#8B13DB'}
+            value={email}
+            onChangeText={setEmail}
+            editable={!loading}
+            returnKeyType="send"
+            onSubmitEditing={handleSubmit}
           />
 
-          <TouchableOpacity 
-            style={styles.button} 
-            onPress={() => navigation.navigate('CodigoSenha')}
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSubmit}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Continuar recuperacao de senha"
           >
-            <Text style={styles.buttonText}>Enviar código</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.linkText}>Voltar ao login</Text>
+            {loading ? (
+              <ActivityIndicator color="#FFF" />
+            ) : (
+              <Text style={styles.buttonText}>Continuar</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>

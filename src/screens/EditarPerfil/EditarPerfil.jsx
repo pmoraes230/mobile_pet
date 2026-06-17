@@ -10,6 +10,7 @@ import {
   Platform,
   ActivityIndicator
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { Camera, Phone, Smile, Plus, Trash2 } from 'lucide-react-native';
 
@@ -19,6 +20,7 @@ import { styles } from './styles';
 import { searchTutors } from '../../services/searchTutor';
 import { consumerCPF } from '../../services/consumerCPF';
 import { getUserInfo } from '../../services/auth';
+import { uploadTutorPhoto } from '../../services/uploadImages';
 import { formateCPF, formateDate } from '../../utils/formatters';
 
 export default function EditarPerfil() {
@@ -32,6 +34,7 @@ export default function EditarPerfil() {
   const [imageUser, setImageUser] = useState(null);
   const [cpfData, setCpfData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState(null);
 
   // Função para tratar se a API responder com um Array [ { ... } ]
@@ -82,6 +85,54 @@ export default function EditarPerfil() {
     loadAll();
   }, []);
 
+  const resolveImageUri = (value) => {
+    if (!value) return null;
+    return value.startsWith('http') || value.startsWith('file:') || value.startsWith('content:') || value.startsWith('data:')
+      ? value
+      : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${value}`;
+  };
+
+  const handlePickProfileImage = async () => {
+    try {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+      if (!permission.granted) {
+        alert('Permita acesso a galeria para alterar a foto.');
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+
+      if (result.canceled || !result.assets?.[0]?.uri) return;
+
+      const uri = result.assets[0].uri;
+      const tutorId = userData?.id || imageUser?.id;
+
+      if (!tutorId) {
+        alert('Nao foi possivel identificar seu usuario.');
+        return;
+      }
+
+      setUploadingPhoto(true);
+      setImageUser((current) => ({ ...current, imagem: uri }));
+      const updatedTutor = await uploadTutorPhoto(tutorId, uri);
+      const nextImage = updatedTutor?.imagemPerfil || updatedTutor?.imagem_perfil_tutor || uri;
+      setImageUser((current) => ({ ...current, imagem: resolveImageUri(nextImage) || uri }));
+      setUserData((current) => ({ ...current, imagem_perfil_tutor: resolveImageUri(nextImage) || uri }));
+      alert('Foto de perfil atualizada!');
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || 'Nao foi possivel alterar a foto.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
@@ -92,8 +143,8 @@ export default function EditarPerfil() {
   }
 
   // Definição da foto (sem Rayan Lindo)
-  const fotoPerfil = imageUser?.imagem || userData?.imagem_perfil_tutor 
-    ? { uri: imageUser?.imagem || userData?.imagem_perfil_tutor } 
+  const fotoPerfil = imageUser?.imagem || userData?.imagem_perfil_tutor
+    ? { uri: resolveImageUri(imageUser?.imagem || userData?.imagem_perfil_tutor) }
     : require('../../assets/user_default.png');
 
   // CPF para exibição
@@ -127,13 +178,24 @@ export default function EditarPerfil() {
 
           {/* FOTO DE PERFIL */}
           <View style={styles.photoCard}>
-            <TouchableOpacity style={styles.avatarWrapper} activeOpacity={0.9}>
+            <TouchableOpacity
+              style={styles.avatarWrapper}
+              activeOpacity={0.9}
+              onPress={handlePickProfileImage}
+              disabled={uploadingPhoto}
+              accessibilityRole="button"
+              accessibilityLabel="Alterar foto de perfil"
+            >
               <Image
                 source={fotoPerfil}
                 style={styles.avatar}
               />
               <View style={styles.cameraBadge}>
-                <Camera size={16} color="#fff" />
+                {uploadingPhoto ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <Camera size={16} color="#fff" />
+                )}
               </View>
             </TouchableOpacity>
             <Text style={styles.photoTitle}>FOTO DE PERFIL</Text>

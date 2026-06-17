@@ -30,11 +30,31 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 15,
   },
-  petImg: {
+  petImageWrapper: {
     width: '100%',
     height: 220,
     borderRadius: 25,
     marginBottom: 15,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  petImg: {
+    width: '100%',
+    height: 220,
+    borderRadius: 25,
+  },
+  petCameraBadge: {
+    position: 'absolute',
+    right: 14,
+    bottom: 14,
+    width: 38,
+    height: 38,
+    borderRadius: 14,
+    backgroundColor: '#9127E1',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#FFF',
   },
   nameWrapper: {
     flexDirection: 'row',

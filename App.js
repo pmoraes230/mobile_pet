@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
+import { createNavigationContainerRef, DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from 'expo-status-bar';
 
@@ -30,8 +30,13 @@ import RedefinirSenha from './src/screens/RedefinirSenha/RedefinirSenha';
 import NotificacoesGerais from './src/screens/NotificacoesGerais/notificacoesgerais';
 import { ThemeProvider, useAppTheme } from './src/theme/ThemeContext';
 import { AppAlertProvider } from './src/components/AppAlert';
+import {
+  addNotificationResponseListener,
+  getLastNotificationResponseAsync,
+} from './src/services/pushNotifications';
 
 const Stack = createNativeStackNavigator();
+const navigationRef = createNavigationContainerRef();
 
 function withThemeRefresh(ScreenComponent) {
   return function ThemeAwareScreen(props) {
@@ -92,10 +97,33 @@ function AppRoutes() {
   const { isDarkMode } = useAppTheme();
   const backgroundColor = isDarkMode ? '#0F1020' : '#F8F9FD';
 
+  const openNotificationsScreen = () => {
+    if (navigationRef.isReady()) {
+      navigationRef.navigate('NotificacoesGerais');
+    }
+  };
+
+  useEffect(() => {
+    const subscription = addNotificationResponseListener(() => {
+      openNotificationsScreen();
+    });
+
+    return () => subscription.remove();
+  }, []);
+
   return (
     <>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} backgroundColor={backgroundColor} />
-      <NavigationContainer theme={isDarkMode ? darkNavigationTheme : lightNavigationTheme}>
+      <NavigationContainer
+        ref={navigationRef}
+        theme={isDarkMode ? darkNavigationTheme : lightNavigationTheme}
+        onReady={async () => {
+          const response = await getLastNotificationResponseAsync();
+          if (response) {
+            openNotificationsScreen();
+          }
+        }}
+      >
         <Stack.Navigator
           screenOptions={{ headerShown: false, contentStyle: { backgroundColor } }}
         >

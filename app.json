@@ -19,6 +19,12 @@
       "expo-router",
       "expo-secure-store",
       [
+        "expo-notifications",
+        {
+          "color": "#9127E1"
+        }
+      ],
+      [
         "expo-splash-screen",
         {
           "image": "./assets/splash-icon.png",
