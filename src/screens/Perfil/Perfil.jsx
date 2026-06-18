@@ -1,32 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  TouchableOpacity, 
+﻿import React, { useCallback, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
   ScrollView,
   Image,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator 
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Mail, Phone, ShieldCheck, PawPrint, Edit3, Lock } from 'lucide-react-native';
 
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { styles } from './styles';
+import { useAppTheme } from '../../theme/ThemeContext';
 import { searchTutors } from '../../services/searchTutor';
 import { consumerCPF } from '../../services/consumerCPF';
-import { getUserInfo } from '../../services/auth';
+import { getPetsByTutor } from '../../services/pet';
+import { logout } from '../../services/auth';
+import { normalizeTutorImage } from '../../services/tutorProfile';
 import { formateCPF, formateDate } from '../../utils/formatters';
+
+const defaultAvatar = require('../../assets/user_default.png');
+const defaultPetImage = require('../../assets/default-pet.png');
 
 const Perfil = () => {
   const navigation = useNavigation();
+  const { isDarkMode } = useAppTheme();
 
   const [userData, setUserData] = useState(null);
-  const [imageUser, setImageUser] = useState(null);
   const [cpfData, setCpfData] = useState(null);
+  const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -35,96 +43,127 @@ const Perfil = () => {
     return Array.isArray(res) ? res[0] : res;
   };
 
-  const loadAllData = async () => {
+  const normalizePets = (res) => {
+    if (Array.isArray(res)) return res;
+    if (Array.isArray(res?.pets)) return res.pets;
+    if (Array.isArray(res?.data)) return res.data;
+    return [];
+  };
+
+  const getPetName = (pet) => pet?.NOME || pet?.nome || pet?.name || 'Pet';
+  const getPetBreed = (pet) => pet?.RACA || pet?.raca || pet?.COR || pet?.cor || 'Sem detalhe';
+  const getPetImage = (pet) => {
+    const rawImage =
+      pet?.imagem ||
+      pet?.IMAGEM ||
+      pet?.foto ||
+      pet?.FOTO ||
+      pet?.imagemPet ||
+      pet?.imagem_pet;
+
+    return normalizeTutorImage(rawImage);
+  };
+
+  const loadAllData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
-      const [tutorRes, cpfRes, infoRes] = await Promise.all([
+      const [tutorRes, cpfRes, petsRes] = await Promise.all([
         searchTutors(),
         consumerCPF(),
-        getUserInfo()
+        getPetsByTutor().catch(() => []),
       ]);
 
       setUserData(handleData(tutorRes));
       setCpfData(handleData(cpfRes));
-      setImageUser(handleData(infoRes));
-
+      setPets(normalizePets(petsRes));
     } catch (err) {
-      console.error("Erro ao carregar perfil:", err);
-      setError("Não foi possível carregar os dados do perfil");
+      console.error('Erro ao carregar perfil:', err);
+      setError('Nao foi possivel carregar os dados do perfil');
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    loadAllData();
   }, []);
 
-  const handleLogout = () => {
+  useFocusEffect(
+    useCallback(() => {
+      loadAllData();
+    }, [loadAllData])
+  );
+
+  const executeLogout = async () => {
+    await logout();
     navigation.reset({
       index: 0,
       routes: [{ name: 'Login' }],
     });
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Sair da conta',
+      'Tem certeza que deseja sair da conta?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Sair',
+          style: 'destructive',
+          onPress: executeLogout,
+        },
+      ],
+      { cancelable: true }
+    );
+  };
+
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
-        <ActivityIndicator size="large" color="#9127E1" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: isDarkMode ? '#0F1020' : '#fff',
+        }}
+      >
+        <ActivityIndicator size="large" color={isDarkMode ? '#B77CFF' : '#9127E1'} />
       </View>
     );
   }
 
-// --- MAPEAMENTO AJUSTADO PARA OS NOMES DA ENTIDADE ---
-  
-  // No Back-end definimos: this.nome
-  const nomeExibir = userData?.nome || 'Nome não encontrado';
-  
-  // No Back-end definimos: this.email
-  const emailExibir = userData?.email || 'Não informado';
-  
-  const telefoneExibir = userData?.telefone || 'Não informado';
-  
-  // No Back-end definimos: this.endereco
-  const enderecoExibir = userData?.endereco || 'Endereço não informado';
-  
-  // No Back-end definimos: this.dataNascimento
-  const rawNascimento = userData?.dataNascimento;
-  
-  // CPF (Vem do serviço de CPF ou do userData se estiver lá)
+  const nomeExibir = userData?.nome || userData?.nome_tutor || 'Nome nao encontrado';
+  const emailExibir = userData?.email || userData?.EMAIL || 'Nao informado';
+  const telefoneExibir = userData?.telefone || userData?.TELEFONE || 'Nao informado';
+  const enderecoExibir = userData?.endereco || userData?.ENDERECO || 'Endereco nao informado';
+  const rawNascimento = userData?.dataNascimento || userData?.DATA_NASCIMENTO;
   const cpfBruto = cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF;
-
-  // Foto (Ajustada para o caminho do S3 que vimos no seu log)
-  const defaultAvatar = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
-  const fotoUrl = userData?.imagemPerfil; // Nome definido na entidade
-  
-  const fotoPerfil = fotoUrl 
-    ? { uri: `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${fotoUrl}` } 
-    : { uri: defaultAvatar };
+  const fotoUrl = normalizeTutorImage(userData?.imagemPerfil || userData?.imagem_perfil_tutor);
+  const fotoPerfil = fotoUrl ? { uri: fotoUrl } : defaultAvatar;
+  const firstPet = pets[0];
+  const firstPetImage = getPetImage(firstPet);
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
-        
-        <HeaderHome 
-          userName={false} 
-          showSearch={false} 
-          showBackButton={true} 
-          showGreeting={false} 
-          onBackPress={() => navigation.goBack()} 
+        <HeaderHome
+          userName={false}
+          showSearch={false}
+          showBackButton={true}
+          showGreeting={false}
+          onBackPress={() => navigation.goBack()}
         />
 
-        <ScrollView 
-          contentContainerStyle={styles.scrollContent} 
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          
           <View style={styles.profileTopCard}>
             <View style={styles.profileRow}>
               <View style={styles.avatarWrapper}>
@@ -134,10 +173,10 @@ const Perfil = () => {
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName}>{nomeExibir}</Text>
                 <View style={styles.tagRow}>
-                  <Text style={styles.profileTag}>Responsável</Text>
+                  <Text style={styles.profileTag}>Responsavel</Text>
                 </View>
                 <Text style={styles.memberText}>Membro Ativo</Text>
-                
+
                 <View style={styles.contactRow}>
                   <View style={styles.contactItem}>
                     <Mail size={14} color="#9127E1" />
@@ -151,15 +190,17 @@ const Perfil = () => {
               </View>
             </View>
 
-            <TouchableOpacity 
-              style={styles.editButton} 
-              activeOpacity={0.8} 
+            <TouchableOpacity
+              style={styles.editButton}
+              activeOpacity={0.8}
               onPress={() => navigation.navigate('EditarPerfil')}
             >
               <Edit3 size={16} color="#fff" />
               <Text style={styles.editButtonText}>EDITAR PERFIL</Text>
             </TouchableOpacity>
           </View>
+
+          {error ? <Text style={{ color: '#dc2626', marginBottom: 12 }}>{error}</Text> : null}
 
           <View style={styles.sectionRow}>
             <View style={styles.card}>
@@ -169,71 +210,92 @@ const Perfil = () => {
                 </View>
                 <Text style={styles.cardTitle}>Dados Pessoais</Text>
               </View>
-              
+
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Documento CPF</Text>
                 <Text style={styles.detailValue}>
-                  {cpfBruto ? formateCPF(cpfBruto) : 'Não informado'}
+                  {cpfBruto ? formateCPF(cpfBruto) : 'Nao informado'}
                 </Text>
               </View>
-              
+
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Nascimento</Text>
                 <Text style={styles.detailValue}>
-                  {rawNascimento ? formateDate(rawNascimento) : 'Não informado'}
+                  {rawNascimento ? formateDate(rawNascimento) : 'Nao informado'}
                 </Text>
               </View>
-              
+
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Endereço registrado</Text>
+                <Text style={styles.detailLabel}>Endereco registrado</Text>
                 <Text style={styles.detailValue}>{enderecoExibir}</Text>
               </View>
             </View>
 
-            <View style={styles.card}> 
+            <View style={styles.card}>
               <View style={styles.sectionHeader}>
-                <View style={[styles.iconCircle, {backgroundColor: '#E6FFFA'}]}>
+                <View style={[styles.iconCircle, { backgroundColor: '#E6FFFA' }]}>
                   <PawPrint size={20} color="#00D7C4" />
                 </View>
                 <Text style={styles.cardTitle}>Meus Pets</Text>
               </View>
-              <View style={styles.petItem}>
-                <View style={styles.petAvatar}><Text style={styles.petInitial}>M</Text></View>
-                <View style={{marginLeft: 12}}>
-                  <Text style={{fontWeight: 'bold', color: '#0D214F'}}>Missy</Text>
-                  <Text style={{fontSize: 12, color: '#7E869E'}}>Preta</Text>
+
+              {firstPet ? (
+                <View style={styles.petItem}>
+                  <View style={styles.petAvatar}>
+                    {firstPetImage ? (
+                      <Image
+                        source={{ uri: firstPetImage }}
+                        style={styles.petAvatarImage}
+                      />
+                    ) : (
+                      <Image
+                        source={defaultPetImage}
+                        style={styles.petAvatarImage}
+                      />
+                    )}
+                  </View>
+                  <View style={styles.petInfo}>
+                    <Text style={styles.petName}>{getPetName(firstPet)}</Text>
+                    <Text style={styles.petBreed}>{getPetBreed(firstPet)}</Text>
+                  </View>
                 </View>
-              </View>
-              <TouchableOpacity 
-                style={styles.viewAllButton} 
+              ) : (
+                <Text style={styles.detailValue}>Nenhum pet cadastrado</Text>
+              )}
+
+              <TouchableOpacity
+                style={styles.viewAllButton}
                 onPress={() => navigation.navigate('MeusPets')}
               >
-                <Text style={styles.viewAllText}>VER TODOS OS PETS →</Text>
+                <Text style={styles.viewAllText}>VER TODOS OS PETS</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           <View style={styles.bottomCard}>
             <View style={styles.sectionHeader}>
-              <View style={[styles.iconCircle, {backgroundColor: '#FFF4EE'}]}>
+              <View style={[styles.iconCircle, { backgroundColor: '#FFF4EE' }]}>
                 <Lock size={20} color="#FF7A2F" />
               </View>
               <Text style={styles.cardTitle}>Privacidade e Acesso</Text>
             </View>
             <View style={styles.buttonRow}>
-              <TouchableOpacity style={styles.secondaryButton} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={styles.secondaryButton}
+                activeOpacity={0.8}
+                onPress={() => navigation.navigate('EsqueciSenha', emailExibir !== 'Nao informado' ? { email: emailExibir } : undefined)}
+              >
                 <Text style={styles.secondaryButtonText}>ALTERAR SENHA</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.primaryButton} 
-                activeOpacity={0.8} 
+              <TouchableOpacity
+                style={styles.primaryButton}
+                activeOpacity={0.8}
                 onPress={handleLogout}
               >
                 <Text style={styles.primaryButtonText}>SAIR DA CONTA</Text>
               </TouchableOpacity>
             </View>
           </View>
-
         </ScrollView>
         <TabBar onLogout={handleLogout} />
       </View>
@@ -242,3 +304,4 @@ const Perfil = () => {
 };
 
 export default Perfil;
+

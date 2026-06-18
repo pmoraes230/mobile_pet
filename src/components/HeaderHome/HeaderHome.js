@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, Image, ActivityIndicator } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,7 +18,6 @@ import { styles } from './styles';
 import { getUserInfo } from '../../services/auth';
 import {
   getNotificacoes,
-  marcarNotificacaoComoLida,
   marcarTodasNotificacoesComoLidas,
 } from '../../services/notificacoes';
 import { registerForPushNotificationsAsync } from '../../services/pushNotifications';
@@ -59,7 +58,7 @@ export default function HeaderHome({
     }
 
     if (normalizedType.includes('adoc')) {
-      return { title: 'Adocao', icon: HandHeart, color: '#14B8A6' };
+      return { title: 'Adoção', icon: HandHeart, color: '#14B8A6' };
     }
 
     if (normalizedType.includes('vacina')) {
@@ -74,7 +73,7 @@ export default function HeaderHome({
       return { title: 'Agendamento', icon: CalendarCheck, color: '#10B981' };
     }
 
-    return { title: 'Notificacao', icon: PawPrint, color: '#536DFE' };
+    return { title: 'Notificação', icon: PawPrint, color: '#536DFE' };
   };
 
   const formatNotificationDate = (date) => {
@@ -115,8 +114,14 @@ export default function HeaderHome({
       }
 
       const data = await getNotificacoes({ limit: 5 });
-      setNotifications(data.notificacoes.map(normalizeNotification));
+      const normalizedNotifications = data.notificacoes.map(normalizeNotification);
+
+      setNotifications(normalizedNotifications);
       setNotificationCount(data.unreadCount);
+      return {
+        ...data,
+        notifications: normalizedNotifications,
+      };
     } catch (error) {
       console.log('Erro ao carregar notificações:', error?.response?.data || error?.message);
     } finally {
@@ -145,41 +150,22 @@ export default function HeaderHome({
     }, [loadNotifications, showNotifications])
   );
 
-  const openNotifications = () => {
+  const openNotifications = async () => {
     setShowNotifModal(true);
-    loadNotifications({ showLoading: true });
-  };
-
-  const handleMarkAsRead = async (notification) => {
-    if (!notification?.id || notification.read) return;
-
-    setNotifications((current) =>
-      current.map((item) => (item.id === notification.id ? { ...item, read: true } : item))
-    );
-    setNotificationCount((current) => Math.max(current - 1, 0));
 
     try {
-      await marcarNotificacaoComoLida(notification.id);
+      const data = await loadNotifications({ showLoading: true });
+
+      if (data?.unreadCount > 0) {
+        setNotifications((current) => current.map((item) => ({ ...item, read: true })));
+        setNotificationCount(0);
+        await marcarTodasNotificacoesComoLidas();
+      }
     } catch (error) {
-      console.log('Erro ao marcar notificação como lida:', error?.response?.data || error?.message);
+      console.log('Erro ao abrir notificações:', error?.response?.data || error?.message);
       loadNotifications();
     }
   };
-
-  const handleMarkAllAsRead = async () => {
-    if (notificationCount <= 0) return;
-
-    setNotifications((current) => current.map((item) => ({ ...item, read: true })));
-    setNotificationCount(0);
-
-    try {
-      await marcarTodasNotificacoesComoLidas();
-    } catch (error) {
-      console.log('Erro ao marcar notificações como lidas:', error?.response?.data || error?.message);
-      loadNotifications();
-    }
-  };
-
   return (
     <>
       <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) + 8 }]}>
@@ -304,16 +290,6 @@ export default function HeaderHome({
             <View style={[styles.modalHeader, isDarkMode && styles.modalHeaderDark]}>
               <Text style={[styles.modalTitle, isDarkMode && styles.modalTitleDark]}>Notificações</Text>
               <View style={styles.modalActions}>
-                {notificationCount > 0 ? (
-                  <TouchableOpacity
-                    style={[styles.markAllBtn, isDarkMode && styles.markAllBtnDark]}
-                    onPress={handleMarkAllAsRead}
-                    accessibilityRole="button"
-                    accessibilityLabel="Marcar todas as notificações como lidas"
-                  >
-                    <Text style={styles.markAllText}>Marcar lidas</Text>
-                  </TouchableOpacity>
-                ) : null}
 
                 <TouchableOpacity
                   onPress={() => setShowNotifModal(false)}
@@ -342,9 +318,7 @@ export default function HeaderHome({
                       !notif.read && styles.notificationItemUnread,
                       isDarkMode && !notif.read && styles.notificationItemUnreadDark,
                     ]}
-                    onPress={() => handleMarkAsRead(notif)}
                     activeOpacity={0.75}
-                    accessibilityRole="button"
                     accessibilityLabel={`${notif.title}. ${notif.message}. ${notif.time}`}
                   >
                     <View style={[styles.notifIcon, { backgroundColor: notif.color }]}>

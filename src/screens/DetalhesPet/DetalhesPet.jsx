@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   View, 
   ScrollView, 
@@ -28,7 +28,6 @@ import { styles } from './styles';
 import { updatePet } from '../../services/updatePet';
 import api from '../../services/api';
 import { uploadPetPhoto } from '../../services/uploadImages';
-// IMPORTADO O FORMATADOR DE DATA
 import { formateDate } from '../../utils/formatters';
 import { useAppTheme } from '../../theme/ThemeContext';
 
@@ -96,7 +95,7 @@ export default function TelaDetalhesPet({ route }) {
       const response = await api.get(`/vacinas/pet/${pet.id || pet.ID}`);
       setVacinas(response.data || []);
     } catch (error) {
-      throw new Error('Erro ao carregar vacinas: ' + error.message);
+      console.log('Erro ao carregar vacinas');
     }
   };
 
@@ -105,7 +104,7 @@ export default function TelaDetalhesPet({ route }) {
       const response = await api.get(`/medicamentos/pet/${pet.id || pet.ID}`);
       setMedicamentos(response.data || []);
     } catch (error) {
-      throw new Error('Erro ao carregar medicamentos: ' + error.message);
+      console.log('Erro ao carregar medicamentos');
     }
   };
 
@@ -162,7 +161,7 @@ export default function TelaDetalhesPet({ route }) {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permission.granted) {
-        alert('Permita acesso a galeria para alterar a foto do pet.');
+        alert('Permita acesso à galeria para alterar a foto do pet.');
         return;
       }
 
@@ -188,7 +187,7 @@ export default function TelaDetalhesPet({ route }) {
       alert('Foto do pet atualizada!');
     } catch (error) {
       console.error(error);
-      alert(error?.message || 'Nao foi possivel alterar a foto do pet.');
+      alert(error?.message || 'Não foi possível alterar a foto do pet.');
     } finally {
       setUploadingPetPhoto(false);
     }
@@ -197,7 +196,7 @@ export default function TelaDetalhesPet({ route }) {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
         <HeaderHome
@@ -577,7 +576,7 @@ export default function TelaDetalhesPet({ route }) {
                           color: p.subtitle,
                         }}
                       >
-                        ⏱️ Frequência: {med.frequencia || med.FREQUENCIA}
+                        🕒 Frequência: {med.frequencia || med.FREQUENCIA}
                       </Text>
                     </View>
                   ))

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+﻿import React, { useCallback, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -15,7 +15,6 @@ import TabBar from '../../components/TabBar';
 import HeaderHome from '../../components/HeaderHome';
 import {
   getNotificacoes,
-  marcarNotificacaoComoLida,
   marcarTodasNotificacoesComoLidas,
 } from '../../services/notificacoes';
 import { useAppTheme } from '../../theme/ThemeContext';
@@ -70,7 +69,7 @@ const normalizeNotification = (item) => {
   return {
     id: item.id,
     titulo: meta.titulo,
-    descricao: item.mensagem || 'Você tem uma nova notificação.',
+    descricao: item.mensagem || 'VocÃª tem uma nova notificaÃ§Ã£o.',
     data: formatNotificationDate(item.data_criacao),
     lida: Boolean(item.lida),
     icon: meta.icon,
@@ -90,10 +89,14 @@ const NotificacoesGerais = () => {
     try {
       setLoading(true);
       const data = await getNotificacoes({ limit: showAll ? 60 : 20 });
-      setNotificacoes(data.notificacoes.map(normalizeNotification));
-      setUnreadCount(data.unreadCount);
+      setNotificacoes(data.notificacoes.map(normalizeNotification).map((item) => ({ ...item, lida: true })));
+      setUnreadCount(0);
+
+      if (data.unreadCount > 0) {
+        await marcarTodasNotificacoesComoLidas();
+      }
     } catch (error) {
-      console.log('Erro ao carregar notificações:', error?.response?.data || error?.message);
+      console.log('Erro ao carregar notificaÃ§Ãµes:', error?.response?.data || error?.message);
       setNotificacoes([]);
       setUnreadCount(0);
     } finally {
@@ -107,42 +110,12 @@ const NotificacoesGerais = () => {
     }, [loadNotificacoes])
   );
 
-  const handleMarkAsRead = async (item) => {
-    if (!item?.id || item.lida) return;
-
-    setNotificacoes((current) =>
-      current.map((notificacao) => (notificacao.id === item.id ? { ...notificacao, lida: true } : notificacao))
-    );
-    setUnreadCount((current) => Math.max(current - 1, 0));
-
-    try {
-      await marcarNotificacaoComoLida(item.id);
-    } catch (error) {
-      console.log('Erro ao marcar notificação como lida:', error?.response?.data || error?.message);
-      loadNotificacoes();
-    }
-  };
-
-  const handleMarkAllAsRead = async () => {
-    if (unreadCount <= 0) return;
-
-    setNotificacoes((current) => current.map((item) => ({ ...item, lida: true })));
-    setUnreadCount(0);
-
-    try {
-      await marcarTodasNotificacoesComoLidas();
-    } catch (error) {
-      console.log('Erro ao marcar notificações como lidas:', error?.response?.data || error?.message);
-      loadNotificacoes();
-    }
-  };
-
   const itemsToShow = showAll ? notificacoes : notificacoes.slice(0, 8);
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={[styles.container, isDarkMode && styles.containerDark]}>
         <HeaderHome
@@ -163,30 +136,19 @@ const NotificacoesGerais = () => {
             <View style={styles.headerRow}>
               <View>
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                  Todas as Notificações
+                  Todas as NotificaÃ§Ãµes
                 </Text>
                 <Text style={[styles.sectionSubtitle, isDarkMode && styles.sectionSubtitleDark]}>
-                  {unreadCount > 0 ? `${unreadCount} não lida${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia'}
+                  {unreadCount > 0 ? `${unreadCount} nÃ£o lida${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia'}
                 </Text>
               </View>
-
-              {unreadCount > 0 ? (
-                <TouchableOpacity
-                  style={styles.verTudoButton}
-                  onPress={handleMarkAllAsRead}
-                  accessibilityRole="button"
-                  accessibilityLabel="Marcar todas as notificações como lidas"
-                >
-                  <Text style={styles.verTudoText}>Marcar lidas</Text>
-                </TouchableOpacity>
-              ) : null}
             </View>
 
             {loading ? (
               <View style={styles.loadingArea}>
                 <ActivityIndicator color="#9127E1" />
                 <Text style={[styles.noNotificacoes, isDarkMode && styles.noNotificacoesDark]}>
-                  Carregando notificações...
+                  Carregando notificaÃ§Ãµes...
                 </Text>
               </View>
             ) : itemsToShow.length > 0 ? (
@@ -203,9 +165,7 @@ const NotificacoesGerais = () => {
                         !item.lida && styles.notificacaoItemUnread,
                         isDarkMode && !item.lida && styles.notificacaoItemUnreadDark,
                       ]}
-                      onPress={() => handleMarkAsRead(item)}
                       activeOpacity={0.78}
-                      accessibilityRole="button"
                       accessibilityLabel={`${item.titulo}. ${item.descricao}. ${item.data}`}
                     >
                       <View style={[styles.iconWrap, { backgroundColor: item.color }]}>
@@ -246,7 +206,7 @@ const NotificacoesGerais = () => {
               <View style={[styles.emptyCard, isDarkMode && styles.emptyCardDark]}>
                 <Bell size={26} color={isDarkMode ? '#A78BFA' : '#9127E1'} />
                 <Text style={[styles.noNotificacoes, isDarkMode && styles.noNotificacoesDark]}>
-                  Nenhuma notificação disponível.
+                  Nenhuma notificaÃ§Ã£o disponÃ­vel.
                 </Text>
               </View>
             )}
@@ -260,3 +220,5 @@ const NotificacoesGerais = () => {
 };
 
 export default NotificacoesGerais;
+
+

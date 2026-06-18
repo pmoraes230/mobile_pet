@@ -50,13 +50,23 @@ export default function PetCard({
         ) : null}
       </View>
 
-      <View style={styles.petInfo}>
-        <Text style={styles.petName}>{pet.nome}</Text>
+      {/* 
+          ADICIONADO flex: 1 aqui para garantir que esta view ocupe todo o espaço 
+          disponível e empurre o botão de ação para o final do card 
+      */}
+      <View style={[styles.petInfo, { flex: 1 }]}>
+        <Text style={styles.petName} numberOfLines={1} ellipsizeMode="tail">
+          {pet.nome}
+        </Text>
 
-        {pet.info ? <Text style={styles.petBreed}>{pet.info}</Text> : null}
+        {pet.info ? (
+          <Text style={styles.petBreed} numberOfLines={1}>
+            {pet.info}
+          </Text>
+        ) : null}
 
         {(pet.tipo || pet.cor) ? (
-          <Text style={styles.petBreed}>
+          <Text style={styles.petBreed} numberOfLines={1}>
             {pet.tipo || ''}
             {pet.tipo && pet.cor ? ' • ' : ''}
             {pet.cor || ''}
@@ -70,7 +80,9 @@ export default function PetCard({
         ) : null}
 
         {pet.tutor ? (
-          <Text style={styles.tutorText}>Tutor: {pet.tutor}</Text>
+          <Text style={styles.tutorText} numberOfLines={1}>
+            Tutor: {pet.tutor}
+          </Text>
         ) : null}
       </View>
 

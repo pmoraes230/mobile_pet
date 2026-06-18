@@ -11,10 +11,16 @@ export const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 18,
     elevation: 12,
+
+    // --- AJUSTADO ---
+    // Reduzi de 340 para 290 para o card ficar menor
+    height: 290, 
+    flexDirection: 'column',
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 16 / 10,
+    // Reduzi um pouco a proporção da imagem para sobrar mais espaço para o texto
+    aspectRatio: 16 / 9, 
     backgroundColor: '#F3F4F6',
     position: 'relative',
   },
@@ -24,61 +30,65 @@ export const styles = StyleSheet.create({
   },
   menuBtn: {
     position: 'absolute',
-    top: 12,
-    right: 12,
-    width: 34,
-    height: 34,
-    borderRadius: 12,
+    top: 8,
+    right: 8,
+    width: 30,
+    height: 30,
+    borderRadius: 10,
     backgroundColor: 'rgba(255,255,255,0.9)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuIcon: {
-    fontSize: 20,
+    fontSize: 18,
     color: '#323232',
   },
   petInfo: {
-    padding: 18,
+    // Reduzi o padding de 18 para 12 para o texto não ficar tão "espalhado"
+    padding: 12, 
+    flex: 1, 
   },
   petName: {
-    fontSize: 18,
+    fontSize: 16, // Reduzi um pouco a fonte
     fontWeight: '700',
     color: '#0D214F',
-    marginBottom: 6,
+    marginBottom: 2,
   },
   petBreed: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#6B7280',
-    marginBottom: 6,
+    marginBottom: 4,
   },
   ageBadge: {
     backgroundColor: '#F3F4F6',
     alignSelf: 'flex-start',
-    borderRadius: 12,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    marginBottom: 10,
+    borderRadius: 8,
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    marginBottom: 6,
   },
   ageText: {
-    fontSize: 12,
+    fontSize: 11,
     color: '#4B5563',
   },
   tutorText: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#374151',
   },
   actionButton: {
-    marginHorizontal: 18,
-    marginBottom: 18,
+    // Reduzi as margens e o padding do botão
+    marginHorizontal: 12,
+    marginBottom: 12,
     backgroundColor: '#9127E1',
-    borderRadius: 14,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 12,
+    paddingVertical: 8,
+    marginTop: 'auto', 
   },
   actionLabel: {
     color: '#FFF',
     fontWeight: '700',
-    fontSize: 14,
+    fontSize: 13,
   },
 });

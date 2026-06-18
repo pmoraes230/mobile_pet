@@ -1,7 +1,7 @@
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import { isRunningInExpoGo } from 'expo';
-import { registrarPushToken } from './notificacoes';
+import { getNotificationPreferences, registrarPushToken } from './notificacoes';
 
 let didRegisterToken = false;
 let notificationsModule = null;
@@ -38,6 +38,12 @@ export const registerForPushNotificationsAsync = async () => {
     const Notifications = getNotificationsModule();
 
     if (!Notifications) {
+      return null;
+    }
+
+    const preferences = await getNotificationPreferences().catch(() => ({ pushEnabled: true }));
+
+    if (!preferences.pushEnabled) {
       return null;
     }
 

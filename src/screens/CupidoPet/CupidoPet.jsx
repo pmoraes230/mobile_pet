@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+﻿import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   ScrollView,
@@ -185,7 +185,7 @@ export default function TinderPet() {
     }
   }
 
-  // --- INTERAÇÕES DE SOM ---
+  // --- INTERACOES DE SOM ---
 
   async function playLikeSound() {
     try {
@@ -296,7 +296,7 @@ export default function TinderPet() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.background }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         
         <HeaderHome 
@@ -326,7 +326,7 @@ export default function TinderPet() {
             </TouchableOpacity>
           </View>
 
-          {/* 2. CARD PRINCIPAL DINÂMICO */}
+          {/* 2. CARD PRINCIPAL DINAMICO */}
           {loading && !petAtual ? (
             <ActivityIndicator size="large" color="#9127E1" style={{ marginTop: 100 }} />
           ) : petAtual ? (
@@ -364,7 +364,7 @@ export default function TinderPet() {
                         position: 'absolute', fontSize: 24,
                         transform: [{ translateX: h.x }, { translateY: h.y }, { scale: h.scale }],
                         opacity: h.opacity
-                      }}>❤️</Animated.Text>
+                      }}>❤</Animated.Text>
                     ))}
                   </View>
                 </View>
@@ -491,3 +491,8 @@ export default function TinderPet() {
     </KeyboardAvoidingView>
   );
 }
+
+
+
+
+

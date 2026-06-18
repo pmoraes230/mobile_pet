@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import {
   View, ScrollView, TouchableOpacity, Text, TextInput,
   Modal, FlatList, KeyboardAvoidingView, Platform,
@@ -48,7 +48,7 @@ function useNovoAgendamentoTheme() {
   return isDarkMode ? NOVO_AGENDAMENTO_THEME.dark : NOVO_AGENDAMENTO_THEME.light;
 }
 
-// ─── helpers ──────────────────────────────────────────────────────────────────
+// --- helpers ------------------------------------------------------------------
 const getItemLabel = (item) =>
   item?.name || item?.nome || item?.NOME || item?.descricao || item?.titulo || 'Selecionar';
 
@@ -56,7 +56,7 @@ const getItemId = (item) =>
   item?.id ?? item?.ID ?? item?.petId ?? item?.ID_PET ?? item?.id_pet ??
   item?._id ?? item?.veterinario_id ?? item?.id_veterinario;
 
-// ─── select field ─────────────────────────────────────────────────────────────
+// --- select field -------------------------------------------------------------
 function SelectField({ label, value, placeholder, onPress, isStep = false }) {
   const p = useNovoAgendamentoTheme();
 
@@ -87,7 +87,7 @@ function SelectField({ label, value, placeholder, onPress, isStep = false }) {
   );
 }
 
-// ─── chips de dia ─────────────────────────────────────────────────────────────
+// --- chips de dia -------------------------------------------------------------
 function ChipsDias({ datas, selectedDate, onSelect, loading }) {
   const p = useNovoAgendamentoTheme();
 
@@ -160,7 +160,7 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
   );
 }
 
-// ─── chips de horário ─────────────────────────────────────────────────────────
+// --- chips de horário ---------------------------------------------------------
 function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
   const p = useNovoAgendamentoTheme();
 
@@ -231,7 +231,7 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
   );
 }
 
-// ─── modal de seleção ─────────────────────────────────────────────────────────
+// --- modal de seleção ---------------------------------------------------------
 function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
   const p = useNovoAgendamentoTheme();
 
@@ -278,7 +278,7 @@ function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
   );
 }
 
-// ─── tela principal ───────────────────────────────────────────────────────────
+// --- tela principal -----------------------------------------------------------
 export default function TelaNovoAgendamento() {
   const navigation = useNavigation();
   const p = useNovoAgendamentoTheme();
@@ -353,7 +353,7 @@ export default function TelaNovoAgendamento() {
 
         return {
           id: item.ID ?? `date-${i}`,
-          date: formattedDate,                    // ← Formato limpo
+          date: formattedDate,                    // <- Formato limpo
           dateLabel: dateObj.toLocaleDateString('pt-BR', {
             day: '2-digit',
             month: '2-digit'
@@ -376,7 +376,7 @@ export default function TelaNovoAgendamento() {
     setSelectedSlot(null);
 
     try {
-      // 🔥 CORREÇÃO: Garante que a data seja enviada como string YYYY-MM-DD pura
+      // ?? CORRECAO: Garante que a data seja enviada como string YYYY-MM-DD pura
       let cleanDate = dateString;
 
       if (dateString instanceof Date) {
@@ -452,7 +452,7 @@ export default function TelaNovoAgendamento() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={{ flex: 1, backgroundColor: p.background }}>
 
         <HeaderHome
@@ -645,3 +645,8 @@ export default function TelaNovoAgendamento() {
     </KeyboardAvoidingView>
   );
 }
+
+
+
+
+

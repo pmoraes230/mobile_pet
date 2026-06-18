@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+﻿import React, { useState, useCallback, useMemo } from 'react';
 import {
   View, ScrollView, TouchableOpacity, Text,
   KeyboardAvoidingView, Platform, ActivityIndicator, Modal,
@@ -11,7 +11,7 @@ import TabBar from '../../components/TabBar';
 import { getAgendaTutor, excluirConsulta, excluirVacina } from '../../services/agendamentoService';
 import { useAppTheme } from '../../theme/ThemeContext';
 
-// ─── helpers de cor por status ───────────────────────────────────────────────
+// --- helpers de cor por status -----------------------------------------------
 const STATUS_COLORS = {
   Confirmado: { bg: '#f0fdf4', text: '#15803d', border: '#bbf7d0' },
   Pendente:   { bg: '#fefce8', text: '#a16207', border: '#fde68a' },
@@ -270,7 +270,7 @@ function StatusBadge({ status }) {
   );
 }
 
-// ─── modal de detalhes (espelha o da web) ────────────────────────────────────
+// --- modal de detalhes (espelha o da web) ------------------------------------
 function ModalDetalhes({ visible, data, onClose }) {
   const p = useAgendaTheme();
 
@@ -322,7 +322,7 @@ function ModalDetalhes({ visible, data, onClose }) {
               ].map(({ label, value }) => (
                 <View key={label} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, padding: 12 }}>
                   <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 4 }}>{label}</Text>
-                  <Text style={{ fontWeight: '900', color: p.text, fontSize: 15, fontStyle: 'italic' }}>{value || '—'}</Text>
+                  <Text style={{ fontWeight: '900', color: p.text, fontSize: 15, fontStyle: 'italic' }}>{value || '-'}</Text>
                 </View>
               ))}
             </View>
@@ -345,7 +345,7 @@ function ModalDetalhes({ visible, data, onClose }) {
   );
 }
 
-// ─── modal de exclusão ────────────────────────────────────────────────────────
+// --- modal de exclusão --------------------------------------------------------
 function ModalExcluir({ visible, tipo, onConfirm, onClose }) {
   const p = useAgendaTheme();
 
@@ -371,7 +371,7 @@ function ModalExcluir({ visible, tipo, onConfirm, onClose }) {
   );
 }
 
-// ─── card de consulta (espelha o da web) ─────────────────────────────────────
+// --- card de consulta (espelha o da web) -------------------------------------
 function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
   const p = useAgendaTheme();
   const d = consulta.data_consulta ? new Date(consulta.data_consulta) : null;
@@ -444,7 +444,7 @@ function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
   );
 }
 
-// ─── card de vacina ───────────────────────────────────────────────────────────
+// --- card de vacina -----------------------------------------------------------
 function CardVacina({ vacina, onPress, onDelete, variant = 'upcoming' }) {
   const p = useAgendaTheme();
   const d = vacina.data_aplicacao ? new Date(vacina.data_aplicacao) : null;
@@ -493,7 +493,7 @@ function CardVacina({ vacina, onPress, onDelete, variant = 'upcoming' }) {
   );
 }
 
-// ─── tela principal ───────────────────────────────────────────────────────────
+// --- tela principal -----------------------------------------------------------
 export default function TelaAgendamento() {
   const navigation = useNavigation();
   const p = useAgendaTheme();
@@ -624,9 +624,9 @@ export default function TelaAgendamento() {
   });
 
   const abrirDetalheVacina = (v) => setDetalhe({
-    tipo: 'VacinaÃ§Ã£o',
+    tipo: 'Vacinação',
     pet: v.pet?.nome,
-    vet: 'ClÃ­nica VeterinÃ¡ria',
+    vet: 'Clínica Veterinária',
     data: v.data_aplicacao ? new Date(v.data_aplicacao).toLocaleDateString('pt-BR',{timeZone:'UTC'}) : '--',
     hora: '--:--',
     obs: `Vacina: ${v.nome}. Lembre-se de trazer a carteirinha.`,
@@ -654,7 +654,7 @@ export default function TelaAgendamento() {
   );
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+    <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <View style={styles.safeArea}>
         <HeaderHome
           userName="Rayan"
@@ -691,7 +691,7 @@ export default function TelaAgendamento() {
               <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Novo Agendamento</Text>
             </TouchableOpacity>
 
-            {/* calendário strip – espelha o da web */}
+            {/* calendário strip - espelha o da web */}
             <View style={{
               backgroundColor: p.surface, borderRadius: 24, padding: 18,
               borderWidth: 1, borderColor: p.accentBorder, marginBottom: 22,
@@ -875,7 +875,7 @@ export default function TelaAgendamento() {
               }}>
                 <Clock size={32} color={p.emptyIcon} strokeWidth={1.5} />
                 <Text style={{ color: p.subtitle, fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
-                  Nenhum histÃ³rico encontrado.
+                  Nenhum histórico encontrado.
                 </Text>
               </View>
             )}
@@ -960,3 +960,8 @@ export default function TelaAgendamento() {
     </KeyboardAvoidingView>
   );
 }
+
+
+
+
+

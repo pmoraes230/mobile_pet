@@ -30,3 +30,19 @@ export const marcarTodasNotificacoesComoLidas = async () => {
 export const registrarPushToken = async ({ token, platform }) => {
   await api.post('/notificacoes/push-token', { token, platform });
 };
+
+const normalizePreferences = (data = {}) => ({
+  pushEnabled: data.pushEnabled ?? true,
+  vaccineRemindersEnabled: data.vaccineRemindersEnabled ?? true,
+  weeklyTipsEnabled: data.weeklyTipsEnabled ?? false,
+});
+
+export const getNotificationPreferences = async () => {
+  const response = await api.get('/notificacoes/preferences');
+  return normalizePreferences(response.data);
+};
+
+export const updateNotificationPreferences = async (preferences) => {
+  const response = await api.patch('/notificacoes/preferences', preferences);
+  return normalizePreferences(response.data);
+};

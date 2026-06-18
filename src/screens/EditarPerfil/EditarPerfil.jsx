@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -20,27 +20,63 @@ import { styles } from './styles';
 import { searchTutors } from '../../services/searchTutor';
 import { consumerCPF } from '../../services/consumerCPF';
 import { getUserInfo } from '../../services/auth';
+import {
+  getCurrentTutorContacts,
+  normalizeTutorImage,
+  updateCurrentTutorContacts,
+  updateCurrentTutorProfile,
+} from '../../services/tutorProfile';
 import { uploadTutorPhoto } from '../../services/uploadImages';
-import { formateCPF, formateDate } from '../../utils/formatters';
+import { formateCPF } from '../../utils/formatters';
 
 export default function EditarPerfil() {
   const navigation = useNavigation();
 
+  const emptyPhone = { tipoContato: 'WhatsApp', ddd: '', numero: '' };
   const [name, setName] = useState('');
   const [address, setAddress] = useState('');
-  const [phoneDdd, setPhoneDdd] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phones, setPhones] = useState([emptyPhone]);
   const [userData, setUserData] = useState(null);
   const [imageUser, setImageUser] = useState(null);
   const [cpfData, setCpfData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState(null);
 
-  // Função para tratar se a API responder com um Array [ { ... } ]
   const handleData = (res) => {
     if (!res) return null;
     return Array.isArray(res) ? res[0] : res;
+  };
+
+  const splitPhone = (value = '') => {
+    const digits = String(value).replace(/\D/g, '');
+
+    if (digits.length >= 10) {
+      return {
+        tipoContato: 'WhatsApp',
+        ddd: digits.substring(0, 2),
+        numero: digits.substring(2),
+      };
+    }
+
+    return { tipoContato: 'WhatsApp', ddd: '', numero: digits };
+  };
+
+  const normalizeLoadedPhones = (contacts = [], fallbackPhone = '') => {
+    const fromContacts = contacts
+      .slice(0, 2)
+      .map((contact) => ({
+        tipoContato: contact.tipoContato || contact.TIPO_CONTATO || 'WhatsApp',
+        ddd: String(contact.ddd || contact.DDD || '').replace(/\D/g, '').slice(0, 2),
+        numero: String(contact.numero || contact.NUMERO || '').replace(/\D/g, '').slice(0, 9),
+      }))
+      .filter((contact) => contact.ddd || contact.numero);
+
+    if (fromContacts.length > 0) return fromContacts;
+
+    const fallback = splitPhone(fallbackPhone);
+    return fallback.ddd || fallback.numero ? [fallback] : [emptyPhone];
   };
 
   const loadAll = async () => {
@@ -48,10 +84,11 @@ export default function EditarPerfil() {
       setLoading(true);
       setError(null);
 
-      const [userRes, cpfRes, imageRes] = await Promise.all([
+      const [userRes, cpfRes, imageRes, contactsRes] = await Promise.all([
         searchTutors(),
         consumerCPF(),
-        getUserInfo()
+        getUserInfo(),
+        getCurrentTutorContacts().catch(() => []),
       ]);
 
       const user = handleData(userRes);
@@ -61,21 +98,12 @@ export default function EditarPerfil() {
       setUserData(user);
       setCpfData(cpf);
       setImageUser(image);
-
-      // Preenche os campos de input com o que veio do banco (minúsculo ou maiúsculo)
       setName(user?.nome || user?.nome_tutor || '');
       setAddress(user?.endereco || user?.ENDERECO || '');
-      
-      // Tenta extrair o telefone se ele vier do banco
-      const telCompleto = user?.telefone || user?.TELEFONE || '';
-      if (telCompleto.length >= 10) {
-        setPhoneDdd(telCompleto.substring(0, 2));
-        setPhoneNumber(telCompleto.substring(2));
-      }
-
+      setPhones(normalizeLoadedPhones(contactsRes, user?.telefone || user?.TELEFONE || ''));
     } catch (err) {
       console.error(err);
-      setError("Erro ao carregar dados para edição.");
+      setError('Erro ao carregar dados para edicao.');
     } finally {
       setLoading(false);
     }
@@ -84,13 +112,6 @@ export default function EditarPerfil() {
   useEffect(() => {
     loadAll();
   }, []);
-
-  const resolveImageUri = (value) => {
-    if (!value) return null;
-    return value.startsWith('http') || value.startsWith('file:') || value.startsWith('content:') || value.startsWith('data:')
-      ? value
-      : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${value}`;
-  };
 
   const handlePickProfileImage = async () => {
     try {
@@ -120,16 +141,108 @@ export default function EditarPerfil() {
 
       setUploadingPhoto(true);
       setImageUser((current) => ({ ...current, imagem: uri }));
+
       const updatedTutor = await uploadTutorPhoto(tutorId, uri);
-      const nextImage = updatedTutor?.imagemPerfil || updatedTutor?.imagem_perfil_tutor || uri;
-      setImageUser((current) => ({ ...current, imagem: resolveImageUri(nextImage) || uri }));
-      setUserData((current) => ({ ...current, imagem_perfil_tutor: resolveImageUri(nextImage) || uri }));
+      const nextImage = normalizeTutorImage(
+        updatedTutor?.imagemPerfil || updatedTutor?.imagem_perfil_tutor || uri
+      );
+
+      setImageUser((current) => ({ ...current, imagem: nextImage || uri }));
+      setUserData((current) => ({
+        ...current,
+        imagemPerfil: updatedTutor?.imagemPerfil || current?.imagemPerfil,
+        imagem_perfil_tutor: updatedTutor?.imagem_perfil_tutor || current?.imagem_perfil_tutor,
+      }));
       alert('Foto de perfil atualizada!');
     } catch (err) {
       console.error(err);
       alert(err?.message || 'Nao foi possivel alterar a foto.');
     } finally {
       setUploadingPhoto(false);
+    }
+  };
+
+  const updatePhoneField = (index, field, value) => {
+    const sanitizedValue = field === 'tipoContato'
+      ? value
+      : String(value).replace(/\D/g, '').slice(0, field === 'ddd' ? 2 : 9);
+
+    setPhones((current) => current.map((phone, phoneIndex) => (
+      phoneIndex === index ? { ...phone, [field]: sanitizedValue } : phone
+    )));
+  };
+
+  const handleAddPhone = () => {
+    if (phones.length >= 2) {
+      alert('Voce pode cadastrar no maximo 2 telefones.');
+      return;
+    }
+
+    setPhones((current) => [...current, { ...emptyPhone }]);
+  };
+
+  const handleRemovePhone = (index) => {
+    setPhones((current) => {
+      const nextPhones = current.filter((_, phoneIndex) => phoneIndex !== index);
+      return nextPhones.length > 0 ? nextPhones : [{ ...emptyPhone }];
+    });
+  };
+
+  const handleSaveProfile = async () => {
+    const cleanName = name.trim();
+    const cleanAddress = address.trim();
+    const validPhones = phones
+      .map((phone) => ({
+        tipoContato: phone.tipoContato || 'WhatsApp',
+        ddd: String(phone.ddd || '').replace(/\D/g, ''),
+        numero: String(phone.numero || '').replace(/\D/g, ''),
+      }))
+      .filter((phone) => phone.ddd || phone.numero);
+    const cleanPhone = validPhones[0] ? `${validPhones[0].ddd}${validPhones[0].numero}` : '';
+
+    if (!cleanName) {
+      alert('Informe seu nome.');
+      return;
+    }
+
+    if (validPhones.length > 2) {
+      alert('Voce pode cadastrar no maximo 2 telefones.');
+      return;
+    }
+
+    for (const phone of validPhones) {
+      if (phone.ddd.length !== 2 || phone.numero.length < 8) {
+        alert('Informe telefones validos com DDD.');
+        return;
+      }
+    }
+
+    const uniquePhones = new Set(validPhones.map((phone) => `${phone.ddd}${phone.numero}`));
+
+    if (uniquePhones.size !== validPhones.length) {
+      alert('Os telefones precisam ser diferentes.');
+      return;
+    }
+
+    try {
+      setSaving(true);
+
+      const updatedTutor = await updateCurrentTutorProfile({
+        nome: cleanName,
+        endereco: cleanAddress,
+        telefone: cleanPhone,
+      });
+      const updatedContacts = await updateCurrentTutorContacts(validPhones);
+
+      setUserData(updatedTutor);
+      setPhones(normalizeLoadedPhones(updatedContacts, cleanPhone));
+      alert('Perfil atualizado!');
+      navigation.goBack();
+    } catch (err) {
+      console.error(err);
+      alert(err?.message || 'Nao foi possivel atualizar o perfil.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -142,21 +255,18 @@ export default function EditarPerfil() {
     );
   }
 
-  // Definição da foto (sem Rayan Lindo)
-  const fotoPerfil = imageUser?.imagem || userData?.imagem_perfil_tutor
-    ? { uri: resolveImageUri(imageUser?.imagem || userData?.imagem_perfil_tutor) }
+  const fotoPerfil = imageUser?.imagem || userData?.imagemPerfil || userData?.imagem_perfil_tutor
+    ? { uri: normalizeTutorImage(imageUser?.imagem || userData?.imagemPerfil || userData?.imagem_perfil_tutor) }
     : require('../../assets/user_default.png');
 
-  // CPF para exibição
   const cpfExibir = cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF || '';
 
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
-
         <HeaderHome
           userName={false}
           showSearch={false}
@@ -170,13 +280,11 @@ export default function EditarPerfil() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-
           <View style={styles.headerRow}>
             <Text style={styles.pageTitle}>Editar meu perfil</Text>
             <Text style={styles.pageSubtitle}>Mantenha seus dados e contatos atualizados</Text>
           </View>
 
-          {/* FOTO DE PERFIL */}
           <View style={styles.photoCard}>
             <TouchableOpacity
               style={styles.avatarWrapper}
@@ -186,10 +294,7 @@ export default function EditarPerfil() {
               accessibilityRole="button"
               accessibilityLabel="Alterar foto de perfil"
             >
-              <Image
-                source={fotoPerfil}
-                style={styles.avatar}
-              />
+              <Image source={fotoPerfil} style={styles.avatar} />
               <View style={styles.cameraBadge}>
                 {uploadingPhoto ? (
                   <ActivityIndicator size="small" color="#fff" />
@@ -202,7 +307,6 @@ export default function EditarPerfil() {
             <Text style={styles.photoSubtitle}>Clique para alterar a imagem</Text>
           </View>
 
-          {/* SEÇÃO DADOS PESSOAIS */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View style={styles.iconBadge}>
@@ -218,11 +322,12 @@ export default function EditarPerfil() {
                 onChangeText={setName}
                 style={styles.textInput}
                 placeholder="Seu nome"
+                placeholderTextColor="#94a3b8"
               />
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>CPF (não editável)</Text>
+              <Text style={styles.fieldLabel}>CPF (nao editavel)</Text>
               <TextInput
                 value={formateCPF(cpfExibir)}
                 editable={false}
@@ -231,17 +336,17 @@ export default function EditarPerfil() {
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Endereço Residencial</Text>
+              <Text style={styles.fieldLabel}>Endereco Residencial</Text>
               <TextInput
                 value={address}
                 onChangeText={setAddress}
                 style={styles.textInput}
-                placeholder="Seu endereço"
+                placeholder="Seu endereco"
+                placeholderTextColor="#94a3b8"
               />
             </View>
           </View>
 
-          {/* SEÇÃO TELEFONES */}
           <View style={styles.sectionCard}>
             <View style={styles.sectionHeader}>
               <View style={[styles.iconBadge, { backgroundColor: '#E6FFFA' }]}>
@@ -250,59 +355,76 @@ export default function EditarPerfil() {
               <Text style={styles.sectionTitle}>Meus Telefones</Text>
             </View>
 
-            <TouchableOpacity style={styles.newContactButton}>
+            <TouchableOpacity
+              style={[styles.newContactButton, phones.length >= 2 && styles.newContactButtonDisabled]}
+              onPress={handleAddPhone}
+              disabled={phones.length >= 2}
+            >
               <Plus size={14} color="#9127E1" />
               <Text style={styles.newContactText}>NOVO CONTATO</Text>
             </TouchableOpacity>
+            <Text style={styles.contactLimitText}>{phones.length}/2 telefones cadastrados</Text>
 
-            <View style={styles.phoneRow}>
-              <View style={styles.phoneSelect}>
-                <Text style={styles.phoneSelectText}>WhatsApp</Text>
+            {phones.map((phone, index) => (
+              <View style={styles.phoneCard} key={`phone-${index}`}>
+                <View style={styles.phoneSelect}>
+                  <Text style={styles.phoneSelectText}>WhatsApp {index + 1}</Text>
+                </View>
+                <TextInput
+                  value={phone.ddd}
+                  onChangeText={(value) => updatePhoneField(index, 'ddd', value)}
+                  placeholder="DDD"
+                  placeholderTextColor="#cbd5e1"
+                  style={[styles.textInput, styles.dddInput]}
+                  keyboardType="numeric"
+                  maxLength={2}
+                />
+                <TextInput
+                  value={phone.numero}
+                  onChangeText={(value) => updatePhoneField(index, 'numero', value)}
+                  placeholder="Numero"
+                  placeholderTextColor="#cbd5e1"
+                  style={[styles.textInput, styles.phoneNumberInput]}
+                  keyboardType="numeric"
+                  maxLength={9}
+                />
+                <TouchableOpacity
+                  style={styles.trashButton}
+                  onPress={() => handleRemovePhone(index)}
+                >
+                  <Trash2 size={18} color="#FF4D4D" />
+                </TouchableOpacity>
               </View>
-              <TextInput
-                value={phoneDdd}
-                onChangeText={setPhoneDdd}
-                placeholder="DDD"
-                placeholderTextColor="#cbd5e1"
-                style={[styles.textInput, styles.dddInput]}
-                keyboardType="numeric"
-                maxLength={2}
-              />
-              <TextInput
-                value={phoneNumber}
-                onChangeText={setPhoneNumber}
-                placeholder="Número"
-                placeholderTextColor="#cbd5e1"
-                style={[styles.textInput, styles.numInput]}
-                keyboardType="numeric"
-              />
-              <TouchableOpacity style={styles.trashButton}>
-                <Trash2 size={18} color="#FF4D4D" />
-              </TouchableOpacity>
-            </View>
+            ))}
           </View>
 
-          {/* BOTÕES DE AÇÃO */}
+          {error ? <Text style={{ color: '#dc2626', marginBottom: 12 }}>{error}</Text> : null}
+
           <View style={styles.actionRow}>
             <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => navigation.goBack()}
+              disabled={saving}
             >
               <Text style={styles.cancelText}>CANCELAR</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.saveButton}
-              onPress={() => alert('Perfil atualizado!')}
+              style={[styles.saveButton, saving && { opacity: 0.7 }]}
+              onPress={handleSaveProfile}
+              disabled={saving}
             >
-              <Text style={styles.saveText}>SALVAR ALTERAÇÕES</Text>
+              {saving ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.saveText}>SALVAR ALTERACOES</Text>
+              )}
             </TouchableOpacity>
           </View>
-
         </ScrollView>
 
         <TabBar />
-
       </View>
     </KeyboardAvoidingView>
   );
 }
+

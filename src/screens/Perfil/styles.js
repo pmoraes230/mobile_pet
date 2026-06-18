@@ -175,6 +175,11 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+    overflow: 'hidden',
+  },
+  petAvatarImage: {
+    width: '100%',
+    height: '100%',
   },
   petInitial: {
     fontSize: 18,

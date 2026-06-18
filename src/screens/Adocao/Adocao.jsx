@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+﻿import React, { useCallback, useState, useEffect } from 'react';
 import {
   View,
   ScrollView,
@@ -171,7 +171,7 @@ export default function TelaAdocao() {
     if (meusPets.length === 0) {
       Alert.alert(
         'Nenhum pet cadastrado',
-        'Cadastre um pet antes de anuncia-lo para adocao.',
+        'Cadastre um pet antes de anunciá-lo para adoção.',
         [
           { text: 'Cancelar', style: 'cancel' },
           { text: 'Cadastrar pet', onPress: () => navigation.navigate('anunciarpet') }
@@ -187,13 +187,13 @@ export default function TelaAdocao() {
     const petId = getPetId(pet);
 
     if (!petId) {
-      Alert.alert('Erro', 'Nao foi possivel identificar este pet.');
+      Alert.alert('Erro', 'Não foi possível identificar este pet.');
       return;
     }
 
     Alert.alert(
-      'Adicionar para adocao',
-      `Deseja anunciar ${pet.nome || pet.NOME || 'este pet'} para adocao?`,
+      'Adicionar para adoção',
+      `Deseja anunciar ${pet.nome || pet.NOME || 'este pet'} para adoção?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -204,11 +204,11 @@ export default function TelaAdocao() {
               await updatePetAdoptionStatus(pet, true);
               setModalSelecionarPetOpen(false);
               await loadData();
-              Alert.alert('Sucesso', 'Pet adicionado para adocao.');
+              Alert.alert('Sucesso', 'Pet adicionado para adoção.');
             } catch (error) {
               Alert.alert(
                 'Erro',
-                error.message || 'Nao foi possivel adicionar o pet para adocao.'
+                error.message || 'Não foi possível adicionar o pet para adoção.'
               );
             } finally {
               setAnnouncingPetId(null);
@@ -223,13 +223,13 @@ export default function TelaAdocao() {
     const petId = getPetId(pet);
 
     if (!petId) {
-      Alert.alert('Erro', 'Nao foi possivel identificar este pet.');
+      Alert.alert('Erro', 'Não foi possível identificar este pet.');
       return;
     }
 
     Alert.alert(
-      'Tirar da adocao',
-      `Deseja remover ${pet.nome || pet.NOME || 'este pet'} dos anuncios de adocao?`,
+      'Tirar da adoção',
+      `Deseja remover ${pet.nome || pet.NOME || 'este pet'} dos anúncios de adoção?`,
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -240,11 +240,11 @@ export default function TelaAdocao() {
               setRemovingPetId(petId);
               await updatePetAdoptionStatus(pet, false);
               await loadData();
-              Alert.alert('Sucesso', 'Pet removido dos anuncios de adocao.');
+              Alert.alert('Sucesso', 'Pet removido dos anúncios de adoção.');
             } catch (error) {
               Alert.alert(
                 'Erro',
-                error.message || 'Nao foi possivel remover o pet da adocao.'
+                error.message || 'Não foi possível remover o pet da adoção.'
               );
             } finally {
               setRemovingPetId(null);
@@ -260,7 +260,7 @@ export default function TelaAdocao() {
     try {
 
       await api.post(
-        '/pets/adocao/interesse', // Removido o /api duplicado
+        '/pets/adocao/interesse', 
         {
           ID_PET: petId,
           MENSAGEM_CONTATO:
@@ -321,7 +321,7 @@ export default function TelaAdocao() {
 
   <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
 
       <View style={styles.safeArea}>
@@ -401,8 +401,8 @@ export default function TelaAdocao() {
                       tutor: 'Tutor',
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
-                    onPress={() => {}}
-                    actionLabel={removingPetId === getPetId(pet) ? 'Removendo...' : 'Tirar da adocao'}
+                    onPress={() => navigation.navigate('PetDetail', { petData: pet })}
+                    actionLabel={removingPetId === getPetId(pet) ? 'Removendo...' : 'Tirar da adoção'}
                     onActionPress={() => handleRemovePetFromAdoption(pet)}
                     cardStyle={styles.smallCard}
                   />
@@ -497,15 +497,15 @@ export default function TelaAdocao() {
                 {filteredPets.map((pet, index) => (
 
                   <PetCard
-                    key={pet.id || pet.ID_PET || index}
+                    key={getPetId(pet)}
                     pet={{
-                      id: pet.id || pet.ID_PET,
+                      id: getPetId(pet),
                       nome: pet.nome || pet.NOME,
                       info: `${pet.especie || pet.ESPECIE} • ${pet.raca || pet.RACA}`,
                       tutor: 'Tutor',
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
-                    onPress={() => {}}
+                    onPress={() => navigation.navigate('PetDetail', { petData: pet })}
                     actionLabel="Quero Adotar"
                     onActionPress={() =>
                       navigation.navigate('PetDetail', { petData: pet })
@@ -633,7 +633,7 @@ export default function TelaAdocao() {
 
                 <View style={styles.emptyBox}>
                   <Text style={styles.emptyText}>
-                    Todos os seus pets ja estao anunciados para adocao.
+                    Todos os seus pets já estão anunciados para adoção.
                   </Text>
                 </View>
 
@@ -663,7 +663,7 @@ export default function TelaAdocao() {
                           </Text>
 
                           <Text style={styles.petModalDetails}>
-                            {item.especie || item.ESPECIE || 'Pet'} - {item.raca || item.RACA || 'Sem raca'}
+                            {item.especie || item.ESPECIE || 'Pet'} - {item.raca || item.RACA || 'Sem raça'}
                           </Text>
                         </View>
 

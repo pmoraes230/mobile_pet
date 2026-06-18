@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -86,14 +86,14 @@ const formatAgeFromDate = (value) => {
   const months = totalMonths % 12;
 
   if (years === 0) {
-    return `${totalMonths} ${totalMonths === 1 ? 'mes' : 'meses'}`;
+    return `${totalMonths} ${totalMonths === 1 ? 'mês' : 'meses'}`;
   }
 
   if (months === 0) {
     return `${years} ${years === 1 ? 'ano' : 'anos'}`;
   }
 
-  return `${years} ${years === 1 ? 'ano' : 'anos'} e ${months} ${months === 1 ? 'mes' : 'meses'}`;
+  return `${years} ${years === 1 ? 'ano' : 'anos'} e ${months} ${months === 1 ? 'mês' : 'meses'}`;
 };
 
 const formatWeight = (value) => {
@@ -226,14 +226,14 @@ export default function PetDetail() {
       especie: rawData.especie || rawData.ESPECIE || 'Não informado',
       breed: rawData.raca || rawData.RACA || 'Não informado',
       age: formatAgeFromDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO) ||
-        (rawData.idade || rawData.IDADE ? `${rawData.idade || rawData.IDADE} ${Number(rawData.idade || rawData.IDADE) === 1 ? 'ano' : 'anos'}` : 'Nao informado'),
-      birthDate: parsePetDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO)?.toLocaleDateString('pt-BR') || 'Nao informada',
+        (rawData.idade || rawData.IDADE ? `${rawData.idade || rawData.IDADE} ${Number(rawData.idade || rawData.IDADE) === 1 ? 'ano' : 'anos'}` : 'Não informado'),
+      birthDate: parsePetDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO)?.toLocaleDateString('pt-BR') || 'Não informada',
       weight: formatWeight(rawData.peso || rawData.PESO),
       castrated: castrated,
-      sexo: rawData.sexo || rawData.SEXO || 'Nao informado',
+      sexo: rawData.sexo || rawData.SEXO || 'Não informado',
       description: rawData.descricao || rawData.DESCRICAO || rawData.biografiaAdocao || 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
       personality: rawData.personalidade || rawData.PERSONALIDADE || 'Nenhuma característica informada.',
-      tutor: typeof tutorName === 'string' ? tutorName : 'Tutor nao informado',
+      tutor: typeof tutorName === 'string' ? tutorName : 'Tutor não informado',
       tutorImage: formatTutorImage(tutorImage),
       image: getImageUri(rawData.imagem || rawData.IMAGEM),
       genero: genero,
@@ -315,7 +315,7 @@ export default function PetDetail() {
           } catch (error) {
             setPetData({
               ...normalized,
-              tutor: normalized.tutor || 'Tutor nao informado',
+              tutor: normalized.tutor || 'Tutor não informado',
             });
           } finally {
             setLoading(false);
@@ -336,7 +336,7 @@ export default function PetDetail() {
     name: 'Niça',
     breed: 'Branco',
     age: '11 anos',
-    birthDate: 'Nao informada',
+    birthDate: 'Não informada',
     weight: '-- kg',
     sexo: 'Macho',
     castrated: 'Não',
@@ -373,7 +373,7 @@ export default function PetDetail() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1, backgroundColor: p.background }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={[styles.container, { backgroundColor: p.background }]}>
         
@@ -475,7 +475,7 @@ export default function PetDetail() {
           <View style={[styles.section, { backgroundColor: p.surface }]}>
             <View style={styles.sectionHeader}>
               <Text style={styles.emojiIcon}>+</Text>
-              <Text style={[styles.sectionTitle, { color: p.text }]}>Saude e cuidados</Text>
+              <Text style={[styles.sectionTitle, { color: p.text }]}>Saúde e cuidados</Text>
             </View>
 
             <View style={styles.healthGrid}>
@@ -488,7 +488,7 @@ export default function PetDetail() {
                 <Text style={[styles.healthValue, { color: p.text }]}>{pet.sexo}</Text>
               </View>
               <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
-                <Text style={[styles.healthLabel, { color: p.muted }]}>Especie</Text>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>Espécie</Text>
                 <Text style={[styles.healthValue, { color: p.text }]}>{pet.especie}</Text>
               </View>
               <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>

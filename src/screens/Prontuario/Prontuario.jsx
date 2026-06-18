@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+﻿import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -284,7 +284,7 @@ export default function TelaProntuario() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
         <HeaderHome
@@ -425,3 +425,4 @@ export default function TelaProntuario() {
     </KeyboardAvoidingView>
   );
 }
+

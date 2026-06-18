@@ -356,7 +356,7 @@ export default function TelaDiario() {
       behavior={
         Platform.OS === 'ios'
           ? 'padding'
-          : 'height'
+          : undefined
       }
     >
       <View style={styles.container}>

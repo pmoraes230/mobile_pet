@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Keyboard, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from './styles';
@@ -11,6 +11,7 @@ export default function TabBar({ onLogout, activeTab, onTabPress }) {
   const route = useRoute();
   const insets = useSafeAreaInsets();
   const [showSidebar, setShowSidebar] = useState(false);
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   const activeColor = '#9127E1';
   const inactiveColor = '#A0A7BA';
@@ -37,6 +38,38 @@ export default function TabBar({ onLogout, activeTab, onTabPress }) {
 
   const currentRouteKey = String(route.name || '').toLowerCase();
   const activeKey = currentRouteKey || String(activeTab || '').toLowerCase();
+
+  useEffect(() => {
+    const showKeyboard = () => {
+      setKeyboardVisible(true);
+    };
+    const hideKeyboard = () => {
+      setKeyboardVisible(false);
+    };
+
+    const subscriptions = [
+      Keyboard.addListener('keyboardWillShow', showKeyboard),
+      Keyboard.addListener('keyboardDidShow', showKeyboard),
+      Keyboard.addListener('keyboardWillHide', hideKeyboard),
+      Keyboard.addListener('keyboardDidHide', hideKeyboard),
+      Keyboard.addListener('keyboardWillChangeFrame', showKeyboard),
+      Keyboard.addListener('keyboardDidChangeFrame', showKeyboard),
+    ];
+
+    const focusInterval = setInterval(() => {
+      const focusedInput = TextInput.State?.currentlyFocusedInput?.();
+      setKeyboardVisible(Boolean(focusedInput));
+    }, 250);
+
+    return () => {
+      subscriptions.forEach((subscription) => subscription.remove());
+      clearInterval(focusInterval);
+    };
+  }, []);
+
+  if (keyboardVisible) {
+    return null;
+  }
 
   return (
     <>

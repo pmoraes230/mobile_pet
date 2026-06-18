@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View, 
   ScrollView, 
@@ -200,7 +200,7 @@ export default function TelaMeusPets() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
         
@@ -403,3 +403,5 @@ export default function TelaMeusPets() {
     </KeyboardAvoidingView>
   );
 }
+
+

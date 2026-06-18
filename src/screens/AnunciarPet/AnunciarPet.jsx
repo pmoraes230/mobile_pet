@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   View,
   ScrollView,
@@ -47,7 +47,7 @@ export default function AnunciarPet() {
 
   const sexos = [
     { id: 1, name: 'Macho' },
-    { id: 2, name: 'Femea' },
+    { id: 2, name: 'Fêmea' },
   ];
 
   const handleLogout = () => {
@@ -88,7 +88,7 @@ export default function AnunciarPet() {
         setPetImage(result.assets[0]);
       }
     } catch (error) {
-      throw new Error('Erro ao selecionar imagem: ' + error.message);
+      console.log('Erro ao selecionar imagem:', error.message);
     }
   };
 
@@ -112,11 +112,11 @@ export default function AnunciarPet() {
       formData.append('dataNascimento', petData);
       formData.append('peso', petPeso ? petPeso.replace(',', '.') : "0");
       
-      // 2. CAMPOS OBRIGATÓRIOS (Vimos no seu schema.prisma que são necessários)
+      // 2. CAMPOS OBRIGATÓRIOS
       formData.append('pelagem', 'Curta'); 
       formData.append('castrado', 'Não');
 
-      // 3. TRATAMENTO DA IMAGEM (Melhorado para evitar Network Error no Android)
+      // 3. TRATAMENTO DA IMAGEM
       const uri = petImage.uri;
       const filename = uri.split('/').pop(); 
       const match = /\.(\w+)$/.exec(filename);
@@ -130,7 +130,6 @@ export default function AnunciarPet() {
 
       console.log('📤 Enviando para API...');
 
-      // 4. Chamada API (Removido headers manuais para o Axios decidir o boundary)
       const response = await api.post('/pets', formData, {
         headers: {
           'Accept': 'application/json',
@@ -147,13 +146,11 @@ export default function AnunciarPet() {
     } catch (error) {
       console.log('--- ERRO NO SALVAMENTO ---');
       if (error.response) {
-        // O servidor respondeu com erro (ex: 400, 500)
         console.log('Dados do erro:', error.response.data);
         Alert.alert('Erro no Servidor', error.response.data.error || 'Erro interno');
       } else if (error.request) {
-        // A requisição nem chegou no servidor (Network Error)
         console.log('Erro de requisição:', error.request);
-        Alert.alert('Erro de Rede', 'Não foi possível conectar ao servidor. Verifique o IP no arquivo api.js');
+        Alert.alert('Erro de Rede', 'Não foi possível conectar ao servidor. Verifique sua conexão.');
       } else {
         console.log('Mensagem de erro:', error.message);
         Alert.alert('Erro', error.message);
@@ -180,7 +177,7 @@ export default function AnunciarPet() {
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.container}>
         
@@ -329,6 +326,7 @@ export default function AnunciarPet() {
           </View>
         </ScrollView>
 
+        {/* Modal de Espécie */}
         <Modal visible={modalEspecieOpen} transparent animationType="fade" onRequestClose={() => setModalEspecieOpen(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -345,6 +343,7 @@ export default function AnunciarPet() {
           </View>
         </Modal>
 
+        {/* Modal de Sexo */}
         <Modal visible={modalSexoOpen} transparent animationType="fade" onRequestClose={() => setModalSexoOpen(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>

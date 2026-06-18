@@ -10,6 +10,7 @@
     "android": {
       "package": "com.mobilepet.app",
       "versionCode": 1,
+      "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
         "foregroundImage": "./assets/pet.png",
         "backgroundColor": "#573F94"
