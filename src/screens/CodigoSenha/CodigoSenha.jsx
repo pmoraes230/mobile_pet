@@ -38,13 +38,13 @@ export default function CodigoSenha() {
 
   const handleSubmit = async () => {
     if (!email) {
-      alert?.showAlert('E-mail nao encontrado', 'Volte e informe o e-mail novamente.');
+      alert?.showAlert('E-mail não encontrado', 'Volte e informe o e-mail novamente.');
       navigation.goBack();
       return;
     }
 
     if (code.length !== 5) {
-      alert?.showAlert('Codigo incompleto', 'Digite os 5 numeros enviados para o seu e-mail.');
+      alert?.showAlert('Código incompleto', 'Digite os 5 números enviados para o seu e-mail.');
       return;
     }
 
@@ -54,8 +54,8 @@ export default function CodigoSenha() {
       navigation.navigate('RedefinirSenha', { email, codigo: code });
     } catch (error) {
       alert?.showAlert(
-        'Codigo invalido',
-        error?.response?.data?.error || error?.response?.data?.message || 'Confira o codigo e tente novamente.'
+        'Código inválido',
+        error?.response?.data?.error || error?.response?.data?.message || 'Confira o código e tente novamente.'
       );
     } finally {
       setLoading(false);
@@ -68,10 +68,10 @@ export default function CodigoSenha() {
     try {
       setResending(true);
       await solicitarCodigoRecuperacao(email);
-      alert?.showAlert('Codigo enviado', 'Enviamos um novo codigo para o seu e-mail.');
+      alert?.showAlert('Código enviado', 'Enviamos um novo código para o seu e-mail.');
     } catch (error) {
       alert?.showAlert(
-        'Nao foi possivel reenviar',
+        'Não foi possível reenviar',
         error?.response?.data?.error || error?.response?.data?.message || 'Tente novamente em alguns instantes.'
       );
     } finally {
@@ -100,9 +100,9 @@ export default function CodigoSenha() {
             <Text style={[styles.backText, isDarkMode && styles.backTextDark]}>Voltar</Text>
           </TouchableOpacity>
 
-          <Text style={[styles.title, isDarkMode && styles.titleDark]}>Insira o codigo</Text>
+          <Text style={[styles.title, isDarkMode && styles.titleDark]}>Insira o código</Text>
           <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
-            Se houver uma conta para este e-mail, enviamos um codigo para continuar.
+            Se houver uma conta para este e-mail, enviamos um código para continuar.
           </Text>
 
           <TouchableOpacity
@@ -110,7 +110,7 @@ export default function CodigoSenha() {
             activeOpacity={1}
             onPress={() => hiddenInputRef.current?.focus()}
             accessibilityRole="button"
-            accessibilityLabel="Digitar codigo de verificacao"
+            accessibilityLabel="Digitar código de verificação"
           >
             {[...Array(5)].map((_, index) => (
               <View
@@ -145,10 +145,10 @@ export default function CodigoSenha() {
             onPress={handleResend}
             disabled={resending}
             accessibilityRole="button"
-            accessibilityLabel="Solicitar novo codigo"
+            accessibilityLabel="Solicitar novo código"
           >
             <Text style={[styles.resendText, isDarkMode && styles.resendTextDark]}>
-              {resending ? 'Enviando...' : 'Solicitar novo codigo'}
+              {resending ? 'Enviando...' : 'Solicitar novo código'}
             </Text>
           </TouchableOpacity>
 
@@ -157,13 +157,13 @@ export default function CodigoSenha() {
             onPress={handleSubmit}
             disabled={loading}
             accessibilityRole="button"
-            accessibilityLabel="Enviar codigo"
+            accessibilityLabel="Enviar código"
           >
             {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.buttonText}>Enviar</Text>}
           </TouchableOpacity>
 
           <Text style={[styles.footerText, isDarkMode && styles.footerTextDark]}>
-            Caso nao encontre o e-mail na caixa de entrada, verifique a pasta de spam.
+            Caso não encontre o e-mail na caixa de entrada, verifique a pasta de spam.
           </Text>
         </View>
       </ScrollView>

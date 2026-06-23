@@ -34,7 +34,7 @@ const getViewerUrl = (fileName, fileUrl) => {
 
 export default function FilePreviewModal({
   visible,
-  title = 'Arquivo do prontuario',
+  title = 'Arquivo do prontuário',
   fileName,
   fileUrl,
   isSaving = false,
@@ -99,16 +99,16 @@ export default function FilePreviewModal({
                 {webViewLoading ? (
                   <View style={styles.webViewLoader}>
                     <ActivityIndicator size="small" color="#9127E1" />
-                    <Text style={styles.webViewLoaderText}>Carregando visualizacao...</Text>
+                    <Text style={styles.webViewLoaderText}>Carregando visualização...</Text>
                   </View>
                 ) : null}
               </View>
             ) : (
               <View style={styles.documentPreview}>
                 <FileText size={54} color="#9127E1" />
-                <Text style={styles.documentTitle}>Visualizacao indisponivel</Text>
+                <Text style={styles.documentTitle}>Visualização indisponível</Text>
                 <Text style={styles.documentText}>
-                  Salve o arquivo no celular para abrir com um app compativel.
+                  Salve o arquivo no celular para abrir com um app compatível.
                 </Text>
               </View>
             )}

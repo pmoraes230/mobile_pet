@@ -16,18 +16,18 @@ export const getProntuariosTutor = async (petId) => {
         "Erro no servidor";
 
       if (status === 401) {
-        throw new Error("Sua sessao expirou. Faca login novamente.");
+        throw new Error("Sua sessão expirou. Faça login novamente.");
       }
 
       if (status === 404) {
-        throw new Error("Pet nao encontrado para este tutor.");
+        throw new Error("Pet não encontrado para este tutor.");
       }
 
       throw new Error(serverMessage);
     }
 
     if (error.request) {
-      throw new Error("Sem conexao com a internet.");
+      throw new Error("Sem conexão com a internet.");
     }
 
     throw new Error("Ocorreu um erro inesperado.");

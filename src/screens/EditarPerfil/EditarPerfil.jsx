@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -103,7 +104,7 @@ export default function EditarPerfil() {
       setPhones(normalizeLoadedPhones(contactsRes, user?.telefone || user?.TELEFONE || ''));
     } catch (err) {
       console.error(err);
-      setError('Erro ao carregar dados para edicao.');
+      setError('Erro ao carregar dados para edição.');
     } finally {
       setLoading(false);
     }
@@ -118,7 +119,7 @@ export default function EditarPerfil() {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permission.granted) {
-        alert('Permita acesso a galeria para alterar a foto.');
+        Alert.alert('Permissão necessária', 'Permita acesso à galeria para alterar a foto.');
         return;
       }
 
@@ -135,7 +136,7 @@ export default function EditarPerfil() {
       const tutorId = userData?.id || imageUser?.id;
 
       if (!tutorId) {
-        alert('Nao foi possivel identificar seu usuario.');
+        Alert.alert('Erro', 'Não foi possível identificar seu usuário.');
         return;
       }
 
@@ -153,10 +154,10 @@ export default function EditarPerfil() {
         imagemPerfil: updatedTutor?.imagemPerfil || current?.imagemPerfil,
         imagem_perfil_tutor: updatedTutor?.imagem_perfil_tutor || current?.imagem_perfil_tutor,
       }));
-      alert('Foto de perfil atualizada!');
+      Alert.alert('Sucesso', 'Foto de perfil atualizada!');
     } catch (err) {
       console.error(err);
-      alert(err?.message || 'Nao foi possivel alterar a foto.');
+      Alert.alert('Erro', err?.message || 'Não foi possível alterar a foto.');
     } finally {
       setUploadingPhoto(false);
     }
@@ -174,7 +175,7 @@ export default function EditarPerfil() {
 
   const handleAddPhone = () => {
     if (phones.length >= 2) {
-      alert('Voce pode cadastrar no maximo 2 telefones.');
+      Alert.alert('Limite atingido', 'Você pode cadastrar no máximo 2 telefones.');
       return;
     }
 
@@ -201,18 +202,18 @@ export default function EditarPerfil() {
     const cleanPhone = validPhones[0] ? `${validPhones[0].ddd}${validPhones[0].numero}` : '';
 
     if (!cleanName) {
-      alert('Informe seu nome.');
+      Alert.alert('Preencha os campos', 'Informe seu nome.');
       return;
     }
 
     if (validPhones.length > 2) {
-      alert('Voce pode cadastrar no maximo 2 telefones.');
+      Alert.alert('Limite atingido', 'Você pode cadastrar no máximo 2 telefones.');
       return;
     }
 
     for (const phone of validPhones) {
       if (phone.ddd.length !== 2 || phone.numero.length < 8) {
-        alert('Informe telefones validos com DDD.');
+        Alert.alert('Telefone inválido', 'Informe telefones válidos com DDD.');
         return;
       }
     }
@@ -220,7 +221,7 @@ export default function EditarPerfil() {
     const uniquePhones = new Set(validPhones.map((phone) => `${phone.ddd}${phone.numero}`));
 
     if (uniquePhones.size !== validPhones.length) {
-      alert('Os telefones precisam ser diferentes.');
+      Alert.alert('Telefone repetido', 'Os telefones precisam ser diferentes.');
       return;
     }
 
@@ -236,11 +237,11 @@ export default function EditarPerfil() {
 
       setUserData(updatedTutor);
       setPhones(normalizeLoadedPhones(updatedContacts, cleanPhone));
-      alert('Perfil atualizado!');
+      Alert.alert('Sucesso', 'Perfil atualizado!');
       navigation.goBack();
     } catch (err) {
       console.error(err);
-      alert(err?.message || 'Nao foi possivel atualizar o perfil.');
+      Alert.alert('Erro', err?.message || 'Não foi possível atualizar o perfil.');
     } finally {
       setSaving(false);
     }
@@ -327,7 +328,7 @@ export default function EditarPerfil() {
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>CPF (nao editavel)</Text>
+              <Text style={styles.fieldLabel}>CPF (não editável)</Text>
               <TextInput
                 value={formateCPF(cpfExibir)}
                 editable={false}
@@ -336,12 +337,12 @@ export default function EditarPerfil() {
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Endereco Residencial</Text>
+              <Text style={styles.fieldLabel}>Endereço Residencial</Text>
               <TextInput
                 value={address}
                 onChangeText={setAddress}
                 style={styles.textInput}
-                placeholder="Seu endereco"
+                placeholder="Seu endereço"
                 placeholderTextColor="#94a3b8"
               />
             </View>
@@ -382,7 +383,7 @@ export default function EditarPerfil() {
                 <TextInput
                   value={phone.numero}
                   onChangeText={(value) => updatePhoneField(index, 'numero', value)}
-                  placeholder="Numero"
+                  placeholder="Número"
                   placeholderTextColor="#cbd5e1"
                   style={[styles.textInput, styles.phoneNumberInput]}
                   keyboardType="numeric"
@@ -416,7 +417,7 @@ export default function EditarPerfil() {
               {saving ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.saveText}>SALVAR ALTERACOES</Text>
+                <Text style={styles.saveText}>SALVAR ALTERAÇÕES</Text>
               )}
             </TouchableOpacity>
           </View>

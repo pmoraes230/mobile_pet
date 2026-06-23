@@ -18,6 +18,7 @@ const inferType = (title = '', buttons = []) => {
     normalizedTitle.includes('criado') ||
     normalizedTitle.includes('cadastrado') ||
     normalizedTitle.includes('excluido') ||
+    normalizedTitle.includes('excluído') ||
     normalizedTitle.includes('removido')
   ) {
     return 'success';

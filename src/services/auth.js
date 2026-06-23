@@ -19,7 +19,7 @@ const saveSession = async ({ token, accessToken, refreshToken }) => {
     const nextAccessToken = accessToken || token;
 
     if (!nextAccessToken) {
-        throw new Error("Token de acesso nao retornado pela API.");
+        throw new Error("Token de acesso não retornado pela API.");
     }
 
     await SecureStore.setItemAsync(TOKEN_KEY, nextAccessToken);
@@ -64,7 +64,7 @@ export const login = async (email, senha) => {
             }
 
             if (status === 400) {
-                throw new Error(serverMessage || "Dados invalidos. Verifique as informacoes.");
+                throw new Error(serverMessage || "Dados inválidos. Verifique as informações.");
             }
 
             if (status === 403) {
@@ -75,7 +75,7 @@ export const login = async (email, senha) => {
         }
 
         if (error.request) {
-            throw new Error("Sem conexao com a internet. Verifique sua rede e tente novamente.");
+            throw new Error("Sem conexão com a internet. Verifique sua rede e tente novamente.");
         }
 
         throw new Error("Ocorreu um erro inesperado. Tente novamente mais tarde.");
@@ -146,7 +146,7 @@ export const refreshAccessToken = async () => {
     const refreshToken = await getRefreshToken();
 
     if (!refreshToken) {
-        throw new Error("Sessao expirada. Faca login novamente.");
+        throw new Error("Sessão expirada. Faça login novamente.");
     }
 
     const response = await axios.post(`${API_URL}/api/auth/refresh`, {

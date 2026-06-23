@@ -31,7 +31,7 @@ export default function RedefinirSenha() {
 
   const handleSubmit = async () => {
     if (!email || !codigo) {
-      alert?.showAlert('Codigo nao encontrado', 'Volte e solicite um novo codigo.');
+      alert?.showAlert('Código não encontrado', 'Volte e solicite um novo código.');
       navigation.navigate('EsqueciSenha');
       return;
     }
@@ -57,7 +57,7 @@ export default function RedefinirSenha() {
       ]);
     } catch (error) {
       alert?.showAlert(
-        'Nao foi possivel alterar',
+        'Não foi possível alterar',
         error?.response?.data?.error || error?.response?.data?.message || 'Tente novamente em alguns instantes.'
       );
     } finally {
@@ -151,7 +151,7 @@ export default function RedefinirSenha() {
               style={styles.eyeButton}
               onPress={() => setShowConfirmPassword((prev) => !prev)}
               accessibilityRole="button"
-              accessibilityLabel={showConfirmPassword ? 'Ocultar confirmacao de senha' : 'Mostrar confirmacao de senha'}
+              accessibilityLabel={showConfirmPassword ? 'Ocultar confirmação de senha' : 'Mostrar confirmação de senha'}
             >
               {showConfirmPassword ? (
                 <EyeOff size={19} color={isDarkMode ? '#FFFFFF' : '#64748B'} />

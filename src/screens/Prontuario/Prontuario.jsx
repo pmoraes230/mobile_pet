@@ -182,8 +182,8 @@ export default function TelaProntuario() {
 
     if (!arquivoUrl) {
       showFeedback({
-        title: 'Arquivo indisponivel',
-        message: 'Este prontuario nao possui arquivo anexado.',
+        title: 'Arquivo indisponível',
+        message: 'Este prontuário não possui arquivo anexado.',
         type: 'warning',
       });
       return;
@@ -215,8 +215,8 @@ export default function TelaProntuario() {
 
     if (!url) {
       showFeedback({
-        title: 'Arquivo indisponivel',
-        message: 'Este prontuario nao possui arquivo anexado.',
+        title: 'Arquivo indisponível',
+        message: 'Este prontuário não possui arquivo anexado.',
         type: 'warning',
       });
       return;
@@ -234,7 +234,7 @@ export default function TelaProntuario() {
 
       if (file.cancelled) {
         showFeedback({
-          title: 'Permissao cancelada',
+        title: 'Permissão cancelada',
           message: 'Nenhuma pasta foi selecionada para salvar o arquivo.',
           type: 'warning',
         });
@@ -251,7 +251,7 @@ export default function TelaProntuario() {
     } catch {
       showFeedback({
         title: 'Erro ao salvar arquivo',
-        message: 'Verifique sua conexao e tente novamente.',
+        message: 'Verifique sua conexão e tente novamente.',
         type: 'error',
       });
     } finally {
@@ -309,10 +309,10 @@ export default function TelaProntuario() {
           }
         >
           <View style={styles.headerSection}>
-            <Text style={styles.title}>Prontuario eletronico</Text>
+            <Text style={styles.title}>Prontuário eletrônico</Text>
             <Text style={styles.subtitle}>
-              Visualize o historico de atendimento e evolucao clinica dos pets.
-              Os registros sao gerados automaticamente pelo veterinario.
+              Visualize o histórico de atendimento e evolução clínica dos pets.
+              Os registros são gerados automaticamente pelo veterinário.
             </Text>
           </View>
 

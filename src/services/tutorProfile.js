@@ -20,7 +20,7 @@ export const getCurrentTutorId = async () => {
   const userInfo = await getUserInfo();
 
   if (!userInfo?.id) {
-    throw new Error('Nao foi possivel identificar seu usuario.');
+    throw new Error('Não foi possível identificar seu usuário.');
   }
 
   return userInfo.id;

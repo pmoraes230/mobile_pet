@@ -80,7 +80,7 @@ const Perfil = () => {
       setPets(normalizePets(petsRes));
     } catch (err) {
       console.error('Erro ao carregar perfil:', err);
-      setError('Nao foi possivel carregar os dados do perfil');
+      setError('Não foi possível carregar os dados do perfil');
     } finally {
       setLoading(false);
     }
@@ -134,10 +134,10 @@ const Perfil = () => {
     );
   }
 
-  const nomeExibir = userData?.nome || userData?.nome_tutor || 'Nome nao encontrado';
-  const emailExibir = userData?.email || userData?.EMAIL || 'Nao informado';
-  const telefoneExibir = userData?.telefone || userData?.TELEFONE || 'Nao informado';
-  const enderecoExibir = userData?.endereco || userData?.ENDERECO || 'Endereco nao informado';
+  const nomeExibir = userData?.nome || userData?.nome_tutor || 'Nome não encontrado';
+  const emailExibir = userData?.email || userData?.EMAIL || 'Não informado';
+  const telefoneExibir = userData?.telefone || userData?.TELEFONE || 'Não informado';
+  const enderecoExibir = userData?.endereco || userData?.ENDERECO || 'Endereço não informado';
   const rawNascimento = userData?.dataNascimento || userData?.DATA_NASCIMENTO;
   const cpfBruto = cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF;
   const fotoUrl = normalizeTutorImage(userData?.imagemPerfil || userData?.imagem_perfil_tutor);
@@ -214,19 +214,19 @@ const Perfil = () => {
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Documento CPF</Text>
                 <Text style={styles.detailValue}>
-                  {cpfBruto ? formateCPF(cpfBruto) : 'Nao informado'}
+                  {cpfBruto ? formateCPF(cpfBruto) : 'Não informado'}
                 </Text>
               </View>
 
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>Nascimento</Text>
                 <Text style={styles.detailValue}>
-                  {rawNascimento ? formateDate(rawNascimento) : 'Nao informado'}
+                  {rawNascimento ? formateDate(rawNascimento) : 'Não informado'}
                 </Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Endereco registrado</Text>
+                <Text style={styles.detailLabel}>Endereço registrado</Text>
                 <Text style={styles.detailValue}>{enderecoExibir}</Text>
               </View>
             </View>
@@ -283,7 +283,7 @@ const Perfil = () => {
               <TouchableOpacity
                 style={styles.secondaryButton}
                 activeOpacity={0.8}
-                onPress={() => navigation.navigate('EsqueciSenha', emailExibir !== 'Nao informado' ? { email: emailExibir } : undefined)}
+                onPress={() => navigation.navigate('EsqueciSenha', emailExibir !== 'Não informado' ? { email: emailExibir } : undefined)}
               >
                 <Text style={styles.secondaryButtonText}>ALTERAR SENHA</Text>
               </TouchableOpacity>

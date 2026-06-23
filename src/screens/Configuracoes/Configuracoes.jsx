@@ -7,6 +7,7 @@ import {
   Switch,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
@@ -47,7 +48,7 @@ export default function Configuracoes() {
         }
       })
       .catch((error) => {
-        console.log('Erro ao carregar preferencias de notificacao:', error?.response?.data || error?.message);
+        console.log('Erro ao carregar preferências de notificação:', error?.response?.data || error?.message);
       });
 
     return () => {
@@ -72,8 +73,8 @@ export default function Configuracoes() {
       setLembretesVacinas(savedPreferences.vaccineRemindersEnabled);
       setDicasSemanais(savedPreferences.weeklyTipsEnabled);
     } catch (error) {
-      console.log('Erro ao salvar preferencias de notificacao:', error?.response?.data || error?.message);
-      alert('Nao foi possivel salvar as preferencias de notificacao.');
+      console.log('Erro ao salvar preferências de notificação:', error?.response?.data || error?.message);
+      Alert.alert('Erro', 'Não foi possível salvar as preferências de notificação.');
     } finally {
       setSavingNotifications(false);
     }
@@ -85,7 +86,7 @@ export default function Configuracoes() {
       navigation.navigate('Mensagens');
     }
     if (tabId === 'consultas') {
-      alert('Ir para Consultas (nao implementado)');
+      Alert.alert('Em breve', 'A área de consultas ainda não foi implementada.');
     }
   };
 
@@ -109,15 +110,15 @@ export default function Configuracoes() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.pageTitle}>Configuracoes da Conta</Text>
+          <Text style={styles.pageTitle}>Configurações da Conta</Text>
           <Text style={styles.pageSubtitle}>
-            Ajuste seu app do jeito que voce prefere.
+            Ajuste seu app do jeito que você prefere.
           </Text>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Aparencia</Text>
+            <Text style={styles.cardTitle}>Aparência</Text>
             <Text style={styles.cardDescription}>
-              Ative o modo escuro quando quiser. O app continua claro por padrao.
+              Ative o modo escuro quando quiser. O app continua claro por padrão.
             </Text>
 
             <View style={styles.optionRow}>
@@ -132,7 +133,7 @@ export default function Configuracoes() {
                   />
                 </View>
                 <Text style={styles.optionHint}>
-                  Essa escolha fica salva para as proximas vezes.
+                  Essa escolha fica salva para as próximas vezes.
                 </Text>
               </View>
             </View>
@@ -142,7 +143,7 @@ export default function Configuracoes() {
             <Text style={styles.cardTitle}>Idioma</Text>
             <Text style={styles.cardDescription}>Escolha o idioma da plataforma.</Text>
             <View style={styles.optionRow}>
-              <Text style={styles.optionText}>Portugues (Brasil)</Text>
+              <Text style={styles.optionText}>Português (Brasil)</Text>
               <View style={styles.badgeValue}>
                 <Text style={styles.badgeText}>Selecionado</Text>
               </View>
@@ -150,13 +151,13 @@ export default function Configuracoes() {
           </View>
 
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Notificacoes</Text>
+            <Text style={styles.cardTitle}>Notificações</Text>
             <Text style={styles.cardDescription}>Gerencie alertas e lembretes.</Text>
 
             <View style={styles.optionRow}>
               <View style={styles.optionContent}>
                 <View style={styles.optionHeader}>
-                  <Text style={styles.optionText}>Notificacoes no celular</Text>
+                  <Text style={styles.optionText}>Notificações no celular</Text>
                   <Switch
                     value={pushEnabled}
                     disabled={savingNotifications}
@@ -166,7 +167,7 @@ export default function Configuracoes() {
                   />
                 </View>
                 <Text style={styles.optionHint}>
-                  Receba avisos do app direto na aba de notificacoes do celular.
+                  Receba avisos do app direto na aba de notificações do celular.
                 </Text>
               </View>
             </View>
@@ -214,7 +215,7 @@ export default function Configuracoes() {
 
           <View style={styles.card}>
             <Text style={styles.cardTitle}>Privacidade</Text>
-            <Text style={styles.cardDescription}>Controle quem ve seus dados.</Text>
+            <Text style={styles.cardDescription}>Controle quem vê seus dados.</Text>
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => navigation.navigate('EsqueciSenha', userEmail ? { email: userEmail } : undefined)}
@@ -223,13 +224,13 @@ export default function Configuracoes() {
             >
               <Text style={styles.actionButtonText}>Redefinir minha senha</Text>
             </TouchableOpacity>
-            <Text style={styles.comingSoon}>Autenticacao 2 Fatores em breve</Text>
+            <Text style={styles.comingSoon}>Autenticação em 2 fatores em breve</Text>
           </View>
 
           <View style={[styles.card, styles.dangerCard]}>
             <Text style={[styles.cardTitle, styles.dangerTitle]}>Desativar conta</Text>
             <Text style={[styles.cardDescription, styles.dangerDescription]}>
-              Ao desativar sua conta, voce perdera acesso permanente a todos os seus pets, registros e historico. Essa acao e irreversivel.
+              Ao desativar sua conta, você perderá acesso permanente a todos os seus pets, registros e histórico. Essa ação é irreversível.
             </Text>
             <TouchableOpacity style={[styles.actionButton, styles.dangerButton]}>
               <Text style={styles.actionButtonText}>DESATIVAR MINHA CONTA</Text>

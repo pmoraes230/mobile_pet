@@ -45,7 +45,7 @@ export default function ProntuarioDetailsModal({
           <View style={styles.header}>
             <View style={styles.headerText}>
               <Text style={styles.title}>
-                {prontuario.motivoConsulta || 'Detalhes do prontuario'}
+                {prontuario.motivoConsulta || 'Detalhes do prontuário'}
               </Text>
               <Text style={styles.date}>{formateDate(prontuario.dataCriacao)}</Text>
             </View>
@@ -58,7 +58,7 @@ export default function ProntuarioDetailsModal({
           <ScrollView showsVerticalScrollIndicator={false}>
             {prontuario.veterinario?.nome ? (
               <View style={styles.section}>
-                <Text style={styles.label}>Veterinario</Text>
+                <Text style={styles.label}>Veterinário</Text>
                 <Text style={styles.text}>
                   {prontuario.veterinario.nome}
                   {prontuario.veterinario.crmv ? ` - CRMV ${prontuario.veterinario.crmv}` : ''}
@@ -66,11 +66,11 @@ export default function ProntuarioDetailsModal({
               </View>
             ) : null}
 
-            <DetailSection label="Diagnostico" value={prontuario.diagnosticoConclusivo} />
+            <DetailSection label="Diagnóstico" value={prontuario.diagnosticoConclusivo} />
             <DetailSection label="Procedimentos" value={prontuario.procedimentos} />
-            <DetailSection label="Avaliacao geral" value={prontuario.avaliacaoGeral} />
-            <DetailSection label="Historico veterinario" value={prontuario.historicoVeterinario} />
-            <DetailSection label="Observacoes" value={prontuario.observacao} />
+            <DetailSection label="Avaliação geral" value={prontuario.avaliacaoGeral} />
+            <DetailSection label="Histórico veterinário" value={prontuario.historicoVeterinario} />
+            <DetailSection label="Observações" value={prontuario.observacao} />
 
             {Array.isArray(prontuario.medicamentos) && prontuario.medicamentos.length > 0 ? (
               <View style={styles.section}>

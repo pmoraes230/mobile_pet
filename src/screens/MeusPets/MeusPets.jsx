@@ -170,9 +170,9 @@ export default function TelaMeusPets() {
       );
       setDeleteModalVisible(false);
       setPetToDelete(null);
-      Alert.alert('Pet excluido', `${petName} foi removido com sucesso.`);
+      Alert.alert('Pet excluído', `${petName} foi removido com sucesso.`);
     } catch (error) {
-      Alert.alert('Erro', error.message || 'Nao foi possivel excluir este pet.');
+      Alert.alert('Erro', error.message || 'Não foi possível excluir este pet.');
     } finally {
       setDeletingPetId(null);
     }
@@ -295,7 +295,7 @@ export default function TelaMeusPets() {
 
               <Text style={[styles.deleteTitle, { color: palette.text }]}>Excluir pet?</Text>
               <Text style={[styles.deleteMessage, { color: palette.subtitle }]}>
-                {`Tem certeza que deseja excluir ${petToDelete?.nome || petToDelete?.NOME || 'este pet'}? Essa acao nao pode ser desfeita.`}
+                {`Tem certeza que deseja excluir ${petToDelete?.nome || petToDelete?.NOME || 'este pet'}? Essa ação não pode ser desfeita.`}
               </Text>
 
               <View style={styles.deleteActions}>
@@ -309,7 +309,7 @@ export default function TelaMeusPets() {
                   }}
                   disabled={!!deletingPetId}
                   accessibilityRole="button"
-                  accessibilityLabel="Cancelar exclusao"
+                  accessibilityLabel="Cancelar exclusão"
                 >
                   <Text style={[styles.deleteCancelText, { color: palette.text }]}>Cancelar</Text>
                 </TouchableOpacity>
@@ -319,7 +319,7 @@ export default function TelaMeusPets() {
                   onPress={confirmDeletePet}
                   disabled={!!deletingPetId}
                   accessibilityRole="button"
-                  accessibilityLabel="Confirmar exclusao do pet"
+                  accessibilityLabel="Confirmar exclusão do pet"
                 >
                   {deletingPetId ? (
                     <ActivityIndicator size="small" color="#FFF" />

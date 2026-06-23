@@ -27,7 +27,7 @@ const getNotificationMeta = (tipo = '') => {
   }
 
   if (normalizedType.includes('adoc')) {
-    return { titulo: 'Adocao', icon: HandHeart, color: '#14B8A6' };
+    return { titulo: 'Adoção', icon: HandHeart, color: '#14B8A6' };
   }
 
   if (normalizedType.includes('vacina')) {
@@ -42,7 +42,7 @@ const getNotificationMeta = (tipo = '') => {
     return { titulo: 'Agendamento', icon: CalendarCheck, color: '#10B981' };
   }
 
-  return { titulo: 'Notificacao', icon: PawPrint, color: '#536DFE' };
+  return { titulo: 'Notificação', icon: PawPrint, color: '#536DFE' };
 };
 
 const formatNotificationDate = (date) => {
@@ -69,7 +69,7 @@ const normalizeNotification = (item) => {
   return {
     id: item.id,
     titulo: meta.titulo,
-    descricao: item.mensagem || 'VocÃª tem uma nova notificaÃ§Ã£o.',
+    descricao: item.mensagem || 'Você tem uma nova notificação.',
     data: formatNotificationDate(item.data_criacao),
     lida: Boolean(item.lida),
     icon: meta.icon,
@@ -96,7 +96,7 @@ const NotificacoesGerais = () => {
         await marcarTodasNotificacoesComoLidas();
       }
     } catch (error) {
-      console.log('Erro ao carregar notificaÃ§Ãµes:', error?.response?.data || error?.message);
+      console.log('Erro ao carregar notificações:', error?.response?.data || error?.message);
       setNotificacoes([]);
       setUnreadCount(0);
     } finally {
@@ -136,10 +136,10 @@ const NotificacoesGerais = () => {
             <View style={styles.headerRow}>
               <View>
                 <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                  Todas as NotificaÃ§Ãµes
+                  Todas as Notificações
                 </Text>
                 <Text style={[styles.sectionSubtitle, isDarkMode && styles.sectionSubtitleDark]}>
-                  {unreadCount > 0 ? `${unreadCount} nÃ£o lida${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia'}
+                  {unreadCount > 0 ? `${unreadCount} não lida${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia'}
                 </Text>
               </View>
             </View>
@@ -148,7 +148,7 @@ const NotificacoesGerais = () => {
               <View style={styles.loadingArea}>
                 <ActivityIndicator color="#9127E1" />
                 <Text style={[styles.noNotificacoes, isDarkMode && styles.noNotificacoesDark]}>
-                  Carregando notificaÃ§Ãµes...
+                  Carregando notificações...
                 </Text>
               </View>
             ) : itemsToShow.length > 0 ? (
@@ -206,7 +206,7 @@ const NotificacoesGerais = () => {
               <View style={[styles.emptyCard, isDarkMode && styles.emptyCardDark]}>
                 <Bell size={26} color={isDarkMode ? '#A78BFA' : '#9127E1'} />
                 <Text style={[styles.noNotificacoes, isDarkMode && styles.noNotificacoesDark]}>
-                  Nenhuma notificaÃ§Ã£o disponÃ­vel.
+                  Nenhuma notificação disponível.
                 </Text>
               </View>
             )}

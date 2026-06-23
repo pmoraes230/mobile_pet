@@ -65,7 +65,7 @@ export const deletePet = async (petId) => {
         const token = await getToken();
 
         if (!token) {
-            throw new Error("UsuÃ¡rio nÃ£o autenticado. FaÃ§a login para continuar.");
+            throw new Error("Usuário não autenticado. Faça login para continuar.");
         }
 
         const response = await axios.delete(
@@ -83,14 +83,14 @@ export const deletePet = async (petId) => {
             const serverMessage =
                 error.response.data?.message ||
                 error.response.data?.error ||
-                "NÃ£o foi possÃ­vel excluir este pet.";
+                "Não foi possível excluir este pet.";
 
             if (error.response.status === 401) {
-                throw new Error("Sua sessÃ£o expirou. FaÃ§a login novamente.");
+                throw new Error("Sua sessão expirou. Faça login novamente.");
             }
 
             if (error.response.status === 404) {
-                throw new Error("Pet nÃ£o encontrado.");
+                throw new Error("Pet não encontrado.");
             }
 
             const deleteError = new Error(serverMessage);
@@ -99,7 +99,7 @@ export const deletePet = async (petId) => {
         }
 
         if (error.request) {
-            throw new Error("Sem conexÃ£o com a internet.");
+            throw new Error("Sem conexão com a internet.");
         }
 
         throw new Error("Ocorreu um erro inesperado.");

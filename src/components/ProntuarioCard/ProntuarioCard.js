@@ -12,9 +12,9 @@ export default function ProntuarioCard({
   onPreviewFile,
   onSaveFile,
 }) {
-  const title = prontuario.motivoConsulta || 'Consulta veterinaria';
-  const veterinarian = prontuario.veterinario?.nome || 'Veterinario nao informado';
-  const diagnosis = prontuario.diagnosticoConclusivo || 'Sem diagnostico informado';
+  const title = prontuario.motivoConsulta || 'Consulta veterinária';
+  const veterinarian = prontuario.veterinario?.nome || 'Veterinário não informado';
+  const diagnosis = prontuario.diagnosticoConclusivo || 'Sem diagnóstico informado';
 
   return (
     <View style={[styles.card, hasFile ? styles.cardWithFile : styles.cardWithoutFile]}>
@@ -41,7 +41,7 @@ export default function ProntuarioCard({
 
         <View style={[styles.badge, hasFile ? styles.badgeSuccess : styles.badgeMuted]}>
           <Text style={[styles.badgeText, hasFile ? styles.badgeTextSuccess : styles.badgeTextMuted]}>
-            {hasFile ? 'Anexo disponivel' : 'Sem anexo'}
+            {hasFile ? 'Anexo disponível' : 'Sem anexo'}
           </Text>
         </View>
       </TouchableOpacity>

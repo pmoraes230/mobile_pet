@@ -28,12 +28,12 @@ export default function EsqueciSenha() {
     const normalizedEmail = email.trim().toLowerCase();
 
     if (!normalizedEmail) {
-      alert?.showAlert('E-mail obrigatorio', 'Informe seu e-mail para receber o codigo.');
+      alert?.showAlert('E-mail obrigatório', 'Informe seu e-mail para receber o código.');
       return;
     }
 
     if (!/^\S+@\S+\.\S+$/.test(normalizedEmail)) {
-      alert?.showAlert('E-mail invalido', 'Digite um e-mail valido para continuar.');
+      alert?.showAlert('E-mail inválido', 'Digite um e-mail válido para continuar.');
       return;
     }
 
@@ -43,7 +43,7 @@ export default function EsqueciSenha() {
       navigation.navigate('CodigoSenha', { email: normalizedEmail });
     } catch (error) {
       alert?.showAlert(
-        'Nao foi possivel enviar',
+        'Não foi possível enviar',
         error?.response?.data?.error || error?.response?.data?.message || 'Verifique o e-mail e tente novamente.'
       );
     } finally {
@@ -78,7 +78,7 @@ export default function EsqueciSenha() {
 
           <Text style={[styles.title, isDarkMode && styles.titleDark]}>Recuperar senha</Text>
           <Text style={[styles.subtitle, isDarkMode && styles.subtitleDark]}>
-            Informe seu e-mail para receber as instrucoes.
+            Informe seu e-mail para receber as instruções.
           </Text>
 
           <Text style={[styles.label, isDarkMode && styles.labelDark]}>EMAIL</Text>
@@ -107,7 +107,7 @@ export default function EsqueciSenha() {
             onPress={handleSubmit}
             disabled={loading}
             accessibilityRole="button"
-            accessibilityLabel="Continuar recuperacao de senha"
+            accessibilityLabel="Continuar recuperação de senha"
           >
             {loading ? (
               <ActivityIndicator color="#FFF" />

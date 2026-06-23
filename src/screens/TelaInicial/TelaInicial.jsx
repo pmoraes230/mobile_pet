@@ -47,7 +47,7 @@ const formatarCompromisso = (compromisso) => {
         month: 'short',
         timeZone: 'UTC',
       })
-    : 'Data nao informada';
+    : 'Data não informada';
 
   const hora = compromisso.horario_consulta?.slice(0, 5);
   const pet = compromisso.pet?.nome || 'Pet';

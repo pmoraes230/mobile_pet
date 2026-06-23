@@ -54,7 +54,7 @@ export const downloadFileToAppStorage = async ({
   folderName = 'downloads',
 }) => {
   if (!url) {
-    throw new Error('URL do arquivo nao informada.');
+    throw new Error('URL do arquivo não informada.');
   }
 
   const directory = await ensureDirectory(folderName);
@@ -130,7 +130,7 @@ export const saveFileToDeviceStorage = async ({
   folderName = 'downloads',
 }) => {
   if (!url) {
-    throw new Error('URL do arquivo nao informada.');
+    throw new Error('URL do arquivo não informada.');
   }
 
   const safeFileName = sanitizeFileName(fileName, getFileNameFromUrl(url, fallbackName));
