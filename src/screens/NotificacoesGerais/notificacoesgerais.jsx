@@ -18,6 +18,7 @@ import {
   marcarTodasNotificacoesComoLidas,
 } from '../../services/notificacoes';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const getNotificationMeta = (tipo = '') => {
   const normalizedType = String(tipo).toLowerCase();
@@ -45,16 +46,16 @@ const getNotificationMeta = (tipo = '') => {
   return { titulo: 'Notificação', icon: PawPrint, color: '#536DFE' };
 };
 
-const formatNotificationDate = (date) => {
-  if (!date) return 'Agora';
+const formatNotificationDate = (date, language = 'pt') => {
+  if (!date) return language === 'en' ? 'Now' : 'Agora';
 
   const parsedDate = new Date(date);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return 'Agora';
+    return language === 'en' ? 'Now' : 'Agora';
   }
 
-  return parsedDate.toLocaleDateString('pt-BR', {
+  return parsedDate.toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR', {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -63,14 +64,53 @@ const formatNotificationDate = (date) => {
   });
 };
 
-const normalizeNotification = (item) => {
+const translateNotificationMessage = (message, t, language) => {
+  const fallback = t('Você tem uma nova notificação.');
+  if (!message) return fallback;
+
+  const exact = t(message);
+  if (language !== 'en' || exact !== message) return exact;
+
+  return String(message)
+    .replace(/\b[Vv]ocê\b/g, 'You')
+    .replace(/\b[Ss]eu\b/g, 'Your')
+    .replace(/\b[Ss]ua\b/g, 'Your')
+    .replace(/\b[Ss]eus\b/g, 'Your')
+    .replace(/\b[Ss]uas\b/g, 'Your')
+    .replace(/\b[Tt]em\b/g, 'have')
+    .replace(/\b[Nn]ova\b/g, 'new')
+    .replace(/\b[Nn]ovo\b/g, 'new')
+    .replace(/\b[Nn]otificação\b/g, 'notification')
+    .replace(/\b[Cc]onsulta\b/g, 'appointment')
+    .replace(/\b[Aa]gendamento\b/g, 'appointment')
+    .replace(/\b[Aa]gendada\b/g, 'scheduled')
+    .replace(/\b[Aa]gendado\b/g, 'scheduled')
+    .replace(/\b[Cc]onfirmada\b/g, 'confirmed')
+    .replace(/\b[Cc]onfirmado\b/g, 'confirmed')
+    .replace(/\b[Cc]ancelada\b/g, 'canceled')
+    .replace(/\b[Cc]ancelado\b/g, 'canceled')
+    .replace(/\b[Pp]endente\b/g, 'pending')
+    .replace(/\b[Vv]acina\b/g, 'vaccine')
+    .replace(/\b[Vv]acinação\b/g, 'vaccination')
+    .replace(/\b[Mm]edicamento\b/g, 'medication')
+    .replace(/\b[Aa]doção\b/g, 'adoption')
+    .replace(/\b[Ii]nteresse\b/g, 'interest')
+    .replace(/\b[Hh]oje\b/g, 'today')
+    .replace(/\b[Aa]manhã\b/g, 'tomorrow')
+    .replace(/\b[Pp]ara\b/g, 'for')
+    .replace(/\b[Dd]o\b/g, 'of')
+    .replace(/\b[Dd]a\b/g, 'of')
+    .replace(/\b[Dd]e\b/g, 'of');
+};
+
+const normalizeNotification = (item, t, language) => {
   const meta = getNotificationMeta(item?.tipo);
 
   return {
     id: item.id,
-    titulo: meta.titulo,
-    descricao: item.mensagem || 'Você tem uma nova notificação.',
-    data: formatNotificationDate(item.data_criacao),
+    titulo: t(meta.titulo),
+    descricao: translateNotificationMessage(item.mensagem, t, language),
+    data: formatNotificationDate(item.data_criacao, language),
     lida: Boolean(item.lida),
     icon: meta.icon,
     color: meta.color,
@@ -80,6 +120,7 @@ const normalizeNotification = (item) => {
 const NotificacoesGerais = () => {
   const navigation = useNavigation();
   const { isDarkMode } = useAppTheme();
+  const { t, language } = useLanguage();
   const [showAll, setShowAll] = useState(false);
   const [notificacoes, setNotificacoes] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -89,7 +130,7 @@ const NotificacoesGerais = () => {
     try {
       setLoading(true);
       const data = await getNotificacoes({ limit: showAll ? 60 : 20 });
-      setNotificacoes(data.notificacoes.map(normalizeNotification).map((item) => ({ ...item, lida: true })));
+      setNotificacoes(data.notificacoes.map((item) => normalizeNotification(item, t, language)).map((item) => ({ ...item, lida: true })));
       setUnreadCount(0);
 
       if (data.unreadCount > 0) {
@@ -102,7 +143,7 @@ const NotificacoesGerais = () => {
     } finally {
       setLoading(false);
     }
-  }, [showAll]);
+  }, [showAll, t, language]);
 
   useFocusEffect(
     useCallback(() => {
@@ -135,11 +176,13 @@ const NotificacoesGerais = () => {
           <View style={styles.notificacoesArea}>
             <View style={styles.headerRow}>
               <View>
-                <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark]}>
-                  Todas as Notificações
+                <Text style={[styles.sectionTitle, isDarkMode && styles.sectionTitleDark, isDarkMode && { color: '#F8FAFC' }]}>
+                  {t('Todas as Notificações')}
                 </Text>
                 <Text style={[styles.sectionSubtitle, isDarkMode && styles.sectionSubtitleDark]}>
-                  {unreadCount > 0 ? `${unreadCount} não lida${unreadCount > 1 ? 's' : ''}` : 'Tudo em dia'}
+                  {unreadCount > 0
+                    ? t('{{count}} não lida{{plural}}', { count: unreadCount, plural: unreadCount > 1 ? 's' : '' })
+                    : t('Tudo em dia')}
                 </Text>
               </View>
             </View>
@@ -148,7 +191,7 @@ const NotificacoesGerais = () => {
               <View style={styles.loadingArea}>
                 <ActivityIndicator color="#9127E1" />
                 <Text style={[styles.noNotificacoes, isDarkMode && styles.noNotificacoesDark]}>
-                  Carregando notificações...
+                  {t('Carregando notificações...')}
                 </Text>
               </View>
             ) : itemsToShow.length > 0 ? (
@@ -175,17 +218,33 @@ const NotificacoesGerais = () => {
                       <View style={styles.notificacaoContent}>
                         <View style={styles.notificacaoRow}>
                           <Text
-                            style={[styles.notificacaoTitulo, isDarkMode && styles.notificacaoTituloDark]}
+                            style={[
+                              styles.notificacaoTitulo,
+                              isDarkMode && styles.notificacaoTituloDark,
+                              isDarkMode && { color: '#FFFFFF' },
+                            ]}
                             numberOfLines={1}
                           >
                             {item.titulo}
                           </Text>
                           {!item.lida ? <View style={styles.unreadDot} /> : null}
                         </View>
-                        <Text style={[styles.notificacaoDescricao, isDarkMode && styles.notificacaoDescricaoDark]}>
+                        <Text
+                          style={[
+                            styles.notificacaoDescricao,
+                            isDarkMode && styles.notificacaoDescricaoDark,
+                            isDarkMode && { color: '#E8ECF7' },
+                          ]}
+                        >
                           {item.descricao}
                         </Text>
-                        <Text style={[styles.notificacaoData, isDarkMode && styles.notificacaoDataDark]}>
+                        <Text
+                          style={[
+                            styles.notificacaoData,
+                            isDarkMode && styles.notificacaoDataDark,
+                            isDarkMode && { color: '#CBD5E1' },
+                          ]}
+                        >
                           {item.data}
                         </Text>
                       </View>
@@ -198,7 +257,9 @@ const NotificacoesGerais = () => {
                     style={[styles.toggleButton, isDarkMode && styles.toggleButtonDark]}
                     onPress={() => setShowAll((prev) => !prev)}
                   >
-                    <Text style={styles.toggleButtonText}>{showAll ? 'Mostrar menos' : 'Ver tudo'}</Text>
+                    <Text style={[styles.toggleButtonText, isDarkMode && { color: '#D8B4FE' }]}>
+                      {showAll ? t('Mostrar menos') : t('Ver tudo')}
+                    </Text>
                   </TouchableOpacity>
                 ) : null}
               </>
@@ -206,7 +267,7 @@ const NotificacoesGerais = () => {
               <View style={[styles.emptyCard, isDarkMode && styles.emptyCardDark]}>
                 <Bell size={26} color={isDarkMode ? '#A78BFA' : '#9127E1'} />
                 <Text style={[styles.noNotificacoes, isDarkMode && styles.noNotificacoesDark]}>
-                  Nenhuma notificação disponível.
+                  {t('Nenhuma notificação disponível.')}
                 </Text>
               </View>
             )}

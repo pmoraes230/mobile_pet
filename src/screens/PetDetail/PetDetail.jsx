@@ -17,6 +17,7 @@ import { styles } from './styles';
 import TabBar from '../../components/TabBar';
 import api from '../../services/api';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const TUTOR_DEFAULT = require('../../assets/user_default.png');
 
@@ -67,7 +68,7 @@ const parsePetDate = (value) => {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 };
 
-const formatAgeFromDate = (value) => {
+const formatAgeFromDate = (value, language = 'pt') => {
   const birthDate = parsePetDate(value);
   if (!birthDate) return null;
 
@@ -84,6 +85,18 @@ const formatAgeFromDate = (value) => {
 
   const years = Math.floor(totalMonths / 12);
   const months = totalMonths % 12;
+
+  if (language === 'en') {
+    if (years === 0) {
+      return `${totalMonths} ${totalMonths === 1 ? 'month' : 'months'}`;
+    }
+
+    if (months === 0) {
+      return `${years} ${years === 1 ? 'year' : 'years'}`;
+    }
+
+    return `${years} ${years === 1 ? 'year' : 'years'} and ${months} ${months === 1 ? 'month' : 'months'}`;
+  }
 
   if (years === 0) {
     return `${totalMonths} ${totalMonths === 1 ? 'mês' : 'meses'}`;
@@ -109,9 +122,14 @@ const getTutorIdFromPet = (rawData = {}) =>
   firstValue(
     rawData.idTutor,
     rawData.ID_TUTOR,
+    rawData.id_tutor,
+    rawData.id_tutor_id,
+    rawData.ID_TUTOR_ID,
+    rawData.tutor_id_id,
+    rawData.tutor_uuid,
+    rawData.TUTOR_UUID,
     rawData.tutorId,
     rawData.TUTOR_ID,
-    rawData.id_tutor,
     rawData.tutor_id,
     rawData.IDTUTOR,
     rawData.idResponsavel,
@@ -119,8 +137,15 @@ const getTutorIdFromPet = (rawData = {}) =>
     rawData.responsavelId,
     rawData.tutor?.id,
     rawData.tutor?.ID,
+    rawData.tutor?.id_tutor,
+    rawData.tutor?.ID_TUTOR,
     rawData.TUTOR?.id,
     rawData.TUTOR?.ID,
+    rawData.id_tutor?.id,
+    rawData.id_tutor?.ID,
+    rawData.id_tutor?.id_tutor,
+    rawData.ID_TUTOR?.id,
+    rawData.ID_TUTOR?.ID,
     rawData.responsavel?.id,
     rawData.responsavel?.ID
   );
@@ -129,9 +154,13 @@ const getTutorNameFromPet = (rawData = {}) =>
   firstValue(
     rawData.nomeTutor,
     rawData.NOME_TUTOR,
+    rawData.nome_tutor,
+    rawData.NOME_TUTOR,
+    rawData.tutor_nome_tutor,
+    rawData.TUTOR_NOME_TUTOR,
+    rawData.responsavel_nome_tutor,
     rawData.tutorNome,
     rawData.TUTOR_NOME,
-    rawData.nome_tutor,
     rawData.tutor_nome,
     rawData.nomeResponsavel,
     rawData.NOME_RESPONSAVEL,
@@ -139,11 +168,21 @@ const getTutorNameFromPet = (rawData = {}) =>
     rawData.tutor?.nome,
     rawData.tutor?.NOME,
     rawData.tutor?.nome_tutor,
+    rawData.tutor?.NOME_TUTOR,
     rawData.TUTOR?.nome,
     rawData.TUTOR?.NOME,
+    rawData.TUTOR?.nome_tutor,
+    rawData.id_tutor?.nome,
+    rawData.id_tutor?.NOME,
+    rawData.id_tutor?.nome_tutor,
+    rawData.id_tutor?.NOME_TUTOR,
+    rawData.ID_TUTOR?.nome,
+    rawData.ID_TUTOR?.NOME,
+    rawData.ID_TUTOR?.nome_tutor,
+    rawData.ID_TUTOR?.NOME_TUTOR,
     rawData.responsavel?.nome,
     rawData.responsavel?.NOME,
-    rawData.tutor
+    typeof rawData.tutor === 'string' ? rawData.tutor : undefined
   );
 
 const getTutorImageFromPet = (rawData = {}) =>
@@ -155,14 +194,29 @@ const getTutorImageFromPet = (rawData = {}) =>
     rawData.imagem_tutor,
     rawData.fotoTutor,
     rawData.FOTO_TUTOR,
+    rawData.imagem_perfil_tutor,
+    rawData.IMAGEM_PERFIL_TUTOR,
     rawData.tutor?.imagem,
     rawData.tutor?.IMAGEM,
     rawData.tutor?.imagem_perfil_tutor,
+    rawData.tutor?.IMAGEM_PERFIL_TUTOR,
     rawData.TUTOR?.imagem,
     rawData.TUTOR?.IMAGEM,
+    rawData.TUTOR?.imagem_perfil_tutor,
+    rawData.id_tutor?.imagem,
+    rawData.id_tutor?.IMAGEM,
+    rawData.id_tutor?.imagem_perfil_tutor,
+    rawData.id_tutor?.IMAGEM_PERFIL_TUTOR,
+    rawData.ID_TUTOR?.imagem,
+    rawData.ID_TUTOR?.IMAGEM,
+    rawData.ID_TUTOR?.imagem_perfil_tutor,
+    rawData.ID_TUTOR?.IMAGEM_PERFIL_TUTOR,
     rawData.responsavel?.imagem,
     rawData.responsavel?.IMAGEM
   );
+
+const unwrapTutorResponse = (data) =>
+  data?.tutor || data?.data?.tutor || data?.data || data?.user || data;
 
 const formatTutorImage = (image) => {
   if (!image || typeof image !== 'string') return TUTOR_DEFAULT;
@@ -177,6 +231,7 @@ export default function PetDetail() {
   const navigation = useNavigation();
   const route = useRoute();
   const { isDarkMode } = useAppTheme();
+  const { t, language } = useLanguage();
   const p = isDarkMode ? PET_DETAIL_THEME.dark : PET_DETAIL_THEME.light;
   const [activeTab, setActiveTab] = useState('home');
   const [isFavorite, setIsFavorite] = useState(false);
@@ -225,15 +280,17 @@ export default function PetDetail() {
       name: rawData.nome || rawData.NOME || 'Pet',
       especie: rawData.especie || rawData.ESPECIE || 'Não informado',
       breed: rawData.raca || rawData.RACA || 'Não informado',
-      age: formatAgeFromDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO) ||
-        (rawData.idade || rawData.IDADE ? `${rawData.idade || rawData.IDADE} ${Number(rawData.idade || rawData.IDADE) === 1 ? 'ano' : 'anos'}` : 'Não informado'),
-      birthDate: parsePetDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO)?.toLocaleDateString('pt-BR') || 'Não informada',
+      age: formatAgeFromDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO, language) ||
+        (rawData.idade || rawData.IDADE
+          ? `${rawData.idade || rawData.IDADE} ${language === 'en' ? (Number(rawData.idade || rawData.IDADE) === 1 ? 'year' : 'years') : (Number(rawData.idade || rawData.IDADE) === 1 ? 'ano' : 'anos')}`
+          : t('Não informado')),
+      birthDate: parsePetDate(rawData.dataNascimento || rawData.DATA_NASCIMENTO || rawData.data_nascimento || rawData.NASCIMENTO)?.toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR') || t('Não informada'),
       weight: formatWeight(rawData.peso || rawData.PESO),
       castrated: castrated,
       sexo: rawData.sexo || rawData.SEXO || 'Não informado',
-      description: rawData.descricao || rawData.DESCRICAO || rawData.biografiaAdocao || 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
-      personality: rawData.personalidade || rawData.PERSONALIDADE || 'Nenhuma característica informada.',
-      tutor: typeof tutorName === 'string' ? tutorName : 'Tutor não informado',
+      description: rawData.descricao || rawData.DESCRICAO || rawData.biografiaAdocao || t('O tutor ainda não escreveu uma descrição detalhada para este pet.'),
+      personality: rawData.personalidade || rawData.PERSONALIDADE || t('Nenhuma característica informada.'),
+      tutor: typeof tutorName === 'string' ? tutorName : t('Tutor não informado'),
       tutorImage: formatTutorImage(tutorImage),
       image: getImageUri(rawData.imagem || rawData.IMAGEM),
       genero: genero,
@@ -293,21 +350,27 @@ export default function PetDetail() {
           try {
             setLoading(true);
             const response = await api.get(`/tutors/${tutorId}`);
+            const tutorData = unwrapTutorResponse(response.data);
 
-            if (response.data) {       
+            if (tutorData) {
               // Atualiza os dados do tutor
               normalized.tutor =
-                response.data.nome ||
-                response.data.NOME ||
-                response.data.nome_tutor ||
-                response.data.NOME_TUTOR ||
+                tutorData.nome ||
+                tutorData.NOME ||
+                tutorData.nome_tutor ||
+                tutorData.NOME_TUTOR ||
+                tutorData.nomeTutor ||
+                tutorData.NOME_TUTOR ||
                 normalized.tutor ||
                 'Tutor';
               normalized.tutorImage = formatTutorImage(
-                response.data.imagem ||
-                response.data.IMAGEM ||
-                response.data.imagem_perfil_tutor ||
-                response.data.IMAGEM_PERFIL_TUTOR
+                tutorData.imagem ||
+                tutorData.IMAGEM ||
+                tutorData.imagem_perfil_tutor ||
+                tutorData.IMAGEM_PERFIL_TUTOR ||
+                tutorData.imagemPerfil ||
+                tutorData.foto ||
+                tutorData.FOTO
               );
               
               setPetData(normalized);
@@ -329,19 +392,19 @@ export default function PetDetail() {
     };
 
     loadPetDetails();
-  }, [route.params]);
+  }, [route.params, language]);
 
   // Usa petData normalizado ou valores padrão
   const pet = petData || {
     name: 'Niça',
     breed: 'Branco',
-    age: '11 anos',
-    birthDate: 'Não informada',
+    age: language === 'en' ? '11 years' : '11 anos',
+    birthDate: t('Não informada'),
     weight: '-- kg',
     sexo: 'Macho',
     castrated: 'Não',
-    description: 'O tutor ainda não escreveu uma descrição detalhada para este pet.',
-    personality: 'Nenhuma característica informada.',
+    description: t('O tutor ainda não escreveu uma descrição detalhada para este pet.'),
+    personality: t('Nenhuma característica informada.'),
     tutor: 'Rayan Rodrigues',
     tutorImage: TUTOR_DEFAULT,
     image: 'https://placekitten.com/400/600',
@@ -356,11 +419,11 @@ export default function PetDetail() {
   };
 
   const handleContact = () => {
-    Alert.alert('Contato', 'Enviando mensagem para entrar em contato com o tutor...');
+    Alert.alert(t('Contato'), t('Enviando mensagem para entrar em contato com o tutor...'));
   };
 
   const handleShare = () => {
-    Alert.alert('Compartilhar', 'Compartilhando perfil do ' + pet.name);
+    Alert.alert(t('Compartilhar'), t('Compartilhando perfil do {{name}}', { name: pet.name }));
   };
 
   const vaccineNames = vaccines
@@ -368,7 +431,7 @@ export default function PetDetail() {
     .filter(Boolean);
   const vaccineSummary = vaccineNames.length > 0
     ? vaccineNames.join(', ')
-    : 'Nenhuma vacina informada';
+    : t('Nenhuma vacina informada');
 
   return (
     <KeyboardAvoidingView
@@ -384,7 +447,7 @@ export default function PetDetail() {
             onPress={() => navigation.goBack()}
           >
             <ChevronLeft size={24} color={p.text} />
-            <Text style={[styles.backText, { color: p.muted }]}>Voltar</Text>
+            <Text style={[styles.backText, { color: p.muted }]}>{t('Voltar')}</Text>
           </TouchableOpacity>
           
           <Text style={[styles.headerTitle, { color: p.text }]}>{pet.name}</Text>
@@ -411,7 +474,7 @@ export default function PetDetail() {
           {loading ? (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingVertical: 40 }}>
               <ActivityIndicator size="large" color="#9127E1" />
-              <Text style={{ marginTop: 10, color: p.subtitle }}>Carregando informações...</Text>
+              <Text style={{ marginTop: 10, color: p.subtitle }}>{t('Carregando informações...')}</Text>
             </View>
           ) : (
           <>
@@ -431,13 +494,13 @@ export default function PetDetail() {
           <View style={[styles.petHeaderSection, { backgroundColor: p.surface, borderBottomColor: p.softBorder }]}>
             <Text style={[styles.petName, { color: p.text }]}>{pet.name}</Text>
             <View style={[styles.petBreedBadge, { backgroundColor: p.accentSoft }]}>
-              <Text style={[styles.petBreedText, { color: p.accent }]}>{pet.breed}</Text>
+              <Text style={[styles.petBreedText, { color: p.accent }]}>{t(pet.breed)}</Text>
             </View>
           </View>
 
           {/* TUTOR RESPONSÁVEL */}
           <View style={[styles.tutorCard, { backgroundColor: p.tutorSurface, borderColor: p.tutorBorder }]}>
-            <Text style={[styles.tutorLabel, { color: p.muted }]}>TUTOR RESPONSÁVEL</Text>
+            <Text style={[styles.tutorLabel, { color: p.muted }]}>{t('TUTOR RESPONSÁVEL')}</Text>
             <View style={styles.tutorContent}>
               <Image 
                 source={pet.tutorImage} 
@@ -458,16 +521,16 @@ export default function PetDetail() {
           {/* PET INFO CARDS */}
           <View style={[styles.infoCardsContainer, { backgroundColor: p.surface }]}>
             <View style={[styles.infoCard, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
-              <Text style={[styles.infoLabel, { color: p.muted }]}>IDADE</Text>
+              <Text style={[styles.infoLabel, { color: p.muted }]}>{t('IDADE')}</Text>
               <Text style={[styles.infoValue, { color: p.text }]}>{pet.age}</Text>
             </View>
             <View style={[styles.infoCard, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
-              <Text style={[styles.infoLabel, { color: p.muted }]}>PESO</Text>
+              <Text style={[styles.infoLabel, { color: p.muted }]}>{t('PESO')}</Text>
               <Text style={[styles.infoValue, { color: p.text }]}>{pet.weight}</Text>
             </View>
             <View style={[styles.infoCard, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
-              <Text style={[styles.infoLabel, { color: p.muted }]}>CASTRADO</Text>
-              <Text style={[styles.infoValue, { color: p.text }]}>{pet.castrated}</Text>
+              <Text style={[styles.infoLabel, { color: p.muted }]}>{t('CASTRADO')}</Text>
+              <Text style={[styles.infoValue, { color: p.text }]}>{t(pet.castrated)}</Text>
             </View>
           </View>
 
@@ -475,24 +538,24 @@ export default function PetDetail() {
           <View style={[styles.section, { backgroundColor: p.surface }]}>
             <View style={styles.sectionHeader}>
               <Text style={styles.emojiIcon}>+</Text>
-              <Text style={[styles.sectionTitle, { color: p.text }]}>Saúde e cuidados</Text>
+              <Text style={[styles.sectionTitle, { color: p.text }]}>{t('Saúde e cuidados')}</Text>
             </View>
 
             <View style={styles.healthGrid}>
               <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
-                <Text style={[styles.healthLabel, { color: p.muted }]}>Nascimento</Text>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>{t('Nascimento')}</Text>
                 <Text style={[styles.healthValue, { color: p.text }]}>{pet.birthDate}</Text>
               </View>
               <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
-                <Text style={[styles.healthLabel, { color: p.muted }]}>Sexo</Text>
-                <Text style={[styles.healthValue, { color: p.text }]}>{pet.sexo}</Text>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>{t('Sexo')}</Text>
+                <Text style={[styles.healthValue, { color: p.text }]}>{t(pet.sexo)}</Text>
               </View>
               <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
-                <Text style={[styles.healthLabel, { color: p.muted }]}>Espécie</Text>
-                <Text style={[styles.healthValue, { color: p.text }]}>{pet.especie}</Text>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>{t('Espécie')}</Text>
+                <Text style={[styles.healthValue, { color: p.text }]}>{t(pet.especie)}</Text>
               </View>
               <View style={[styles.healthItem, { backgroundColor: p.surfaceAlt, borderColor: p.border }]}>
-                <Text style={[styles.healthLabel, { color: p.muted }]}>Vacinas</Text>
+                <Text style={[styles.healthLabel, { color: p.muted }]}>{t('Vacinas')}</Text>
                 <Text style={[styles.healthValue, { color: p.text }]}>{vaccineSummary}</Text>
               </View>
             </View>
@@ -502,7 +565,7 @@ export default function PetDetail() {
           <View style={[styles.section, { backgroundColor: p.surface }]}>
             <View style={styles.sectionHeader}>
               <View style={[styles.sectionBorder, { backgroundColor: p.accent }]} />
-              <Text style={[styles.sectionTitle, { color: p.text }]}>Conheça o {pet.name}</Text>
+              <Text style={[styles.sectionTitle, { color: p.text }]}>{t('Conheça o {{name}}', { name: pet.name })}</Text>
             </View>
             <Text style={[styles.sectionDescription, { color: p.subtitle }]}>
               {pet.description}
@@ -513,7 +576,7 @@ export default function PetDetail() {
           <View style={[styles.section, { backgroundColor: p.surface }]}>
             <View style={styles.sectionHeader}>
               <Text style={styles.emojiIcon}>✨</Text>
-              <Text style={[styles.sectionTitle, { color: p.text }]}>Personalidade</Text>
+              <Text style={[styles.sectionTitle, { color: p.text }]}>{t('Personalidade')}</Text>
             </View>
             <Text style={[styles.sectionDescription, { color: p.subtitle }]}>
               {pet.personality}
@@ -527,7 +590,7 @@ export default function PetDetail() {
               onPress={handleShare}
             >
               <Share2 size={18} color={p.muted} />
-              <Text style={[styles.shareButtonText, { color: p.muted }]}>Compartilhar</Text>
+              <Text style={[styles.shareButtonText, { color: p.muted }]}>{t('Compartilhar')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -535,7 +598,7 @@ export default function PetDetail() {
               onPress={handleContact}
             >
               <Heart size={18} color="white" />
-              <Text style={styles.contactButtonText}>Quero entrar em contato</Text>
+              <Text style={styles.contactButtonText}>{t('Quero entrar em contato')}</Text>
             </TouchableOpacity>
           </View>
           </>

@@ -15,9 +15,11 @@ import { useNavigation } from '@react-navigation/native';
 import { ChevronLeft } from 'lucide-react-native';
 import { styles } from './styles';
 import { register } from '../../services/auth';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function ResponsavelCadastro() {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
@@ -39,7 +41,7 @@ export default function ResponsavelCadastro() {
 
   const handleCadastro = async () => {
     if (!podeRegistrar) {
-      setErro('Verifique todos os campos e requisitos de senha.');
+      setErro(t('Verifique todos os campos e requisitos de senha.'));
       return;
     }
 
@@ -50,8 +52,8 @@ export default function ResponsavelCadastro() {
       const resposta = await register(nome, email, senha, cpfCnpj, dataNascimento, endereco, telefone);
       
       Alert.alert(
-        'Sucesso!',
-        'Cadastro realizado com sucesso!',
+        t('Sucesso!'),
+        t('Cadastro realizado com sucesso!'),
         [
           {
             text: 'OK',
@@ -65,9 +67,9 @@ export default function ResponsavelCadastro() {
         ]
       );
     } catch (err) {
-      const mensagemErro = err.message || 'Erro ao cadastrar. Tente novamente.';
+      const mensagemErro = err.message || t('Erro ao cadastrar. Tente novamente.');
       setErro(mensagemErro);
-      Alert.alert('Erro', mensagemErro);
+      Alert.alert(t('Erro'), mensagemErro);
     } finally {
       setLoading(false);
     }
@@ -94,21 +96,21 @@ export default function ResponsavelCadastro() {
             resizeMode="contain"
           />
 
-          <Text style={styles.titulo}>Crie sua conta</Text>
+          <Text style={styles.titulo}>{t('Crie sua conta')}</Text>
           <Text style={styles.subtitulo}>
-            Complete os dados abaixo para começar a cuidar do seu pet.
+            {t('Complete os dados abaixo para começar a cuidar do seu pet.')}
           </Text>
 
-          <Text style={styles.labelInput}>NOME COMPLETO</Text>
+          <Text style={styles.labelInput}>{t('NOME COMPLETO')}</Text>
           <TextInput
-            placeholder="Seu nome completo"
+            placeholder={t('Seu nome completo')}
             placeholderTextColor="#A0A7E6"
             style={styles.input}
             value={nome}
             onChangeText={setNome}
           />
 
-          <Text style={styles.labelInput}>EMAIL</Text>
+          <Text style={styles.labelInput}>{t('EMAIL')}</Text>
           <TextInput
             placeholder="seu@email.com"
             placeholderTextColor="#A0A7E6"
@@ -119,7 +121,7 @@ export default function ResponsavelCadastro() {
             autoCapitalize="none"
           />
 
-          <Text style={styles.labelInput}>SENHA</Text>
+          <Text style={styles.labelInput}>{t('SENHA')}</Text>
           <TextInput
             placeholder="••••••••"
             placeholderTextColor="#A0A7E6"
@@ -129,21 +131,21 @@ export default function ResponsavelCadastro() {
             secureTextEntry
           />
           
-          <Text style={styles.senhaLabel}>A senha deve conter:</Text>
+          <Text style={styles.senhaLabel}>{t('A senha deve conter:')}</Text>
           <Text style={[styles.senhaRequisito, temMinimo8 && styles.requisitoAtivo]}>
-            ✓ Mínimo 8 caracteres
+            ✓ {t('Mínimo 8 caracteres')}
           </Text>
           <Text style={[styles.senhaRequisito, temMaiuscula && styles.requisitoAtivo]}>
-            ✓ Uma letra maiúscula
+            ✓ {t('Uma letra maiúscula')}
           </Text>
           <Text style={[styles.senhaRequisito, temNumero && styles.requisitoAtivo]}>
-            ✓ Um número
+            ✓ {t('Um número')}
           </Text>
           <Text style={[styles.senhaRequisito, temSimbolo && styles.requisitoAtivo]}>
-            ✓ Um símbolo (@$%)
+            ✓ {t('Um símbolo (@$%)')}
           </Text>
 
-          <Text style={styles.labelInput}>CPF OU CNPJ</Text>
+          <Text style={styles.labelInput}>{t('CPF OU CNPJ')}</Text>
           <TextInput
             placeholder="000.000.000-00 ou 00.000.000/0000-00"
             placeholderTextColor="#A0A7E6"
@@ -153,7 +155,7 @@ export default function ResponsavelCadastro() {
             keyboardType="numeric"
           />
 
-          <Text style={styles.labelInput}>DATA DE NASCIMENTO</Text>
+          <Text style={styles.labelInput}>{t('DATA DE NASCIMENTO')}</Text>
           <TextInput
             placeholder="dd/mm/aaaa"
             placeholderTextColor="#A0A7E6"
@@ -163,16 +165,16 @@ export default function ResponsavelCadastro() {
             keyboardType="numeric"
           />
 
-          <Text style={styles.labelInput}>ENDEREÇO</Text>
+          <Text style={styles.labelInput}>{t('ENDEREÇO')}</Text>
           <TextInput
-            placeholder="Ex: Rua das Flores, 123 - Bairro - Cidade"
+            placeholder={t('Ex: Rua das Flores, 123 - Bairro - Cidade')}
             placeholderTextColor="#A0A7E6"
             style={styles.input}
             value={endereco}
             onChangeText={setEndereco}
           />
 
-          <Text style={styles.labelInput}>TELEFONE (OPCIONAL)</Text>
+          <Text style={styles.labelInput}>{t('TELEFONE (OPCIONAL)')}</Text>
           <TextInput
             placeholder="(11) 99999-9999"
             placeholderTextColor="#A0A7E6"
@@ -196,17 +198,17 @@ export default function ResponsavelCadastro() {
             {loading ? (
               <ActivityIndicator size="small" color="#FFF" />
             ) : (
-              <Text style={styles.textoBotao}>Cadastrar</Text>
+              <Text style={styles.textoBotao}>{t('Cadastrar')}</Text>
             )}
           </TouchableOpacity>
 
           <Text style={styles.footerText}>
-            Já tem uma conta?{' '}
+            {t('Já tem uma conta?')}{' '}
             <Text 
               style={styles.footerLink} 
               onPress={() => navigation.goBack()}
             >
-              Fazer login
+              {t('Fazer login')}
             </Text>
           </Text>
         </View>

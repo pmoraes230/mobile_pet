@@ -25,6 +25,7 @@ import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import PetCard from '../../components/PetCard';
 import TabBar from '../../components/TabBar';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const ESTADOS_CIDADES = {
   'Acre': ['Rio Branco', 'Cruzeiro do Sul', 'Sena Madureira'],
@@ -59,6 +60,7 @@ const ESTADOS_CIDADES = {
 export default function TelaAdocao() {
 
   const navigation = useNavigation();
+  const { t } = useLanguage();
 
   const [activeTab, setActiveTab] = useState('home');
   const [busca, setBusca] = useState('');
@@ -170,11 +172,11 @@ export default function TelaAdocao() {
   const handleOpenPetSelection = () => {
     if (meusPets.length === 0) {
       Alert.alert(
-        'Nenhum pet cadastrado',
-        'Cadastre um pet antes de anunciá-lo para adoção.',
+        t('Nenhum pet cadastrado'),
+        t('Cadastre um pet antes de anunciá-lo para adoção.'),
         [
-          { text: 'Cancelar', style: 'cancel' },
-          { text: 'Cadastrar pet', onPress: () => navigation.navigate('anunciarpet') }
+          { text: t('Cancelar'), style: 'cancel' },
+          { text: t('Cadastrar pet'), onPress: () => navigation.navigate('anunciarpet') }
         ]
       );
       return;
@@ -187,28 +189,28 @@ export default function TelaAdocao() {
     const petId = getPetId(pet);
 
     if (!petId) {
-      Alert.alert('Erro', 'Não foi possível identificar este pet.');
+      Alert.alert(t('Erro'), t('Não foi possível identificar este pet.'));
       return;
     }
 
     Alert.alert(
-      'Adicionar para adoção',
-      `Deseja anunciar ${pet.nome || pet.NOME || 'este pet'} para adoção?`,
+      t('Adicionar para adoção'),
+      t('Deseja anunciar {{name}} para adoção?', { name: pet.nome || pet.NOME || t('este pet') }),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('Cancelar'), style: 'cancel' },
         {
-          text: 'Anunciar',
+          text: t('Anunciar'),
           onPress: async () => {
             try {
               setAnnouncingPetId(petId);
               await updatePetAdoptionStatus(pet, true);
               setModalSelecionarPetOpen(false);
               await loadData();
-              Alert.alert('Sucesso', 'Pet adicionado para adoção.');
+              Alert.alert(t('Sucesso'), t('Pet adicionado para adoção.'));
             } catch (error) {
               Alert.alert(
-                'Erro',
-                error.message || 'Não foi possível adicionar o pet para adoção.'
+                t('Erro'),
+                error.message || t('Não foi possível adicionar o pet para adoção.')
               );
             } finally {
               setAnnouncingPetId(null);
@@ -223,28 +225,28 @@ export default function TelaAdocao() {
     const petId = getPetId(pet);
 
     if (!petId) {
-      Alert.alert('Erro', 'Não foi possível identificar este pet.');
+      Alert.alert(t('Erro'), t('Não foi possível identificar este pet.'));
       return;
     }
 
     Alert.alert(
-      'Tirar da adoção',
-      `Deseja remover ${pet.nome || pet.NOME || 'este pet'} dos anúncios de adoção?`,
+      t('Tirar da adoção'),
+      t('Deseja remover {{name}} dos anúncios de adoção?', { name: pet.nome || pet.NOME || t('este pet') }),
       [
-        { text: 'Cancelar', style: 'cancel' },
+        { text: t('Cancelar'), style: 'cancel' },
         {
-          text: 'Remover',
+          text: t('Remover'),
           style: 'destructive',
           onPress: async () => {
             try {
               setRemovingPetId(petId);
               await updatePetAdoptionStatus(pet, false);
               await loadData();
-              Alert.alert('Sucesso', 'Pet removido dos anúncios de adoção.');
+              Alert.alert(t('Sucesso'), t('Pet removido dos anúncios de adoção.'));
             } catch (error) {
               Alert.alert(
-                'Erro',
-                error.message || 'Não foi possível remover o pet da adoção.'
+                t('Erro'),
+                error.message || t('Não foi possível remover o pet da adoção.')
               );
             } finally {
               setRemovingPetId(null);
@@ -264,20 +266,20 @@ export default function TelaAdocao() {
         {
           ID_PET: petId,
           MENSAGEM_CONTATO:
-            'Tenho interesse em adotar este pet.'
+            t('Tenho interesse em adotar este pet.')
         }
       );
 
       Alert.alert(
-        'Sucesso',
-        'Interesse enviado com sucesso!'
+        t('Sucesso'),
+        t('Interesse enviado com sucesso!')
       );
 
     } catch (error) {
 
       Alert.alert(
-        'Erro',
-        'Não foi possível enviar interesse.'
+        t('Erro'),
+        t('Não foi possível enviar interesse.')
       );
     }
   };
@@ -342,11 +344,11 @@ export default function TelaAdocao() {
 
           <View style={styles.headerSection}>
             <Text style={styles.title}>
-              Adoção Responsável
+              {t('Adoção Responsável')}
             </Text>
 
             <Text style={styles.subtitle}>
-              Gerencie seus anúncios e encontre novos amigos.
+              {t('Gerencie seus anúncios e encontre novos amigos.')}
             </Text>
           </View>
 
@@ -363,7 +365,7 @@ export default function TelaAdocao() {
             </Text>
 
             <Text style={styles.btnAnnounceText}>
-              Anunciar pet meu
+              {t('Anunciar pet meu')}
             </Text>
           </TouchableOpacity>
 
@@ -374,7 +376,7 @@ export default function TelaAdocao() {
             <Megaphone size={16} color="#0D214F" />
 
             <Text style={styles.sectionLabel}>
-              {' '}Seus Pets em Anúncio
+              {' '}{t('Seus Pets em Anúncio')}
             </Text>
           </View>
 
@@ -383,7 +385,7 @@ export default function TelaAdocao() {
 
               <View style={styles.emptyBox}>
                 <Text style={styles.emptyText}>
-                  Você não tem nenhum pet anunciado no momento.
+                  {t('Você não tem nenhum pet anunciado no momento.')}
                 </Text>
               </View>
 
@@ -398,11 +400,11 @@ export default function TelaAdocao() {
                       id: getPetId(pet),
                       nome: pet.nome || pet.NOME,
                       info: `${pet.especie || pet.ESPECIE} • ${pet.raca || pet.RACA}`,
-                      tutor: 'Tutor',
+                      tutor: t('Tutor'),
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
                     onPress={() => navigation.navigate('PetDetail', { petData: pet })}
-                    actionLabel={removingPetId === getPetId(pet) ? 'Removendo...' : 'Tirar da adoção'}
+                    actionLabel={removingPetId === getPetId(pet) ? t('Removendo...') : t('Tirar da adoção')}
                     onActionPress={() => handleRemovePetFromAdoption(pet)}
                     cardStyle={styles.smallCard}
                   />
@@ -414,7 +416,7 @@ export default function TelaAdocao() {
           <View style={styles.feedDivider}>
             <View style={styles.line} />
             <Text style={styles.feedDividerText}>
-              FEED GLOBAL
+              {t('FEED GLOBAL')}
             </Text>
             <View style={styles.line} />
           </View>
@@ -426,7 +428,7 @@ export default function TelaAdocao() {
 
               <TextInput
                 style={styles.searchInput}
-                placeholder="Pesquisar por nome ou raça..."
+                placeholder={t('Pesquisar por nome ou raça...')}
                 placeholderTextColor="#A0A7BA"
                 value={busca}
                 onChangeText={setBusca}
@@ -442,7 +444,7 @@ export default function TelaAdocao() {
                 <Text style={styles.filterText}>
                   {selectedEstado
                     ? selectedEstado.name
-                    : 'Estado'}
+                  : t('Estado')}
                 </Text>
 
                 <ChevronDown
@@ -458,7 +460,7 @@ export default function TelaAdocao() {
                 <Text style={styles.filterText}>
                   {selectedCidade
                     ? selectedCidade.name
-                    : 'Cidade'}
+                  : t('Cidade')}
                 </Text>
 
                 <ChevronDown
@@ -478,7 +480,7 @@ export default function TelaAdocao() {
             <Megaphone size={16} color="#0D214F" />
 
             <Text style={styles.sectionLabel}>
-              {' '}Pets esperando por um lar
+              {' '}{t('Pets esperando por um lar')}
             </Text>
           </View>
 
@@ -502,11 +504,11 @@ export default function TelaAdocao() {
                       id: getPetId(pet),
                       nome: pet.nome || pet.NOME,
                       info: `${pet.especie || pet.ESPECIE} • ${pet.raca || pet.RACA}`,
-                      tutor: 'Tutor',
+                      tutor: t('Tutor'),
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
                     onPress={() => navigation.navigate('PetDetail', { petData: pet })}
-                    actionLabel="Quero Adotar"
+                    actionLabel={t('Quero Adotar')}
                     onActionPress={() =>
                       navigation.navigate('PetDetail', { petData: pet })
                     }
@@ -532,7 +534,7 @@ export default function TelaAdocao() {
             <View style={styles.modalContent}>
 
               <Text style={styles.modalTitle}>
-                Selecione um Estado
+                {t('Selecione um Estado')}
               </Text>
 
               <FlatList
@@ -558,7 +560,7 @@ export default function TelaAdocao() {
                 }
               >
                 <Text style={styles.modalCloseBtnText}>
-                  Fechar
+                  {t('Fechar')}
                 </Text>
               </TouchableOpacity>
 
@@ -580,7 +582,7 @@ export default function TelaAdocao() {
             <View style={styles.modalContent}>
 
               <Text style={styles.modalTitle}>
-                Selecione uma Cidade
+                {t('Selecione uma Cidade')}
               </Text>
 
               <FlatList
@@ -606,7 +608,7 @@ export default function TelaAdocao() {
                 }
               >
                 <Text style={styles.modalCloseBtnText}>
-                  Fechar
+                  {t('Fechar')}
                 </Text>
               </TouchableOpacity>
 
@@ -626,14 +628,14 @@ export default function TelaAdocao() {
             <View style={styles.modalContent}>
 
               <Text style={styles.modalTitle}>
-                Selecione um pet
+                {t('Selecione um pet')}
               </Text>
 
               {petsDisponiveisParaAnuncio.length === 0 ? (
 
                 <View style={styles.emptyBox}>
                   <Text style={styles.emptyText}>
-                    Todos os seus pets já estão anunciados para adoção.
+                    {t('Todos os seus pets já estão anunciados para adoção.')}
                   </Text>
                 </View>
 
@@ -663,7 +665,7 @@ export default function TelaAdocao() {
                           </Text>
 
                           <Text style={styles.petModalDetails}>
-                            {item.especie || item.ESPECIE || 'Pet'} - {item.raca || item.RACA || 'Sem raça'}
+                            {t(item.especie || item.ESPECIE || 'Pet')} - {t(item.raca || item.RACA || 'Sem raça')}
                           </Text>
                         </View>
 
@@ -671,7 +673,7 @@ export default function TelaAdocao() {
                           <ActivityIndicator size="small" color="#9127E1" />
                         ) : (
                           <Text style={styles.petModalAction}>
-                            Adicionar
+                            {t('Adicionar')}
                           </Text>
                         )}
                       </TouchableOpacity>
@@ -686,7 +688,7 @@ export default function TelaAdocao() {
                 onPress={() => setModalSelecionarPetOpen(false)}
               >
                 <Text style={styles.modalCloseBtnText}>
-                  Cancelar
+                  {t('Cancelar')}
                 </Text>
               </TouchableOpacity>
 

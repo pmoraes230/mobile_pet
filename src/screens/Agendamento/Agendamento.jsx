@@ -10,6 +10,7 @@ import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
 import { getAgendaTutor, excluirConsulta, excluirVacina } from '../../services/agendamentoService';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 // --- helpers de cor por status -----------------------------------------------
 const STATUS_COLORS = {
@@ -102,6 +103,20 @@ const isSameDay = (a, b) => (
   a.getUTCDate() === b.getUTCDate()
 );
 
+const getNomePet = (item, fallback = 'Pet') => (
+  item?.pet?.nome ||
+  item?.pet?.NOME ||
+  item?.pet?.name ||
+  item?.petNome ||
+  item?.pet_nome ||
+  item?.nome_pet ||
+  item?.nomePet ||
+  item?.animal?.nome ||
+  item?.animal?.NOME ||
+  item?.animal?.name ||
+  fallback
+);
+
 function SectionHeader({ title, count, subtitle }) {
   const p = useAgendaTheme();
 
@@ -147,10 +162,11 @@ function CalendarioCompletoModal({
   onToday,
 }) {
   const p = useAgendaTheme();
+  const { t, language } = useLanguage();
   const diasMes = gerarDiasMes(dataVisualizada);
   const hoje = new Date();
-  const tituloMes = dataVisualizada.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-  const semana = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+  const tituloMes = dataVisualizada.toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR', { month: 'long', year: 'numeric' });
+  const semana = language === 'en' ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -159,33 +175,33 @@ function CalendarioCompletoModal({
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
             <View style={{ flex: 1, paddingRight: 12 }}>
               <Text style={{ fontSize: 19, fontWeight: '900', color: p.text, textTransform: 'capitalize' }}>{tituloMes}</Text>
-              <Text style={{ fontSize: 13, color: p.subtitle, marginTop: 2 }}>Escolha uma data no mes ou navegue por ano.</Text>
+              <Text style={{ fontSize: 13, color: p.subtitle, marginTop: 2 }}>{t('Escolha uma data no mês ou navegue por ano.')}</Text>
             </View>
             <TouchableOpacity
               onPress={onClose}
               style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: p.surfaceMuted, justifyContent: 'center', alignItems: 'center' }}
               accessibilityRole="button"
-              accessibilityLabel="Fechar calendário"
+              accessibilityLabel={t('Fechar calendário')}
             >
               <X size={18} color={p.subtitle} />
             </TouchableOpacity>
           </View>
 
           <View style={{ flexDirection: 'row', gap: 8, marginBottom: 14 }}>
-            <TouchableOpacity onPress={() => onChangeYear(-1)} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Ano anterior">
-              <Text style={{ color: p.subtitle, fontWeight: '900' }}>- ano</Text>
+            <TouchableOpacity onPress={() => onChangeYear(-1)} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel={t('Ano anterior')}>
+              <Text style={{ color: p.subtitle, fontWeight: '900' }}>{t('- ano')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onChangeMonth(-1)} style={{ width: 44, backgroundColor: p.accentSoft, borderRadius: 14, justifyContent: 'center', alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Mês anterior">
+            <TouchableOpacity onPress={() => onChangeMonth(-1)} style={{ width: 44, backgroundColor: p.accentSoft, borderRadius: 14, justifyContent: 'center', alignItems: 'center' }} accessibilityRole="button" accessibilityLabel={t('Mês anterior')}>
               <ChevronLeft size={20} color={p.accent} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={onToday} style={{ flex: 1, backgroundColor: '#9333ea', borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Ir para hoje">
-              <Text style={{ color: '#fff', fontWeight: '900' }}>Hoje</Text>
+            <TouchableOpacity onPress={onToday} style={{ flex: 1, backgroundColor: '#9333ea', borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel={t('Ir para hoje')}>
+              <Text style={{ color: '#fff', fontWeight: '900' }}>{t('Hoje')}</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onChangeMonth(1)} style={{ width: 44, backgroundColor: p.accentSoft, borderRadius: 14, justifyContent: 'center', alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Próximo mês">
+            <TouchableOpacity onPress={() => onChangeMonth(1)} style={{ width: 44, backgroundColor: p.accentSoft, borderRadius: 14, justifyContent: 'center', alignItems: 'center' }} accessibilityRole="button" accessibilityLabel={t('Próximo mês')}>
               <ChevronRight size={20} color={p.accent} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => onChangeYear(1)} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel="Próximo ano">
-              <Text style={{ color: p.subtitle, fontWeight: '900' }}>+ ano</Text>
+            <TouchableOpacity onPress={() => onChangeYear(1)} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, paddingVertical: 10, alignItems: 'center' }} accessibilityRole="button" accessibilityLabel={t('Próximo ano')}>
+              <Text style={{ color: p.subtitle, fontWeight: '900' }}>{t('+ ano')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -214,7 +230,7 @@ function CalendarioCompletoModal({
                   onPress={() => onSelectDate(dia.data)}
                   style={{ width: `${100 / 7}%`, aspectRatio: 1, padding: 3 }}
                   accessibilityRole="button"
-                  accessibilityLabel={`Selecionar dia ${dia.dia}`}
+                  accessibilityLabel={t('Selecionar dia {{day}}', { day: dia.dia })}
                   accessibilityState={{ selected: selecionado }}
                 >
                   <View style={{
@@ -254,6 +270,7 @@ function CalendarioCompletoModal({
 
 function StatusBadge({ status }) {
   const { isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const colors = isDarkMode ? STATUS_COLORS_DARK : STATUS_COLORS;
   const c = colors[status] || (isDarkMode
     ? { bg: '#202238', text: '#DDE3F5', border: '#2A2D45' }
@@ -264,7 +281,7 @@ function StatusBadge({ status }) {
       borderRadius: 20, paddingHorizontal: 10, paddingVertical: 3, alignSelf: 'flex-start',
     }}>
       <Text style={{ fontSize: 11, fontWeight: '700', color: c.text, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-        {status}
+        {t(status)}
       </Text>
     </View>
   );
@@ -273,6 +290,7 @@ function StatusBadge({ status }) {
 // --- modal de detalhes (espelha o da web) ------------------------------------
 function ModalDetalhes({ visible, data, onClose }) {
   const p = useAgendaTheme();
+  const { t } = useLanguage();
 
   if (!data) return null;
   return (
@@ -283,7 +301,7 @@ function ModalDetalhes({ visible, data, onClose }) {
           <View style={{ backgroundColor: '#9333ea', padding: 24, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <View>
               <Text style={{ fontSize: 20, fontWeight: '900', color: '#fff', fontStyle: 'italic' }}>{data.tipo}</Text>
-              <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>Informações do agendamento</Text>
+              <Text style={{ color: 'rgba(255,255,255,0.75)', fontSize: 13, marginTop: 2 }}>{t('Informações do agendamento')}</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: 6 }}>
               <X size={18} color="#fff" />
@@ -294,7 +312,7 @@ function ModalDetalhes({ visible, data, onClose }) {
             {/* pet + vet */}
             <View style={{ flexDirection: 'row', gap: 16 }}>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>Paciente</Text>
+                <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>{t('Paciente')}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <View style={{ width: 32, height: 32, backgroundColor: p.accentSoft, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
                     <Dog size={16} color={p.accent} />
@@ -303,7 +321,7 @@ function ModalDetalhes({ visible, data, onClose }) {
                 </View>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>Veterinário</Text>
+                <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 6 }}>{t('Veterinário')}</Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                   <View style={{ width: 32, height: 32, backgroundColor: p.surfaceAlt, borderRadius: 16, justifyContent: 'center', alignItems: 'center' }}>
                     <User size={16} color="#2563eb" />
@@ -321,22 +339,22 @@ function ModalDetalhes({ visible, data, onClose }) {
                 { label: 'Status', value: data.status },
               ].map(({ label, value }) => (
                 <View key={label} style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 14, padding: 12 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 4 }}>{label}</Text>
-                  <Text style={{ fontWeight: '900', color: p.text, fontSize: 15, fontStyle: 'italic' }}>{value || '-'}</Text>
+                  <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 4 }}>{t(label)}</Text>
+                  <Text style={{ fontWeight: '900', color: p.text, fontSize: 15, fontStyle: 'italic' }}>{t(value) || '-'}</Text>
                 </View>
               ))}
             </View>
 
             {/* observações */}
             <View>
-              <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>Observações / Sintomas</Text>
+              <Text style={{ fontSize: 10, fontWeight: '900', color: p.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 8 }}>{t('Observações / Sintomas')}</Text>
               <View style={{ backgroundColor: p.accentSofter, borderColor: p.accentBorder, borderWidth: 1, borderRadius: 16, padding: 16 }}>
-                <Text style={{ color: p.subtitle, lineHeight: 22, fontStyle: 'italic', fontSize: 14 }}>{data.obs || 'Nenhuma observação informada.'}</Text>
+                <Text style={{ color: p.subtitle, lineHeight: 22, fontStyle: 'italic', fontSize: 14 }}>{data.obs || t('Nenhuma observação informada.')}</Text>
               </View>
             </View>
 
             <TouchableOpacity onPress={onClose} style={{ backgroundColor: p.surfaceMuted, borderRadius: 14, paddingVertical: 14, alignItems: 'center', marginTop: 4 }}>
-              <Text style={{ fontWeight: '900', color: p.subtitle, fontSize: 14 }}>Fechar</Text>
+              <Text style={{ fontWeight: '900', color: p.subtitle, fontSize: 14 }}>{t('Fechar')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -348,21 +366,22 @@ function ModalDetalhes({ visible, data, onClose }) {
 // --- modal de exclusão --------------------------------------------------------
 function ModalExcluir({ visible, tipo, onConfirm, onClose }) {
   const p = useAgendaTheme();
+  const { t } = useLanguage();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
         <View style={{ backgroundColor: p.surface, borderRadius: 28, padding: 32, width: '100%', maxWidth: 400, borderWidth: 1, borderColor: p.border }}>
-          <Text style={{ fontSize: 20, fontWeight: '900', color: p.text, textAlign: 'center', marginBottom: 10 }}>Confirmar exclusão</Text>
+          <Text style={{ fontSize: 20, fontWeight: '900', color: p.text, textAlign: 'center', marginBottom: 10 }}>{t('Confirmar exclusão')}</Text>
           <Text style={{ color: p.subtitle, textAlign: 'center', marginBottom: 28, fontSize: 14, lineHeight: 20 }}>
-            Tem certeza que deseja excluir {tipo ? `este(a) ${tipo.toLowerCase()}` : 'este agendamento'}? Esta ação não pode ser desfeita.
+            {t('Tem certeza que deseja excluir este agendamento? Esta ação não pode ser desfeita.')}
           </Text>
           <View style={{ flexDirection: 'row', gap: 12 }}>
             <TouchableOpacity onPress={onClose} style={{ flex: 1, backgroundColor: p.surfaceMuted, borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
-              <Text style={{ fontWeight: '900', color: p.subtitle }}>Cancelar</Text>
+              <Text style={{ fontWeight: '900', color: p.subtitle }}>{t('Cancelar')}</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={onConfirm} style={{ flex: 1, backgroundColor: '#dc2626', borderRadius: 14, paddingVertical: 14, alignItems: 'center' }}>
-              <Text style={{ fontWeight: '900', color: '#fff' }}>Sim, excluir</Text>
+              <Text style={{ fontWeight: '900', color: '#fff' }}>{t('Sim, excluir')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -374,10 +393,12 @@ function ModalExcluir({ visible, tipo, onConfirm, onClose }) {
 // --- card de consulta (espelha o da web) -------------------------------------
 function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
   const p = useAgendaTheme();
+  const { t, language } = useLanguage();
   const d = consulta.data_consulta ? new Date(consulta.data_consulta) : null;
-  const diaStr = d ? `${String(d.getUTCDate()).padStart(2,'0')} ${d.toLocaleString('pt-BR',{month:'short',timeZone:'UTC'})}` : '--';
+  const diaStr = d ? `${String(d.getUTCDate()).padStart(2,'0')} ${d.toLocaleString(language === 'en' ? 'en-US' : 'pt-BR',{month:'short',timeZone:'UTC'})}` : '--';
   const horaStr = consulta.horario_consulta?.slice(0, 5) || '--:--';
   const isHistory = variant === 'history';
+  const nomePet = getNomePet(consulta, t('Pet não informado'));
 
   return (
     <TouchableOpacity
@@ -394,24 +415,24 @@ function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
       <View style={{ minWidth: 64, alignItems: 'center', paddingRight: 16, borderRightWidth: 1, borderRightColor: p.softBorder }}>
         <Text style={{ fontSize: 11, fontWeight: '900', color: p.muted, letterSpacing: 1, textTransform: 'uppercase' }}>{diaStr}</Text>
         <Text style={{ fontSize: 22, fontWeight: '900', color: p.text, marginTop: 4 }}>{horaStr}</Text>
-        {isHistory && <Text style={{ fontSize: 10, color: p.muted, fontWeight: '800', marginTop: 3 }}>feito</Text>}
+        {isHistory && <Text style={{ fontSize: 10, color: p.muted, fontWeight: '800', marginTop: 3 }}>{t('feito')}</Text>}
       </View>
 
       {/* corpo */}
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <Text style={{ fontSize: 17, fontWeight: '900', color: p.text, flexShrink: 1 }}>{consulta.tipo_de_consulta}</Text>
+          <Text style={{ fontSize: 17, fontWeight: '900', color: p.text, flexShrink: 1 }}>{t(consulta.tipo_de_consulta)}</Text>
           <StatusBadge status={consulta.status} />
         </View>
 
         <View style={{ flexDirection: 'row', gap: 16, flexWrap: 'wrap' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
             <Dog size={14} color={p.accent} />
-            <Text style={{ fontSize: 13, color: p.accent, fontWeight: '600' }}>@{consulta.pet?.nome}</Text>
+            <Text style={{ fontSize: 13, color: p.accent, fontWeight: '600' }}>{nomePet}</Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
             <User size={14} color={p.subtitle} />
-            <Text style={{ fontSize: 13, color: p.subtitle }}>Vet: {consulta.veterinario?.nome}</Text>
+            <Text style={{ fontSize: 13, color: p.subtitle }}>{t('Vet')}: {consulta.veterinario?.nome}</Text>
           </View>
         </View>
 
@@ -419,7 +440,7 @@ function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
         {consulta.status === 'Pendente' && (
           <View style={{ marginTop: 10, backgroundColor: p.warningSoft, borderColor: p.warningBorder, borderWidth: 1, borderRadius: 12, padding: 10 }}>
             <Text style={{ fontSize: 12, color: p.warningText, fontStyle: 'italic' }}>
-              Aguardando confirmação do veterinário
+              {t('Aguardando confirmação do veterinário')}
             </Text>
           </View>
         )}
@@ -447,9 +468,11 @@ function CardConsulta({ consulta, onPress, onDelete, variant = 'upcoming' }) {
 // --- card de vacina -----------------------------------------------------------
 function CardVacina({ vacina, onPress, onDelete, variant = 'upcoming' }) {
   const p = useAgendaTheme();
+  const { t, language } = useLanguage();
   const d = vacina.data_aplicacao ? new Date(vacina.data_aplicacao) : null;
-  const diaStr = d ? `${String(d.getUTCDate()).padStart(2,'0')} ${d.toLocaleString('pt-BR',{month:'short',timeZone:'UTC'})}` : '--';
+  const diaStr = d ? `${String(d.getUTCDate()).padStart(2,'0')} ${d.toLocaleString(language === 'en' ? 'en-US' : 'pt-BR',{month:'short',timeZone:'UTC'})}` : '--';
   const isHistory = variant === 'history';
+  const nomePet = getNomePet(vacina, t('Pet não informado'));
 
   return (
     <TouchableOpacity
@@ -464,14 +487,14 @@ function CardVacina({ vacina, onPress, onDelete, variant = 'upcoming' }) {
     >
       <View style={{ minWidth: 60, alignItems: 'center', paddingRight: 16, borderRightWidth: 1, borderRightColor: p.softBorder }}>
         <Text style={{ fontSize: 11, fontWeight: '900', color: p.muted, letterSpacing: 1, textTransform: 'uppercase' }}>{diaStr}</Text>
-        <Text style={{ fontSize: 16, fontWeight: '900', color: p.text, marginTop: 4 }}>Vacina</Text>
+        <Text style={{ fontSize: 16, fontWeight: '900', color: p.text, marginTop: 4 }}>{t('Vacina')}</Text>
       </View>
 
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 18, fontWeight: '900', color: p.text, marginBottom: 6 }}>{vacina.nome}</Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
           <Dog size={14} color={p.accent} />
-          <Text style={{ fontSize: 13, color: p.accent, fontWeight: '600' }}>@{vacina.pet?.nome}</Text>
+          <Text style={{ fontSize: 13, color: p.accent, fontWeight: '600' }}>{nomePet}</Text>
         </View>
       </View>
 
@@ -497,6 +520,7 @@ function CardVacina({ vacina, onPress, onDelete, variant = 'upcoming' }) {
 export default function TelaAgendamento() {
   const navigation = useNavigation();
   const p = useAgendaTheme();
+  const { t, language } = useLanguage();
   const [agenda, setAgenda] = useState(null);
   const [carregando, setCarregando] = useState(true);
   const [dataAtual, setDataAtual] = useState(new Date());
@@ -524,7 +548,9 @@ export default function TelaAgendamento() {
   };
 
   const gerarDiasSemana = () => {
-    const nomes = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    const nomes = language === 'en'
+      ? ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']
+      : ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
     const hoje = new Date(dataAtual);
     const inicio = new Date(hoje);
     inicio.setDate(hoje.getDate() - hoje.getDay());
@@ -539,9 +565,9 @@ export default function TelaAgendamento() {
   const hojeMonth = new Date().getMonth();
   const dias = gerarDiasSemana();
 
-  const mesTexto = dataAtual.toLocaleString('pt-BR', { month: 'long' });
+  const mesTexto = dataAtual.toLocaleString(language === 'en' ? 'en-US' : 'pt-BR', { month: 'long' });
   const mesCapitalizado = mesTexto.charAt(0).toUpperCase() + mesTexto.slice(1);
-  const dataSelecionadaTexto = dataSelecionada.toLocaleDateString('pt-BR', {
+  const dataSelecionadaTexto = dataSelecionada.toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR', {
     weekday: 'long',
     day: '2-digit',
     month: 'long',
@@ -615,22 +641,22 @@ export default function TelaAgendamento() {
 
   const abrirDetalheConsulta = (c) => setDetalhe({
     tipo: c.tipo_de_consulta,
-    pet: c.pet?.nome,
+    pet: getNomePet(c, t('Pet não informado')),
     vet: `Dr(a). ${c.veterinario?.nome}`,
-    data: c.data_consulta ? new Date(c.data_consulta).toLocaleDateString('pt-BR',{timeZone:'UTC'}) : '--',
+    data: c.data_consulta ? new Date(c.data_consulta).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR',{timeZone:'UTC'}) : '--',
     hora: c.horario_consulta?.slice(0,5) || '--:--',
     obs: c.observacoes || '',
     status: c.status,
   });
 
   const abrirDetalheVacina = (v) => setDetalhe({
-    tipo: 'Vacinação',
-    pet: v.pet?.nome,
-    vet: 'Clínica Veterinária',
-    data: v.data_aplicacao ? new Date(v.data_aplicacao).toLocaleDateString('pt-BR',{timeZone:'UTC'}) : '--',
+    tipo: t('Vacinação'),
+    pet: getNomePet(v, t('Pet não informado')),
+    vet: t('Clínica Veterinária'),
+    data: v.data_aplicacao ? new Date(v.data_aplicacao).toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR',{timeZone:'UTC'}) : '--',
     hora: '--:--',
-    obs: `Vacina: ${v.nome}. Lembre-se de trazer a carteirinha.`,
-    status: 'Agendada',
+    obs: `${t('Vacina')}: ${v.nome}. ${t('Lembre-se de trazer a carteirinha.')}`,
+    status: t('Agendada'),
   });
 
   const renderCompromisso = ({ categoria, item }, variant = 'upcoming') => (
@@ -667,15 +693,15 @@ export default function TelaAgendamento() {
         {carregando ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color="#9333ea" />
-            <Text style={{ marginTop: 12, color: p.subtitle, fontSize: 14 }}>Carregando agenda...</Text>
+            <Text style={{ marginTop: 12, color: p.subtitle, fontSize: 14 }}>{t('Carregando agenda...')}</Text>
           </View>
         ) : (
           <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
 
             {/* header */}
             <View style={{ marginBottom: 20 }}>
-              <Text style={{ fontSize: 28, fontWeight: '900', color: p.text, letterSpacing: -0.5 }}>Agendamentos</Text>
-              <Text style={{ color: p.subtitle, fontWeight: '500', fontSize: 14, marginTop: 2 }}>Próximos compromissos e histórico</Text>
+              <Text style={{ fontSize: 28, fontWeight: '900', color: p.text, letterSpacing: -0.5 }}>{t('Agendamentos')}</Text>
+              <Text style={{ color: p.subtitle, fontWeight: '500', fontSize: 14, marginTop: 2 }}>{t('Próximos compromissos e histórico')}</Text>
             </View>
 
             {/* botão novo */}
@@ -688,7 +714,7 @@ export default function TelaAgendamento() {
               }}
             >
               <Plus size={20} color="#fff" strokeWidth={3} />
-              <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>Novo Agendamento</Text>
+              <Text style={{ color: '#fff', fontWeight: '900', fontSize: 15 }}>{t('Novo Agendamento')}</Text>
             </TouchableOpacity>
 
             {/* calendário strip - espelha o da web */}
@@ -713,7 +739,7 @@ export default function TelaAgendamento() {
                     }}
                     style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: '#9333ea', justifyContent: 'center', alignItems: 'center' }}
                     accessibilityRole="button"
-                    accessibilityLabel="Abrir calendário completo"
+                    accessibilityLabel={t('Abrir calendário completo')}
                   >
                     <Calendar size={18} color="#fff" />
                   </TouchableOpacity>
@@ -725,7 +751,7 @@ export default function TelaAgendamento() {
                     }}
                     style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: p.surfaceAlt, justifyContent: 'center', alignItems: 'center' }}
                     accessibilityRole="button"
-                    accessibilityLabel="Semana anterior"
+                    accessibilityLabel={t('Semana anterior')}
                   >
                     <ChevronLeft size={21} color={p.subtitle} />
                   </TouchableOpacity>
@@ -737,7 +763,7 @@ export default function TelaAgendamento() {
                     }}
                     style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: p.surfaceAlt, justifyContent: 'center', alignItems: 'center' }}
                     accessibilityRole="button"
-                    accessibilityLabel="Próxima semana"
+                    accessibilityLabel={t('Próxima semana')}
                   >
                     <ChevronRight size={21} color={p.subtitle} />
                   </TouchableOpacity>
@@ -762,7 +788,7 @@ export default function TelaAgendamento() {
                         minHeight: 78,
                       }}
                       accessibilityRole="button"
-                      accessibilityLabel={`Selecionar ${dia.nome} ${dia.num}`}
+                      accessibilityLabel={t('Selecionar {{day}} {{number}}', { day: dia.nome, number: dia.num })}
                       accessibilityState={{ selected: isSelected }}
                     >
                       <Text style={{
@@ -799,23 +825,23 @@ export default function TelaAgendamento() {
                     <CalendarCheck size={16} color={p.accent} />
                     <Text style={{ color: p.text, fontWeight: '900', fontSize: 16 }}>{proximos.length}</Text>
                   </View>
-                  <Text style={{ color: p.subtitle, fontSize: 12, marginTop: 2 }}>proximos</Text>
+                  <Text style={{ color: p.subtitle, fontSize: 12, marginTop: 2 }}>{t('próximos')}</Text>
                 </View>
                 <View style={{ flex: 1, backgroundColor: p.surfaceAlt, borderRadius: 16, padding: 12 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <Clock size={16} color={p.subtitle} />
                     <Text style={{ color: p.text, fontWeight: '900', fontSize: 16 }}>{historico.length}</Text>
                   </View>
-                  <Text style={{ color: p.subtitle, fontSize: 12, marginTop: 2 }}>historico</Text>
+                  <Text style={{ color: p.subtitle, fontSize: 12, marginTop: 2 }}>{t('histórico')}</Text>
                 </View>
               </View>
             </View>
 
             {/* lista */}
             <SectionHeader
-              title="Dia selecionado"
+              title={t('Dia selecionado')}
               count={compromissosSelecionados.length}
-              subtitle="Toque em um compromisso para ver detalhes."
+              subtitle={t('Toque em um compromisso para ver detalhes.')}
             />
 
             {compromissosSelecionados.map((compromisso) => {
@@ -832,15 +858,15 @@ export default function TelaAgendamento() {
               }}>
                 <CalendarX size={36} color={p.emptyIcon} strokeWidth={1.5} />
                 <Text style={{ color: p.subtitle, fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
-                  Nenhum compromisso neste dia.
+                  {t('Nenhum compromisso neste dia.')}
                 </Text>
               </View>
             )}
 
             <SectionHeader
-              title="Próximos"
+              title={t('Próximos')}
               count={proximos.length}
-              subtitle="Consultas e vacinas em aberto."
+              subtitle={t('Consultas e vacinas em aberto.')}
             />
 
             {proximos.map((compromisso) => renderCompromisso(compromisso, 'upcoming'))}
@@ -854,15 +880,15 @@ export default function TelaAgendamento() {
               }}>
                 <CalendarX size={36} color={p.emptyIcon} strokeWidth={1.5} />
                 <Text style={{ color: p.subtitle, fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
-                  Nenhum compromisso futuro.
+                  {t('Nenhum compromisso futuro.')}
                 </Text>
               </View>
             )}
 
             <SectionHeader
-              title="Historico"
+              title={t('Histórico')}
               count={historico.length}
-              subtitle="Consultas e vacinas anteriores."
+              subtitle={t('Consultas e vacinas anteriores.')}
             />
 
             {historico.map((compromisso) => renderCompromisso(compromisso, 'history'))}
@@ -875,7 +901,7 @@ export default function TelaAgendamento() {
               }}>
                 <Clock size={32} color={p.emptyIcon} strokeWidth={1.5} />
                 <Text style={{ color: p.subtitle, fontWeight: '800', fontSize: 15, marginTop: 10, textAlign: 'center' }}>
-                  Nenhum histórico encontrado.
+                  {t('Nenhum histórico encontrado.')}
                 </Text>
               </View>
             )}
@@ -902,13 +928,13 @@ export default function TelaAgendamento() {
                 key={v.id}
                 vacina={v}
                 onPress={() => setDetalhe({
-                  tipo: 'Vacinação',
+                  tipo: t('Vacinação'),
                   pet: v.pet?.nome,
-                  vet: 'Clínica Veterinária',
+                  vet: t('Clínica Veterinária'),
                   data: v.data_aplicacao ? new Date(v.data_aplicacao).toLocaleDateString('pt-BR',{timeZone:'UTC'}) : '--',
                   hora: '--:--',
-                  obs: `Vacina: ${v.nome}. Lembre-se de trazer a carteirinha.`,
-                  status: 'Agendada',
+                  obs: `${t('Vacina')}: ${v.nome}. ${t('Lembre-se de trazer a carteirinha.')}`,
+                  status: t('Agendada'),
                 })}
                 onDelete={(e) => { e?.stopPropagation?.(); setDeleteInfo({ id: v.id, tipo: 'Vacina', categoria: 'vacina' }); }}
               />
@@ -922,7 +948,7 @@ export default function TelaAgendamento() {
               }}>
                 <CalendarX size={48} color="#d1d5db" strokeWidth={1.5} />
                 <Text style={{ color: '#6b7280', fontWeight: '700', fontSize: 17, marginTop: 12 }}>
-                  Nenhum agendamento para esta semana.
+                  {t('Nenhum agendamento para esta semana.')}
                 </Text>
               </View>
             )}

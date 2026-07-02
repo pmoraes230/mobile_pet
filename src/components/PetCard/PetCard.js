@@ -2,6 +2,7 @@ import React from 'react';
 import { TouchableOpacity, View, Text, Image } from 'react-native';
 import { styles } from './styles';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function PetCard({
   pet,
@@ -12,6 +13,7 @@ export default function PetCard({
   cardStyle,
 }) {
   const { isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const rawImage = pet?.foto || pet?.imagem;
   const menuIconColor = isDarkMode ? '#F5F7FF' : '#323232';
 
@@ -81,7 +83,7 @@ export default function PetCard({
 
         {pet.tutor ? (
           <Text style={styles.tutorText} numberOfLines={1}>
-            Tutor: {pet.tutor}
+            {t('Tutor')}: {pet.tutor}
           </Text>
         ) : null}
       </View>

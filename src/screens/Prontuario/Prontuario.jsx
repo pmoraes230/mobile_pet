@@ -21,9 +21,11 @@ import ProntuarioCard from '../../components/ProntuarioCard';
 import ProntuarioDetailsModal from '../../components/ProntuarioDetailsModal';
 import { getProntuariosTutor } from '../../services/prontuario';
 import { getFileNameFromUrl, saveFileToDeviceStorage } from '../../services/fileDownload';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function TelaProntuario() {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState('home');
   const [selectedPet, setSelectedPet] = useState(null);
   const [modalPetOpen, setModalPetOpen] = useState(false);
@@ -49,7 +51,7 @@ export default function TelaProntuario() {
     });
   };
 
-  const getPetName = (pet) => pet?.nome || pet?.NOME || pet?.name || 'Pet sem nome';
+  const getPetName = (pet) => pet?.nome || pet?.NOME || pet?.name || t('Pet sem nome');
 
   const loadPets = useCallback(async () => {
     try {
@@ -182,8 +184,8 @@ export default function TelaProntuario() {
 
     if (!arquivoUrl) {
       showFeedback({
-        title: 'Arquivo indisponível',
-        message: 'Este prontuário não possui arquivo anexado.',
+        title: t('Arquivo indisponível'),
+        message: t('Este prontuário não possui arquivo anexado.'),
         type: 'warning',
       });
       return;
@@ -215,8 +217,8 @@ export default function TelaProntuario() {
 
     if (!url) {
       showFeedback({
-        title: 'Arquivo indisponível',
-        message: 'Este prontuário não possui arquivo anexado.',
+        title: t('Arquivo indisponível'),
+        message: t('Este prontuário não possui arquivo anexado.'),
         type: 'warning',
       });
       return;
@@ -234,24 +236,24 @@ export default function TelaProntuario() {
 
       if (file.cancelled) {
         showFeedback({
-        title: 'Permissão cancelada',
-          message: 'Nenhuma pasta foi selecionada para salvar o arquivo.',
+        title: t('Permissão cancelada'),
+          message: t('Nenhuma pasta foi selecionada para salvar o arquivo.'),
           type: 'warning',
         });
         return;
       }
 
       showFeedback({
-        title: 'Arquivo salvo',
+        title: t('Arquivo salvo'),
         message: Platform.OS === 'android'
-          ? `Arquivo salvo na pasta escolhida: ${file.fileName}`
-          : `Arquivo salvo no armazenamento do app: ${file.fileName}`,
+          ? t('Arquivo salvo na pasta escolhida: {{name}}', { name: file.fileName })
+          : t('Arquivo salvo no armazenamento do app: {{name}}', { name: file.fileName }),
         type: 'success',
       });
     } catch {
       showFeedback({
-        title: 'Erro ao salvar arquivo',
-        message: 'Verifique sua conexão e tente novamente.',
+        title: t('Erro ao salvar arquivo'),
+        message: t('Verifique sua conexão e tente novamente.'),
         type: 'error',
       });
     } finally {
@@ -309,32 +311,31 @@ export default function TelaProntuario() {
           }
         >
           <View style={styles.headerSection}>
-            <Text style={styles.title}>Prontuário eletrônico</Text>
+            <Text style={styles.title}>{t('Prontuário eletrônico')}</Text>
             <Text style={styles.subtitle}>
-              Visualize o histórico de atendimento e evolução clínica dos pets.
-              Os registros são gerados automaticamente pelo veterinário.
+              {t('Visualize o histórico de atendimento e evolução clínica dos pets. Os registros são gerados automaticamente pelo veterinário.')}
             </Text>
           </View>
 
           <View style={styles.selectorContainer}>
-            <Text style={styles.labelPets}>PETS:</Text>
+            <Text style={styles.labelPets}>{t('PETS:')}</Text>
             <TouchableOpacity
               style={styles.petDropdown}
               onPress={() => setModalPetOpen(true)}
             >
               <Text style={styles.petDropdownText}>
                 {loadingPets
-                  ? 'Carregando pets...'
+                  ? t('Carregando pets...')
                   : selectedPet
                     ? getPetName(selectedPet)
-                    : 'Selecione um pet...'}
+                    : t('Selecione um pet...')}
               </Text>
               <Text style={{ color: '#9127E1', fontSize: 10 }}>v</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.mainCard}>
-            <Text style={styles.cardTitle}>Historico de Prontuarios</Text>
+            <Text style={styles.cardTitle}>{t('Histórico de Prontuários')}</Text>
 
             {errorMessage ? (
               <View style={styles.emptyStateContainer}>
@@ -342,15 +343,15 @@ export default function TelaProntuario() {
                 <Text style={styles.emptyTitle}>{errorMessage}</Text>
               </View>
             ) : loadingProntuarios ? (
-              <Text style={styles.statusText}>Carregando prontuarios...</Text>
+              <Text style={styles.statusText}>{t('Carregando prontuarios...')}</Text>
             ) : prontuarios.length > 0 ? (
               prontuarios.map(renderProntuario)
             ) : (
               <View style={styles.emptyStateContainer}>
                 <Folder size={40} color="#A0A7BA" />
-                <Text style={styles.emptyTitle}>Nenhum registro disponivel</Text>
+                <Text style={styles.emptyTitle}>{t('Nenhum registro disponivel')}</Text>
                 <Text style={styles.emptySubtitle}>
-                  Selecione outro pet ou aguarde registros futuros.
+                  {t('Selecione outro pet ou aguarde registros futuros.')}
                 </Text>
               </View>
             )}
@@ -365,11 +366,11 @@ export default function TelaProntuario() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selecione um Pet</Text>
+              <Text style={styles.modalTitle}>{t('Selecione um Pet')}</Text>
               {loadingPets ? (
-                <Text style={styles.statusText}>Carregando pets...</Text>
+                <Text style={styles.statusText}>{t('Carregando pets...')}</Text>
               ) : pets.length === 0 ? (
-                <Text style={styles.statusText}>Nenhum pet cadastrado.</Text>
+                <Text style={styles.statusText}>{t('Nenhum pet cadastrado.')}</Text>
               ) : (
                 <FlatList
                   data={pets}
@@ -382,7 +383,7 @@ export default function TelaProntuario() {
                 style={styles.modalCloseBtn}
                 onPress={() => setModalPetOpen(false)}
               >
-                <Text style={styles.modalCloseBtnText}>Fechar</Text>
+                <Text style={styles.modalCloseBtnText}>{t('Fechar')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -400,7 +401,7 @@ export default function TelaProntuario() {
 
         <FilePreviewModal
           visible={!!selectedFile}
-          title="Arquivo do prontuario"
+          title={t('Arquivo do prontuario')}
           fileName={selectedFile?.fileName}
           fileUrl={selectedFile?.url}
           isSaving={!!downloadingId}

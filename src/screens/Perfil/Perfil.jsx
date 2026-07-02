@@ -24,6 +24,7 @@ import { getPetsByTutor } from '../../services/pet';
 import { logout } from '../../services/auth';
 import { normalizeTutorImage } from '../../services/tutorProfile';
 import { formateCPF, formateDate } from '../../utils/formatters';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const defaultAvatar = require('../../assets/user_default.png');
 const defaultPetImage = require('../../assets/default-pet.png');
@@ -31,6 +32,7 @@ const defaultPetImage = require('../../assets/default-pet.png');
 const Perfil = () => {
   const navigation = useNavigation();
   const { isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
 
   const [userData, setUserData] = useState(null);
   const [cpfData, setCpfData] = useState(null);
@@ -51,7 +53,7 @@ const Perfil = () => {
   };
 
   const getPetName = (pet) => pet?.NOME || pet?.nome || pet?.name || 'Pet';
-  const getPetBreed = (pet) => pet?.RACA || pet?.raca || pet?.COR || pet?.cor || 'Sem detalhe';
+  const getPetBreed = (pet) => pet?.RACA || pet?.raca || pet?.COR || pet?.cor || t('Sem detalhe');
   const getPetImage = (pet) => {
     const rawImage =
       pet?.imagem ||
@@ -80,7 +82,7 @@ const Perfil = () => {
       setPets(normalizePets(petsRes));
     } catch (err) {
       console.error('Erro ao carregar perfil:', err);
-      setError('Não foi possível carregar os dados do perfil');
+      setError(t('Não foi possível carregar os dados do perfil'));
     } finally {
       setLoading(false);
     }
@@ -102,15 +104,15 @@ const Perfil = () => {
 
   const handleLogout = () => {
     Alert.alert(
-      'Sair da conta',
-      'Tem certeza que deseja sair da conta?',
+      t('Sair da conta'),
+      t('Tem certeza que deseja sair da conta?'),
       [
         {
-          text: 'Cancelar',
+          text: t('Cancelar'),
           style: 'cancel',
         },
         {
-          text: 'Sair',
+          text: t('Sair'),
           style: 'destructive',
           onPress: executeLogout,
         },
@@ -134,10 +136,10 @@ const Perfil = () => {
     );
   }
 
-  const nomeExibir = userData?.nome || userData?.nome_tutor || 'Nome não encontrado';
-  const emailExibir = userData?.email || userData?.EMAIL || 'Não informado';
-  const telefoneExibir = userData?.telefone || userData?.TELEFONE || 'Não informado';
-  const enderecoExibir = userData?.endereco || userData?.ENDERECO || 'Endereço não informado';
+  const nomeExibir = userData?.nome || userData?.nome_tutor || t('Nome não encontrado');
+  const emailExibir = userData?.email || userData?.EMAIL || t('Não informado');
+  const telefoneExibir = userData?.telefone || userData?.TELEFONE || t('Não informado');
+  const enderecoExibir = userData?.endereco || userData?.ENDERECO || t('Endereço não informado');
   const rawNascimento = userData?.dataNascimento || userData?.DATA_NASCIMENTO;
   const cpfBruto = cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF;
   const fotoUrl = normalizeTutorImage(userData?.imagemPerfil || userData?.imagem_perfil_tutor);
@@ -173,9 +175,9 @@ const Perfil = () => {
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName}>{nomeExibir}</Text>
                 <View style={styles.tagRow}>
-                  <Text style={styles.profileTag}>Responsavel</Text>
+                  <Text style={styles.profileTag}>{t('Responsável')}</Text>
                 </View>
-                <Text style={styles.memberText}>Membro Ativo</Text>
+                <Text style={styles.memberText}>{t('Membro Ativo')}</Text>
 
                 <View style={styles.contactRow}>
                   <View style={styles.contactItem}>
@@ -196,7 +198,7 @@ const Perfil = () => {
               onPress={() => navigation.navigate('EditarPerfil')}
             >
               <Edit3 size={16} color="#fff" />
-              <Text style={styles.editButtonText}>EDITAR PERFIL</Text>
+              <Text style={styles.editButtonText}>{t('EDITAR PERFIL')}</Text>
             </TouchableOpacity>
           </View>
 
@@ -208,25 +210,25 @@ const Perfil = () => {
                 <View style={styles.iconCircle}>
                   <ShieldCheck size={20} color="#9127E1" />
                 </View>
-                <Text style={styles.cardTitle}>Dados Pessoais</Text>
+                <Text style={styles.cardTitle}>{t('Dados Pessoais')}</Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Documento CPF</Text>
+                <Text style={styles.detailLabel}>{t('Documento CPF')}</Text>
                 <Text style={styles.detailValue}>
-                  {cpfBruto ? formateCPF(cpfBruto) : 'Não informado'}
+                  {cpfBruto ? formateCPF(cpfBruto) : t('Não informado')}
                 </Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Nascimento</Text>
+                <Text style={styles.detailLabel}>{t('Nascimento')}</Text>
                 <Text style={styles.detailValue}>
-                  {rawNascimento ? formateDate(rawNascimento) : 'Não informado'}
+                  {rawNascimento ? formateDate(rawNascimento) : t('Não informado')}
                 </Text>
               </View>
 
               <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Endereço registrado</Text>
+                <Text style={styles.detailLabel}>{t('Endereço registrado')}</Text>
                 <Text style={styles.detailValue}>{enderecoExibir}</Text>
               </View>
             </View>
@@ -236,7 +238,7 @@ const Perfil = () => {
                 <View style={[styles.iconCircle, { backgroundColor: '#E6FFFA' }]}>
                   <PawPrint size={20} color="#00D7C4" />
                 </View>
-                <Text style={styles.cardTitle}>Meus Pets</Text>
+                <Text style={styles.cardTitle}>{t('Meus Pets')}</Text>
               </View>
 
               {firstPet ? (
@@ -260,14 +262,14 @@ const Perfil = () => {
                   </View>
                 </View>
               ) : (
-                <Text style={styles.detailValue}>Nenhum pet cadastrado</Text>
+                <Text style={styles.detailValue}>{t('Nenhum pet cadastrado')}</Text>
               )}
 
               <TouchableOpacity
                 style={styles.viewAllButton}
                 onPress={() => navigation.navigate('MeusPets')}
               >
-                <Text style={styles.viewAllText}>VER TODOS OS PETS</Text>
+                <Text style={styles.viewAllText}>{t('VER TODOS OS PETS')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -277,22 +279,22 @@ const Perfil = () => {
               <View style={[styles.iconCircle, { backgroundColor: '#FFF4EE' }]}>
                 <Lock size={20} color="#FF7A2F" />
               </View>
-              <Text style={styles.cardTitle}>Privacidade e Acesso</Text>
+              <Text style={styles.cardTitle}>{t('Privacidade e Acesso')}</Text>
             </View>
             <View style={styles.buttonRow}>
               <TouchableOpacity
                 style={styles.secondaryButton}
                 activeOpacity={0.8}
-                onPress={() => navigation.navigate('EsqueciSenha', emailExibir !== 'Não informado' ? { email: emailExibir } : undefined)}
+                onPress={() => navigation.navigate('EsqueciSenha', emailExibir !== t('Não informado') ? { email: emailExibir } : undefined)}
               >
-                <Text style={styles.secondaryButtonText}>ALTERAR SENHA</Text>
+                <Text style={styles.secondaryButtonText}>{t('ALTERAR SENHA')}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.primaryButton}
                 activeOpacity={0.8}
                 onPress={handleLogout}
               >
-                <Text style={styles.primaryButtonText}>SAIR DA CONTA</Text>
+                <Text style={styles.primaryButtonText}>{t('SAIR DA CONTA')}</Text>
               </TouchableOpacity>
             </View>
           </View>

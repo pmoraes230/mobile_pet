@@ -8,9 +8,11 @@ import { useNavigation } from '@react-navigation/native';
 import { styles } from './styles';
 import { Eye, EyeOff } from 'lucide-react-native';
 import { login, setupAxiosInterceptors } from '../../services/auth';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function ResponsavelLogin() {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
@@ -27,7 +29,7 @@ export default function ResponsavelLogin() {
 
   const handleLogin = async () => {
     if (!email || !senha) {
-      showCustomModal('Erro', 'Por favor, preencha todos os campos.');
+      showCustomModal(t('Erro'), t('Por favor, preencha todos os campos.'));
       return;
     }
     setLoading(true);
@@ -36,7 +38,7 @@ export default function ResponsavelLogin() {
       setupAxiosInterceptors();
       navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
     } catch (err) {
-      showCustomModal('Falha no login', err.message);
+      showCustomModal(t('Falha no login'), err.message);
     } finally {
       setLoading(false);
     }
@@ -57,13 +59,13 @@ export default function ResponsavelLogin() {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.titulo}>Bem vindo!</Text>
+          <Text style={styles.titulo}>{t('Bem vindo!')}</Text>
           <Text style={styles.subtitulo}>
-            Acesse sua conta e gerencie seus pets com facilidade.
+            {t('Acesse sua conta e gerencie seus pets com facilidade.')}
           </Text>
 
           <TextInput
-            placeholder="Email"
+            placeholder={t('Email')}
             placeholderTextColor="#A0A7E6"
             style={styles.input}
             value={email}
@@ -73,7 +75,7 @@ export default function ResponsavelLogin() {
           />
           <View style={styles.inputWrapper}>
             <TextInput
-              placeholder="Senha"
+              placeholder={t('Senha')}
               placeholderTextColor="#A0A7E6"
               secureTextEntry={!showPassword}
               style={[styles.input, { paddingRight: 45 }]}
@@ -105,7 +107,7 @@ export default function ResponsavelLogin() {
               navigation.navigate('EsqueciSenha', typedEmail ? { email: typedEmail } : undefined);
             }}
           >
-            <Text style={styles.esqueci}>Esqueci minha senha</Text>
+            <Text style={styles.esqueci}>{t('Esqueci minha senha')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -114,17 +116,17 @@ export default function ResponsavelLogin() {
             disabled={loading}
           >
             <Text style={styles.textoBotao}>
-              {loading ? 'Entrando...' : 'Entrar'}
+              {loading ? t('Entrando...') : t('Entrar')}
             </Text>
           </TouchableOpacity>
 
           <Text style={styles.footerText}>
-            Ainda não tem uma conta?{' '}
+            {t('Ainda não tem uma conta?')}{' '}
             <Text
               style={styles.footerLink}
               onPress={() => navigation.navigate('Cadastro')}
             >
-              Criar conta
+              {t('Criar conta')}
             </Text>
           </Text>
 

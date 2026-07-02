@@ -7,17 +7,19 @@ import { styles } from './styles';
 import { User, Settings, LogOut } from 'lucide-react-native';
 
 import { logout } from '../../services/auth';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function Sidebar({ visible, onClose }) {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   
   // Estados do Modal Customizado
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
 
   const menuItems = [
-    { id: 1, label: 'Meu Perfil', icon: User, color: '#4A90E2', route: 'Perfil' },
-    { id: 2, label: 'Configurações', icon: Settings, color: '#7E869E', route: 'Configuracoes' },
-    { id: 3, label: 'Sair', icon: LogOut, color: '#EF4444', isLogout: true },
+    { id: 1, label: t('Meu Perfil'), icon: User, color: '#4A90E2', route: 'Perfil' },
+    { id: 2, label: t('Configurações'), icon: Settings, color: '#7E869E', route: 'Configuracoes' },
+    { id: 3, label: t('Sair'), icon: LogOut, color: '#EF4444', isLogout: true },
   ];
 
   const handleLogoutConfirm = async () => {
@@ -58,7 +60,7 @@ export default function Sidebar({ visible, onClose }) {
         {/* SIDEBAR */}
         <View style={styles.sidebar}>
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>Menu</Text>
+            <Text style={styles.headerTitle}>{t('Menu')}</Text>
             <TouchableOpacity onPress={onClose}>
               <Text style={styles.closeBtn}>✕</Text>
             </TouchableOpacity>
@@ -83,7 +85,7 @@ export default function Sidebar({ visible, onClose }) {
           </View>
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Versão 1.0.0</Text>
+            <Text style={styles.footerText}>{t('Versão 1.0.0')}</Text>
           </View>
         </View>
       </View>
@@ -99,9 +101,9 @@ export default function Sidebar({ visible, onClose }) {
           <View style={styles.modalContainer}>
             <LogOut size={48} color="#EF4444" style={{ marginBottom: 16 }} />
             
-            <Text style={styles.modalTitle}>Deseja realmente sair?</Text>
+            <Text style={styles.modalTitle}>{t('Deseja realmente sair?')}</Text>
             <Text style={styles.modalMessage}>
-              Você precisará fazer login novamente para acessar o app.
+              {t('Você precisará fazer login novamente para acessar o app.')}
             </Text>
 
             <View style={styles.buttonContainer}>
@@ -109,14 +111,14 @@ export default function Sidebar({ visible, onClose }) {
                 style={styles.cancelButton}
                 onPress={() => setConfirmModalVisible(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancelar</Text>
+                <Text style={styles.cancelButtonText}>{t('Cancelar')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.confirmButton}
                 onPress={handleLogoutConfirm}
               >
-                <Text style={styles.confirmButtonText}>Sair</Text>
+                <Text style={styles.confirmButtonText}>{t('Sair')}</Text>
               </TouchableOpacity>
             </View>
           </View>

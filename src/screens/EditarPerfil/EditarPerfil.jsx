@@ -29,9 +29,11 @@ import {
 } from '../../services/tutorProfile';
 import { uploadTutorPhoto } from '../../services/uploadImages';
 import { formateCPF } from '../../utils/formatters';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function EditarPerfil() {
   const navigation = useNavigation();
+  const { t } = useLanguage();
 
   const emptyPhone = { tipoContato: 'WhatsApp', ddd: '', numero: '' };
   const [name, setName] = useState('');
@@ -104,7 +106,7 @@ export default function EditarPerfil() {
       setPhones(normalizeLoadedPhones(contactsRes, user?.telefone || user?.TELEFONE || ''));
     } catch (err) {
       console.error(err);
-      setError('Erro ao carregar dados para edição.');
+      setError(t('Erro ao carregar dados para edição.'));
     } finally {
       setLoading(false);
     }
@@ -119,7 +121,7 @@ export default function EditarPerfil() {
       const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permission.granted) {
-        Alert.alert('Permissão necessária', 'Permita acesso à galeria para alterar a foto.');
+        Alert.alert(t('Permissão necessária'), t('Permita acesso à galeria para alterar a foto.'));
         return;
       }
 
@@ -136,7 +138,7 @@ export default function EditarPerfil() {
       const tutorId = userData?.id || imageUser?.id;
 
       if (!tutorId) {
-        Alert.alert('Erro', 'Não foi possível identificar seu usuário.');
+        Alert.alert(t('Erro'), t('Não foi possível identificar seu usuário.'));
         return;
       }
 
@@ -154,10 +156,10 @@ export default function EditarPerfil() {
         imagemPerfil: updatedTutor?.imagemPerfil || current?.imagemPerfil,
         imagem_perfil_tutor: updatedTutor?.imagem_perfil_tutor || current?.imagem_perfil_tutor,
       }));
-      Alert.alert('Sucesso', 'Foto de perfil atualizada!');
+      Alert.alert(t('Sucesso'), t('Foto de perfil atualizada!'));
     } catch (err) {
       console.error(err);
-      Alert.alert('Erro', err?.message || 'Não foi possível alterar a foto.');
+      Alert.alert(t('Erro'), err?.message || t('Não foi possível alterar a foto.'));
     } finally {
       setUploadingPhoto(false);
     }
@@ -175,7 +177,7 @@ export default function EditarPerfil() {
 
   const handleAddPhone = () => {
     if (phones.length >= 2) {
-      Alert.alert('Limite atingido', 'Você pode cadastrar no máximo 2 telefones.');
+      Alert.alert(t('Limite atingido'), t('Você pode cadastrar no máximo 2 telefones.'));
       return;
     }
 
@@ -202,18 +204,18 @@ export default function EditarPerfil() {
     const cleanPhone = validPhones[0] ? `${validPhones[0].ddd}${validPhones[0].numero}` : '';
 
     if (!cleanName) {
-      Alert.alert('Preencha os campos', 'Informe seu nome.');
+      Alert.alert(t('Preencha os campos'), t('Informe seu nome.'));
       return;
     }
 
     if (validPhones.length > 2) {
-      Alert.alert('Limite atingido', 'Você pode cadastrar no máximo 2 telefones.');
+      Alert.alert(t('Limite atingido'), t('Você pode cadastrar no máximo 2 telefones.'));
       return;
     }
 
     for (const phone of validPhones) {
       if (phone.ddd.length !== 2 || phone.numero.length < 8) {
-        Alert.alert('Telefone inválido', 'Informe telefones válidos com DDD.');
+        Alert.alert(t('Telefone inválido'), t('Informe telefones válidos com DDD.'));
         return;
       }
     }
@@ -221,7 +223,7 @@ export default function EditarPerfil() {
     const uniquePhones = new Set(validPhones.map((phone) => `${phone.ddd}${phone.numero}`));
 
     if (uniquePhones.size !== validPhones.length) {
-      Alert.alert('Telefone repetido', 'Os telefones precisam ser diferentes.');
+      Alert.alert(t('Telefone repetido'), t('Os telefones precisam ser diferentes.'));
       return;
     }
 
@@ -237,11 +239,11 @@ export default function EditarPerfil() {
 
       setUserData(updatedTutor);
       setPhones(normalizeLoadedPhones(updatedContacts, cleanPhone));
-      Alert.alert('Sucesso', 'Perfil atualizado!');
+      Alert.alert(t('Sucesso'), t('Perfil atualizado!'));
       navigation.goBack();
     } catch (err) {
       console.error(err);
-      Alert.alert('Erro', err?.message || 'Não foi possível atualizar o perfil.');
+      Alert.alert(t('Erro'), err?.message || t('Não foi possível atualizar o perfil.'));
     } finally {
       setSaving(false);
     }
@@ -251,7 +253,7 @@ export default function EditarPerfil() {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#fff' }}>
         <ActivityIndicator size="large" color="#9127E1" />
-        <Text style={{ marginTop: 15, color: '#666' }}>Carregando dados...</Text>
+        <Text style={{ marginTop: 15, color: '#666' }}>{t('Carregando dados...')}</Text>
       </View>
     );
   }
@@ -282,8 +284,8 @@ export default function EditarPerfil() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.headerRow}>
-            <Text style={styles.pageTitle}>Editar meu perfil</Text>
-            <Text style={styles.pageSubtitle}>Mantenha seus dados e contatos atualizados</Text>
+            <Text style={styles.pageTitle}>{t('Editar meu perfil')}</Text>
+            <Text style={styles.pageSubtitle}>{t('Mantenha seus dados e contatos atualizados')}</Text>
           </View>
 
           <View style={styles.photoCard}>
@@ -293,7 +295,7 @@ export default function EditarPerfil() {
               onPress={handlePickProfileImage}
               disabled={uploadingPhoto}
               accessibilityRole="button"
-              accessibilityLabel="Alterar foto de perfil"
+              accessibilityLabel={t('Alterar foto de perfil')}
             >
               <Image source={fotoPerfil} style={styles.avatar} />
               <View style={styles.cameraBadge}>
@@ -304,8 +306,8 @@ export default function EditarPerfil() {
                 )}
               </View>
             </TouchableOpacity>
-            <Text style={styles.photoTitle}>FOTO DE PERFIL</Text>
-            <Text style={styles.photoSubtitle}>Clique para alterar a imagem</Text>
+            <Text style={styles.photoTitle}>{t('FOTO DE PERFIL')}</Text>
+            <Text style={styles.photoSubtitle}>{t('Clique para alterar a imagem')}</Text>
           </View>
 
           <View style={styles.sectionCard}>
@@ -313,22 +315,22 @@ export default function EditarPerfil() {
               <View style={styles.iconBadge}>
                 <Smile size={20} color="#9127E1" />
               </View>
-              <Text style={styles.sectionTitle}>Dados Pessoais</Text>
+              <Text style={styles.sectionTitle}>{t('Dados Pessoais')}</Text>
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Nome Completo</Text>
+              <Text style={styles.fieldLabel}>{t('Nome Completo')}</Text>
               <TextInput
                 value={name}
                 onChangeText={setName}
                 style={styles.textInput}
-                placeholder="Seu nome"
+                placeholder={t('Seu nome')}
                 placeholderTextColor="#94a3b8"
               />
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>CPF (não editável)</Text>
+              <Text style={styles.fieldLabel}>{t('CPF (não editável)')}</Text>
               <TextInput
                 value={formateCPF(cpfExibir)}
                 editable={false}
@@ -337,12 +339,12 @@ export default function EditarPerfil() {
             </View>
 
             <View style={styles.fieldContainer}>
-              <Text style={styles.fieldLabel}>Endereço Residencial</Text>
+              <Text style={styles.fieldLabel}>{t('Endereço Residencial')}</Text>
               <TextInput
                 value={address}
                 onChangeText={setAddress}
                 style={styles.textInput}
-                placeholder="Seu endereço"
+                placeholder={t('Seu endereço')}
                 placeholderTextColor="#94a3b8"
               />
             </View>
@@ -353,7 +355,7 @@ export default function EditarPerfil() {
               <View style={[styles.iconBadge, { backgroundColor: '#E6FFFA' }]}>
                 <Phone size={20} color="#00D7C4" />
               </View>
-              <Text style={styles.sectionTitle}>Meus Telefones</Text>
+              <Text style={styles.sectionTitle}>{t('Meus Telefones')}</Text>
             </View>
 
             <TouchableOpacity
@@ -362,9 +364,9 @@ export default function EditarPerfil() {
               disabled={phones.length >= 2}
             >
               <Plus size={14} color="#9127E1" />
-              <Text style={styles.newContactText}>NOVO CONTATO</Text>
+              <Text style={styles.newContactText}>{t('NOVO CONTATO')}</Text>
             </TouchableOpacity>
-            <Text style={styles.contactLimitText}>{phones.length}/2 telefones cadastrados</Text>
+            <Text style={styles.contactLimitText}>{t('{{count}}/2 telefones cadastrados', { count: phones.length })}</Text>
 
             {phones.map((phone, index) => (
               <View style={styles.phoneCard} key={`phone-${index}`}>
@@ -383,7 +385,7 @@ export default function EditarPerfil() {
                 <TextInput
                   value={phone.numero}
                   onChangeText={(value) => updatePhoneField(index, 'numero', value)}
-                  placeholder="Número"
+                  placeholder={t('Número')}
                   placeholderTextColor="#cbd5e1"
                   style={[styles.textInput, styles.phoneNumberInput]}
                   keyboardType="numeric"
@@ -407,7 +409,7 @@ export default function EditarPerfil() {
               onPress={() => navigation.goBack()}
               disabled={saving}
             >
-              <Text style={styles.cancelText}>CANCELAR</Text>
+              <Text style={styles.cancelText}>{t('CANCELAR')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.saveButton, saving && { opacity: 0.7 }]}
@@ -417,7 +419,7 @@ export default function EditarPerfil() {
               {saving ? (
                 <ActivityIndicator size="small" color="#fff" />
               ) : (
-                <Text style={styles.saveText}>SALVAR ALTERAÇÕES</Text>
+                <Text style={styles.saveText}>{t('SALVAR ALTERAÇÕES')}</Text>
               )}
             </TouchableOpacity>
           </View>

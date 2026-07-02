@@ -92,12 +92,45 @@ const colorKeys = new Set([
   'tintColor',
 ]);
 
+const darkSurfaceColors = new Set([
+  '#0b1020',
+  '#0f1020',
+  '#0f172a',
+  '#111827',
+  '#17182b',
+  '#172033',
+  '#202238',
+  '#241a3d',
+  '#2a1d42',
+  '#2a2d45',
+]);
+
+const lightTextColors = new Set([
+  '#ffffff',
+  '#fff',
+  'white',
+  '#f8fafc',
+  '#f5f7ff',
+  '#eef2ff',
+  '#e8ecf7',
+  '#dde3f5',
+  '#d6dbe8',
+  '#cbd5e1',
+  '#aeb6cc',
+  '#aab4c5',
+  '#8e98b5',
+]);
+
 function mapColor(key, value) {
   if (typeof value !== 'string') return value;
 
   const normalized = value.trim().toLowerCase();
 
-  if ((key === 'color' || key === 'tintColor') && (normalized === '#fff' || normalized === '#ffffff' || normalized === 'white')) {
+  if (key !== 'color' && key !== 'tintColor' && darkSurfaceColors.has(normalized)) {
+    return value;
+  }
+
+  if ((key === 'color' || key === 'tintColor') && lightTextColors.has(normalized)) {
     return value;
   }
 

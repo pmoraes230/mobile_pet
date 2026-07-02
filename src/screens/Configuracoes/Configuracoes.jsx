@@ -19,6 +19,7 @@ import {
   getNotificationPreferences,
   updateNotificationPreferences,
 } from '../../services/notificacoes';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function Configuracoes() {
   const navigation = useNavigation();
@@ -29,6 +30,7 @@ export default function Configuracoes() {
   const [savingNotifications, setSavingNotifications] = useState(false);
   const [userEmail, setUserEmail] = useState('');
   const { isDarkMode, setThemeMode } = useAppTheme();
+  const { language, setLanguage, t } = useLanguage();
 
   useEffect(() => {
     let mounted = true;
@@ -74,7 +76,7 @@ export default function Configuracoes() {
       setDicasSemanais(savedPreferences.weeklyTipsEnabled);
     } catch (error) {
       console.log('Erro ao salvar preferências de notificação:', error?.response?.data || error?.message);
-      Alert.alert('Erro', 'Não foi possível salvar as preferências de notificação.');
+      Alert.alert(t('Erro'), t('Não foi possível salvar as preferências de notificação.'));
     } finally {
       setSavingNotifications(false);
     }
@@ -86,7 +88,7 @@ export default function Configuracoes() {
       navigation.navigate('Mensagens');
     }
     if (tabId === 'consultas') {
-      Alert.alert('Em breve', 'A área de consultas ainda não foi implementada.');
+      Alert.alert(t('Em breve'), t('A área de consultas ainda não foi implementada.'));
     }
   };
 
@@ -95,7 +97,7 @@ export default function Configuracoes() {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.container}>
+      <View style={[styles.container, isDarkMode && styles.containerDark]}>
         <HeaderHome
           userName="Rayan"
           showSearch={false}
@@ -110,21 +112,21 @@ export default function Configuracoes() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Text style={styles.pageTitle}>Configurações da Conta</Text>
-          <Text style={styles.pageSubtitle}>
-            Ajuste seu app do jeito que você prefere.
+          <Text style={[styles.pageTitle, isDarkMode && styles.pageTitleDark]}>{t('Configurações da Conta')}</Text>
+          <Text style={[styles.pageSubtitle, isDarkMode && styles.pageSubtitleDark]}>
+            {t('Ajuste seu app do jeito que você prefere.')}
           </Text>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Aparência</Text>
-            <Text style={styles.cardDescription}>
-              Ative o modo escuro quando quiser. O app continua claro por padrão.
+          <View style={[styles.card, isDarkMode && styles.cardDark]}>
+            <Text style={[styles.cardTitle, isDarkMode && styles.cardTitleDark]}>{t('Aparência')}</Text>
+            <Text style={[styles.cardDescription, isDarkMode && styles.cardDescriptionDark]}>
+              {t('Ative o modo escuro quando quiser. O app continua claro por padrão.')}
             </Text>
 
             <View style={styles.optionRow}>
               <View style={styles.optionContent}>
                 <View style={styles.optionHeader}>
-                  <Text style={styles.optionText}>Modo escuro</Text>
+                  <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>{t('Modo escuro')}</Text>
                   <Switch
                     value={isDarkMode}
                     onValueChange={(value) => setThemeMode(value ? 'dark' : 'light')}
@@ -132,32 +134,55 @@ export default function Configuracoes() {
                     trackColor={{ false: '#d1d5db', true: '#c4b5fd' }}
                   />
                 </View>
-                <Text style={styles.optionHint}>
-                  Essa escolha fica salva para as próximas vezes.
+                <Text style={[styles.optionHint, isDarkMode && styles.optionHintDark]}>
+                  {t('Essa escolha fica salva para as próximas vezes.')}
                 </Text>
               </View>
             </View>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Idioma</Text>
-            <Text style={styles.cardDescription}>Escolha o idioma da plataforma.</Text>
-            <View style={styles.optionRow}>
-              <Text style={styles.optionText}>Português (Brasil)</Text>
-              <View style={styles.badgeValue}>
-                <Text style={styles.badgeText}>Selecionado</Text>
-              </View>
+          <View style={[styles.card, isDarkMode && styles.cardDark]}>
+            <Text style={[styles.cardTitle, isDarkMode && styles.cardTitleDark]}>{t('Idioma')}</Text>
+            <Text style={[styles.cardDescription, isDarkMode && styles.cardDescriptionDark]}>{t('Escolha o idioma da plataforma.')}</Text>
+            <View style={styles.languageRow}>
+              <TouchableOpacity
+                style={[styles.languageButton, isDarkMode && styles.languageButtonDark, language === 'pt' && styles.languageButtonActive]}
+                onPress={() => setLanguage('pt')}
+              >
+                <Text style={[styles.languageButtonText, language === 'pt' && styles.languageButtonTextActive]}>
+                  PT
+                </Text>
+                <Text style={[styles.languageButtonLabel, isDarkMode && styles.languageButtonLabelDark, language === 'pt' && styles.languageButtonTextActive]}>
+                  {t('Português (Brasil)')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.languageButton, isDarkMode && styles.languageButtonDark, language === 'en' && styles.languageButtonActive]}
+                onPress={() => setLanguage('en')}
+              >
+                <Text style={[styles.languageButtonText, language === 'en' && styles.languageButtonTextActive]}>
+                  EN
+                </Text>
+                <Text style={[styles.languageButtonLabel, isDarkMode && styles.languageButtonLabelDark, language === 'en' && styles.languageButtonTextActive]}>
+                  {t('Inglês')}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Notificações</Text>
-            <Text style={styles.cardDescription}>Gerencie alertas e lembretes.</Text>
+          <View style={[styles.card, isDarkMode && styles.cardDark]}>
+            <Text style={[styles.cardTitle, isDarkMode && styles.cardTitleDark, isDarkMode && { color: '#F8FAFC' }]}>
+              {t('Notificações')}
+            </Text>
+            <Text style={[styles.cardDescription, isDarkMode && styles.cardDescriptionDark]}>{t('Gerencie alertas e lembretes.')}</Text>
 
             <View style={styles.optionRow}>
               <View style={styles.optionContent}>
                 <View style={styles.optionHeader}>
-                  <Text style={styles.optionText}>Notificações no celular</Text>
+                  <Text style={[styles.optionText, isDarkMode && styles.optionTextDark, isDarkMode && { color: '#F8FAFC' }]}>
+                    {t('Notificações no celular')}
+                  </Text>
                   <Switch
                     value={pushEnabled}
                     disabled={savingNotifications}
@@ -166,18 +191,18 @@ export default function Configuracoes() {
                     trackColor={{ false: '#d1d5db', true: '#c4b5fd' }}
                   />
                 </View>
-                <Text style={styles.optionHint}>
-                  Receba avisos do app direto na aba de notificações do celular.
+                <Text style={[styles.optionHint, isDarkMode && styles.optionHintDark]}>
+                  {t('Receba avisos do app direto na aba de notificações do celular.')}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
 
             <View style={styles.optionRow}>
               <View style={styles.optionContent}>
                 <View style={styles.optionHeader}>
-                  <Text style={styles.optionText}>Lembretes de vacinas</Text>
+                  <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>{t('Lembretes de vacinas')}</Text>
                   <Switch
                     value={lembretesVacinas}
                     disabled={!pushEnabled || savingNotifications}
@@ -186,18 +211,18 @@ export default function Configuracoes() {
                     trackColor={{ false: '#d1d5db', true: '#c4b5fd' }}
                   />
                 </View>
-                <Text style={styles.optionHint}>
-                  Receba lembretes para as vacinas do seu pet.
+                <Text style={[styles.optionHint, isDarkMode && styles.optionHintDark]}>
+                  {t('Receba lembretes para as vacinas do seu pet.')}
                 </Text>
               </View>
             </View>
 
-            <View style={styles.divider} />
+            <View style={[styles.divider, isDarkMode && styles.dividerDark]} />
 
             <View style={styles.optionRow}>
               <View style={styles.optionContent}>
                 <View style={styles.optionHeader}>
-                  <Text style={styles.optionText}>Dicas semanais de cuidados</Text>
+                  <Text style={[styles.optionText, isDarkMode && styles.optionTextDark]}>{t('Dicas semanais de cuidados')}</Text>
                   <Switch
                     value={dicasSemanais}
                     disabled={!pushEnabled || savingNotifications}
@@ -206,34 +231,34 @@ export default function Configuracoes() {
                     trackColor={{ false: '#d1d5db', true: '#c4b5fd' }}
                   />
                 </View>
-                <Text style={styles.optionHint}>
-                  Receba dicas para cuidar melhor do seu pet.
+                <Text style={[styles.optionHint, isDarkMode && styles.optionHintDark]}>
+                  {t('Receba dicas para cuidar melhor do seu pet.')}
                 </Text>
               </View>
             </View>
           </View>
 
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Privacidade</Text>
-            <Text style={styles.cardDescription}>Controle quem vê seus dados.</Text>
+          <View style={[styles.card, isDarkMode && styles.cardDark]}>
+            <Text style={[styles.cardTitle, isDarkMode && styles.cardTitleDark]}>{t('Privacidade')}</Text>
+            <Text style={[styles.cardDescription, isDarkMode && styles.cardDescriptionDark]}>{t('Controle quem vê seus dados.')}</Text>
             <TouchableOpacity
               style={styles.actionButton}
               onPress={() => navigation.navigate('EsqueciSenha', userEmail ? { email: userEmail } : undefined)}
               accessibilityRole="button"
-              accessibilityLabel="Redefinir minha senha"
+              accessibilityLabel={t('Redefinir minha senha')}
             >
-              <Text style={styles.actionButtonText}>Redefinir minha senha</Text>
+              <Text style={styles.actionButtonText}>{t('Redefinir minha senha')}</Text>
             </TouchableOpacity>
-            <Text style={styles.comingSoon}>Autenticação em 2 fatores em breve</Text>
+            <Text style={[styles.comingSoon, isDarkMode && styles.comingSoonDark]}>{t('Autenticação em 2 fatores em breve')}</Text>
           </View>
 
           <View style={[styles.card, styles.dangerCard]}>
-            <Text style={[styles.cardTitle, styles.dangerTitle]}>Desativar conta</Text>
+            <Text style={[styles.cardTitle, styles.dangerTitle]}>{t('Desativar conta')}</Text>
             <Text style={[styles.cardDescription, styles.dangerDescription]}>
-              Ao desativar sua conta, você perderá acesso permanente a todos os seus pets, registros e histórico. Essa ação é irreversível.
+              {t('Ao desativar sua conta, você perderá acesso permanente a todos os seus pets, registros e histórico. Essa ação é irreversível.')}
             </Text>
             <TouchableOpacity style={[styles.actionButton, styles.dangerButton]}>
-              <Text style={styles.actionButtonText}>DESATIVAR MINHA CONTA</Text>
+              <Text style={styles.actionButtonText}>{t('DESATIVAR MINHA CONTA')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

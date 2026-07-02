@@ -367,6 +367,10 @@ export const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
+  notificationEmptyTextDark: {
+    color: '#D6DBE8',
+  },
+
   seeAllBtn: {
     paddingVertical: 15,
     paddingHorizontal: 25,
@@ -383,5 +387,9 @@ export const styles = StyleSheet.create({
     color: '#9127E1',
     fontSize: 14,
     fontWeight: '600',
+  },
+
+  seeAllBtnTextDark: {
+    color: '#D8B4FE',
   },
 });

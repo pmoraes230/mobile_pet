@@ -34,6 +34,7 @@ import TabBar from '../../components/TabBar';
 import api from '../../services/api';
 import { getUserInfo } from '../../services/auth';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 // SONS DE LIKE (PETCH)
 const MIAU_SOUND = require('../../assets/miau.mp3');
@@ -57,6 +58,7 @@ const ESTADOS_CIDADES = {
 export default function TinderPet() {
   const navigation = useNavigation();
   const { isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const theme = isDarkMode
     ? {
         background: '#0F1020',
@@ -300,7 +302,7 @@ export default function TinderPet() {
       <View style={[styles.container, { backgroundColor: theme.background }]}>
         
         <HeaderHome 
-          userName={user?.nome || 'Usuário'} 
+          userName={user?.nome || t('Usuário')}
           showSearch={false} 
           showBackButton 
           onBackPress={() => navigation.goBack()} 
@@ -311,7 +313,7 @@ export default function TinderPet() {
           <View style={styles.filterRow}>
             <TouchableOpacity style={[styles.filterButton, { backgroundColor: theme.surface, borderColor: theme.border }]} onPress={() => setModalEstadoOpen(true)}>
               <MapPin size={14} color={theme.accent} />
-              <Text style={[styles.filterText, { color: theme.muted }]}>{selectedEstado?.name || 'Estado'}</Text>
+              <Text style={[styles.filterText, { color: theme.muted }]}>{selectedEstado?.name || t('Estado')}</Text>
               <ChevronDown size={14} color="#A0A7BA" />
             </TouchableOpacity>
 
@@ -321,7 +323,7 @@ export default function TinderPet() {
               onPress={() => setModalCidadeOpen(true)}
             >
               <MapPin size={14} color={theme.accent} />
-              <Text style={[styles.filterText, { color: theme.muted }]}>{selectedCidade?.name || 'Cidade'}</Text>
+              <Text style={[styles.filterText, { color: theme.muted }]}>{selectedCidade?.name || t('Cidade')}</Text>
               <ChevronDown size={14} color="#A0A7BA" />
             </TouchableOpacity>
           </View>
@@ -338,10 +340,10 @@ export default function TinderPet() {
                     {petAtual?.nome || petAtual?.NOME}, <Text style={{ fontWeight: '300' }}>{petAtual?.idade || petAtual?.IDADE || '?'}a</Text>
                   </Text>
                   <Text style={styles.cardBio} numberOfLines={2}>
-                    {petAtual?.descricao || petAtual?.DESCRICAO || 'Olá! Vamos ser amigos?'}
+                    {petAtual?.descricao || petAtual?.DESCRICAO || t('Olá! Vamos ser amigos?')}
                   </Text>
                   <Text style={styles.cardBreed}>
-                    {getPetEmoji(petAtual?.especie || petAtual?.ESPECIE)} {(petAtual?.especie || petAtual?.ESPECIE || 'PET').toUpperCase()} • {(petAtual?.raca || petAtual?.RACA || 'SRD').toUpperCase()}
+                    {getPetEmoji(petAtual?.especie || petAtual?.ESPECIE)} {t(petAtual?.especie || petAtual?.ESPECIE || 'PET').toUpperCase()} • {t(petAtual?.raca || petAtual?.RACA || 'SRD').toUpperCase()}
                   </Text>
                 </View>
               </View>
@@ -375,20 +377,20 @@ export default function TinderPet() {
               </View>
             </>
           ) : (
-            <Text style={{ textAlign: 'center', marginTop: 50, color: '#999' }}>Nenhum pet encontrado.</Text>
+            <Text style={{ textAlign: 'center', marginTop: 50, color: '#999' }}>{t('Nenhum pet encontrado.')}</Text>
           )}
 
           {/* 4. SEU PET WIDGET */}
           <View style={[styles.activePetWidget, { backgroundColor: theme.surface, borderColor: theme.border }]}>
             <Image source={(petLogado?.imagem || petLogado?.IMAGEM) ? { uri: getImageUri(petLogado?.imagem || petLogado?.IMAGEM) } : MISSY_IMAGE} style={styles.activePetImg} />
             <View style={styles.activePetInfo}>
-              <Text style={[styles.activePetName, { color: theme.text }]}>{petLogado?.nome || petLogado?.NOME || 'Seu Pet'} (Você)</Text>
+              <Text style={[styles.activePetName, { color: theme.text }]}>{petLogado?.nome || petLogado?.NOME || t('Seu Pet')} ({t('Você')})</Text>
               <View style={styles.badgeRow}>
                 <View style={[styles.miniBadge, { backgroundColor: theme.accentSoft }]}>
-                  <Text style={[styles.miniBadgeText, { color: theme.accent }]}>{getPetEmoji(petLogado?.especie || petLogado?.ESPECIE)} {petLogado?.especie || petLogado?.ESPECIE || 'Pet'}</Text>
+                  <Text style={[styles.miniBadgeText, { color: theme.accent }]}>{getPetEmoji(petLogado?.especie || petLogado?.ESPECIE)} {t(petLogado?.especie || petLogado?.ESPECIE || 'Pet')}</Text>
                 </View>
                 <View style={[styles.miniBadge, { backgroundColor: theme.orangeSoft }]}>
-                  <Text style={[styles.miniBadgeText, { color: '#FF7A2F' }]}>🐾 No Tinder</Text>
+                  <Text style={[styles.miniBadgeText, { color: '#FF7A2F' }]}>🐾 {t('No Tinder')}</Text>
                 </View>
               </View>
             </View>
@@ -399,7 +401,7 @@ export default function TinderPet() {
 
           {/* 5. AMIGOS RECENTES */}
           <View style={styles.friendsHeader}>
-            <Text style={[styles.sectionTitle, { color: theme.muted }]}>Amigos recentes</Text>
+            <Text style={[styles.sectionTitle, { color: theme.muted }]}>{t('Amigos recentes')}</Text>
             <Zap size={14} color="#FF7A2F" fill="#FF7A2F" />
           </View>
 
@@ -414,7 +416,7 @@ export default function TinderPet() {
                 </View>
               ))
             ) : (
-              <Text style={{ marginLeft: 20, color: '#AAA', fontSize: 12 }}>Nenhum amigo recente.</Text>
+              <Text style={{ marginLeft: 20, color: '#AAA', fontSize: 12 }}>{t('Nenhum amigo recente.')}</Text>
             )}
           </ScrollView>
         </ScrollView>
@@ -423,7 +425,7 @@ export default function TinderPet() {
         <Modal visible={modalTrocarPetOpen} transparent animationType="slide">
           <View style={[styles.modalOverlay, { backgroundColor: theme.overlay }]}>
             <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Seus Pets</Text>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>{t('Seus Pets')}</Text>
               <FlatList
                 data={meusPets}
                 keyExtractor={item => (item.id || item.ID).toString()}
@@ -445,7 +447,7 @@ export default function TinderPet() {
                 )}
               />
               <TouchableOpacity style={[styles.modalCloseBtn, { backgroundColor: theme.surfaceAlt }]} onPress={() => setModalTrocarPetOpen(false)}>
-                <Text style={[styles.modalCloseBtnText, { color: theme.muted }]}>Cancelar</Text>
+                <Text style={[styles.modalCloseBtnText, { color: theme.muted }]}>{t('Cancelar')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -455,7 +457,7 @@ export default function TinderPet() {
         <Modal visible={modalEstadoOpen} transparent animationType="fade">
           <View style={[styles.modalOverlay, { backgroundColor: theme.overlay }]}>
             <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Selecione um Estado</Text>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>{t('Selecione um Estado')}</Text>
               <FlatList
                 data={Object.keys(ESTADOS_CIDADES).map((n, i) => ({ id: i, name: n }))}
                 keyExtractor={item => item.id.toString()}
@@ -472,7 +474,7 @@ export default function TinderPet() {
         <Modal visible={modalCidadeOpen} transparent animationType="fade">
           <View style={[styles.modalOverlay, { backgroundColor: theme.overlay }]}>
             <View style={[styles.modalContent, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.modalTitle, { color: theme.text }]}>Selecione uma Cidade</Text>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>{t('Selecione uma Cidade')}</Text>
               <FlatList
                 data={selectedEstado ? ESTADOS_CIDADES[selectedEstado.name].map((n, i) => ({ id: i, name: n })) : []}
                 keyExtractor={item => item.id.toString()}

@@ -13,6 +13,7 @@ import {
   getAgendaSemanal, criarAgendamento,
   getAgendaDisponivelDates, getAgendaDisponivelTimes,
 } from '../../services/agendamentoService';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const NOVO_AGENDAMENTO_THEME = {
   light: {
@@ -59,6 +60,7 @@ const getItemId = (item) =>
 // --- select field -------------------------------------------------------------
 function SelectField({ label, value, placeholder, onPress, isStep = false }) {
   const p = useNovoAgendamentoTheme();
+  const { t } = useLanguage();
 
   return (
     <View style={{ marginBottom: 16 }}>
@@ -79,7 +81,7 @@ function SelectField({ label, value, placeholder, onPress, isStep = false }) {
         }}
       >
         <Text style={{ fontWeight: '700', color: value ? p.fieldText : p.muted, fontSize: 14 }}>
-          {value || placeholder}
+          {value ? t(value) : placeholder}
         </Text>
         <Text style={{ color: p.muted, fontSize: 12 }}>▼</Text>
       </TouchableOpacity>
@@ -90,6 +92,7 @@ function SelectField({ label, value, placeholder, onPress, isStep = false }) {
 // --- chips de dia -------------------------------------------------------------
 function ChipsDias({ datas, selectedDate, onSelect, loading }) {
   const p = useNovoAgendamentoTheme();
+  const { t } = useLanguage();
 
   if (loading) {
     return (
@@ -98,7 +101,7 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
           fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
           textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
         }}>
-          Escolha o Dia
+          {t('Escolha o Dia')}
         </Text>
         <ActivityIndicator color={p.accent} style={{ marginTop: 8 }} />
       </View>
@@ -111,7 +114,7 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
         fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
         textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
       }}>
-        Escolha o Dia
+        {t('Escolha o Dia')}
       </Text>
 
       {datas.length > 0 ? (
@@ -149,10 +152,10 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
           borderColor: p.border,
         }}>
           <Text style={{ color: p.subtitle, fontWeight: '600', textAlign: 'center' }}>
-            Nenhuma data disponível para este veterinário no momento.
+            {t('Nenhuma data disponível para este veterinário no momento.')}
           </Text>
           <Text style={{ color: p.muted, fontSize: 13, marginTop: 4, textAlign: 'center' }}>
-            Tente selecionar outro veterinário.
+            {t('Tente selecionar outro veterinário.')}
           </Text>
         </View>
       )}
@@ -163,6 +166,7 @@ function ChipsDias({ datas, selectedDate, onSelect, loading }) {
 // --- chips de horário ---------------------------------------------------------
 function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
   const p = useNovoAgendamentoTheme();
+  const { t } = useLanguage();
 
   if (loading) {
     return <ActivityIndicator color={p.accent} style={{ marginTop: 8, marginBottom: 16 }} />;
@@ -174,7 +178,7 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
           fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
           textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
         }}>
-          Horários Disponíveis
+          {t('Horários Disponíveis')}
         </Text>
         <View style={{
           backgroundColor: p.surfaceAlt,
@@ -183,7 +187,7 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
           alignItems: 'center',
         }}>
           <Text style={{ color: p.subtitle, textAlign: 'center' }}>
-            Nenhum horário disponível para esta data.
+            {t('Nenhum horário disponível para esta data.')}
           </Text>
         </View>
       </View>
@@ -196,7 +200,7 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
         fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
         textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
       }}>
-        Horários Disponíveis
+        {t('Horários Disponíveis')}
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
         {slots.map((slot) => {
@@ -234,6 +238,7 @@ function ChipsHorarios({ slots, selectedSlot, onSelect, loading }) {
 // --- modal de seleção ---------------------------------------------------------
 function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
   const p = useNovoAgendamentoTheme();
+  const { t } = useLanguage();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -246,7 +251,7 @@ function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
             flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
             padding: 24, borderBottomWidth: 1, borderBottomColor: p.border,
           }}>
-            <Text style={{ fontSize: 18, fontWeight: '900', color: p.text }}>{titulo}</Text>
+            <Text style={{ fontSize: 18, fontWeight: '900', color: p.text }}>{t(titulo)}</Text>
             <TouchableOpacity
               onPress={onClose}
               style={{ backgroundColor: p.surfaceAlt, borderRadius: 20, padding: 6 }}
@@ -267,7 +272,7 @@ function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
                 }}
               >
                 <Text style={{ fontSize: 15, fontWeight: '700', color: p.fieldText }}>
-                  {getItemLabel(item)}
+                  {t(getItemLabel(item))}
                 </Text>
               </TouchableOpacity>
             )}
@@ -282,6 +287,7 @@ function ModalSelecao({ visible, titulo, dados, onSelect, onClose }) {
 export default function TelaNovoAgendamento() {
   const navigation = useNavigation();
   const p = useNovoAgendamentoTheme();
+  const { t, language } = useLanguage();
 
   const [selectedPet, setSelectedPet] = useState(null);
   const [selectedVeterinario, setSelectedVeterinario] = useState(null);
@@ -327,7 +333,7 @@ export default function TelaNovoAgendamento() {
         setSelectedVeterinario((prev) => prev || primeiroVet);
         if (primeiroVet) await loadAvailableDates(getItemId(primeiroVet));
       } catch (err) {
-        setAgendaErro(err.message || 'Erro ao carregar dados.');
+        setAgendaErro(err.message || t('Erro ao carregar dados.'));
       } finally {
         setAgendaCarregando(false);
       }
@@ -354,7 +360,7 @@ export default function TelaNovoAgendamento() {
         return {
           id: item.ID ?? `date-${i}`,
           date: formattedDate,                    // <- Formato limpo
-          dateLabel: dateObj.toLocaleDateString('pt-BR', {
+          dateLabel: dateObj.toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR', {
             day: '2-digit',
             month: '2-digit'
           }),
@@ -364,7 +370,7 @@ export default function TelaNovoAgendamento() {
       setAvailableDates(formatted);
     } catch (e) {
       console.error(e);
-      setAgendaErro('Erro ao buscar datas disponíveis.');
+      setAgendaErro(t('Erro ao buscar datas disponíveis.'));
     } finally {
       setLoadingDates(false);
     }
@@ -394,7 +400,7 @@ export default function TelaNovoAgendamento() {
       })));
     } catch (e) {
       console.error("Erro ao buscar horários:", e);
-      setAgendaErro('Erro ao buscar horários.');
+      setAgendaErro(t('Erro ao buscar horários.'));
     } finally {
       setLoadingSlots(false);
     }
@@ -424,11 +430,11 @@ export default function TelaNovoAgendamento() {
 
   const handleConfirmar = async () => {
     if (!selectedPet || !selectedVeterinario || !selectedServico) {
-      Alert.alert('Preencha os campos', 'Selecione pet, veterinário e tipo de serviço.');
+      Alert.alert(t('Preencha os campos'), t('Selecione pet, veterinário e tipo de serviço.'));
       return;
     }
     if (!selectedDate || !selectedSlot) {
-      Alert.alert('Selecione data e horário', 'Escolha uma data e um horário disponíveis.');
+      Alert.alert(t('Selecione data e horário'), t('Escolha uma data e um horário disponíveis.'));
       return;
     }
     setIsSubmitting(true);
@@ -437,15 +443,15 @@ export default function TelaNovoAgendamento() {
       const agendaDisponivelId = getItemId(selectedSlot);
       const petId = getItemId(selectedPet);
       if (agendaDisponivelId == null || petId == null)
-        throw new Error('ID de pet ou vaga não encontrado.');
+        throw new Error(t('ID de pet ou vaga não encontrado.'));
       const resultado = await criarAgendamento({ agendaDisponivelId, petId, tipo: selectedServico, obs });
-      Alert.alert('Agendamento criado', resultado.mensagem, [
+      Alert.alert(t('Agendamento criado'), resultado.mensagem, [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
     } catch (e) {
-      const msg = e.message || 'Erro ao criar agendamento.';
+      const msg = e.message || t('Erro ao criar agendamento.');
       setAgendaErro(msg);
-      Alert.alert('Erro', msg);
+      Alert.alert(t('Erro'), msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -466,7 +472,7 @@ export default function TelaNovoAgendamento() {
         {agendaCarregando ? (
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
             <ActivityIndicator size="large" color="#9333ea" />
-            <Text style={{ marginTop: 12, color: p.subtitle, fontSize: 14 }}>Carregando...</Text>
+            <Text style={{ marginTop: 12, color: p.subtitle, fontSize: 14 }}>{t('Carregando...')}</Text>
           </View>
         ) : (
           <ScrollView
@@ -476,26 +482,26 @@ export default function TelaNovoAgendamento() {
           >
             <View style={{ marginBottom: 24 }}>
               <Text style={{ fontSize: 24, fontWeight: '900', color: p.text, letterSpacing: -0.5 }}>
-                Novo Agendamento
+                {t('Novo Agendamento')}
               </Text>
               <Text style={{ color: p.subtitle, fontWeight: '500', fontSize: 14, marginTop: 4 }}>
-                Escolha o veterinário, dia e horário
+                {t('Escolha o veterinário, dia e horário')}
               </Text>
             </View>
 
             {/* 1. Pet */}
             <SelectField
-              label="Qual Pet?"
+              label={t('Qual Pet?')}
               value={selectedPet ? getItemLabel(selectedPet) : null}
-              placeholder="Selecione seu pet..."
+              placeholder={t('Selecione seu pet...')}
               onPress={() => setModalPetOpen(true)}
             />
 
             {/* 2. Veterinário */}
             <SelectField
-              label="Veterinário"
+              label={t('Veterinário')}
               value={selectedVeterinario ? getItemLabel(selectedVeterinario) : null}
-              placeholder="Escolha o médico..."
+              placeholder={t('Escolha o médico...')}
               onPress={() => setModalVeterOpen(true)}
             />
 
@@ -516,7 +522,7 @@ export default function TelaNovoAgendamento() {
                   fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
                   textTransform: 'uppercase', marginBottom: 8, color: p.accentText,
                 }}>
-                  Data Selecionada
+                  {t('Data Selecionada')}
                 </Text>
                 <View style={{
                   backgroundColor: '#9333ea',
@@ -531,7 +537,7 @@ export default function TelaNovoAgendamento() {
                     {selectedDate.dateLabel}
                   </Text>
                   <TouchableOpacity onPress={() => setSelectedDate(null)}>
-                    <Text style={{ color: '#ddd', fontSize: 13, fontWeight: '600' }}>Trocar</Text>
+                    <Text style={{ color: '#ddd', fontSize: 13, fontWeight: '600' }}>{t('Trocar')}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -549,9 +555,9 @@ export default function TelaNovoAgendamento() {
 
             {/* 5. Tipo de Serviço */}
             <SelectField
-              label="Tipo de Serviço"
-              value={selectedServico}
-              placeholder="Selecione o serviço..."
+              label={t('Tipo de Serviço')}
+              value={t(selectedServico)}
+              placeholder={t('Selecione o serviço...')}
               onPress={() => setModalServicoOpen(true)}
             />
 
@@ -561,7 +567,7 @@ export default function TelaNovoAgendamento() {
                 fontSize: 10, fontWeight: '900', letterSpacing: 1.5,
                 textTransform: 'uppercase', marginBottom: 8, color: p.muted,
               }}>
-                Observações
+                {t('Observações')}
               </Text>
               <TextInput
                 style={{
@@ -571,7 +577,7 @@ export default function TelaNovoAgendamento() {
                   minHeight: 90, textAlignVertical: 'top',
                   borderWidth: 1, borderColor: p.border,
                 }}
-                placeholder="Descreva brevemente..."
+                placeholder={t('Descreva brevemente...')}
                 placeholderTextColor={p.muted}
                 multiline
                 value={obs}
@@ -593,7 +599,7 @@ export default function TelaNovoAgendamento() {
                   borderWidth: 1, borderColor: p.border,
                 }}
               >
-                <Text style={{ fontWeight: '900', color: p.subtitle, fontSize: 14 }}>Cancelar</Text>
+                <Text style={{ fontWeight: '900', color: p.subtitle, fontSize: 14 }}>{t('Cancelar')}</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -610,7 +616,7 @@ export default function TelaNovoAgendamento() {
                 {isSubmitting ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={{ fontWeight: '900', color: '#fff', fontSize: 14 }}>Agendar Agora</Text>
+                  <Text style={{ fontWeight: '900', color: '#fff', fontSize: 14 }}>{t('Agendar Agora')}</Text>
                 )}
               </TouchableOpacity>
             </View>

@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
     color: '#172033',
   },
   notificacaoTituloDark: {
-    color: '#F8FAFC',
+    color: '#FFFFFF',
   },
   notificacaoDescricao: {
     marginTop: 6,
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     color: '#5E6678',
   },
   notificacaoDescricaoDark: {
-    color: '#D6DBE8',
+    color: '#E8ECF7',
   },
   notificacaoData: {
     fontSize: 11,
@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   notificacaoDataDark: {
-    color: '#9CA8C2',
+    color: '#CBD5E1',
   },
   unreadDot: {
     width: 9,
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   noNotificacoesDark: {
-    color: '#AEB6CC',
+    color: '#E8ECF7',
   },
 });
 

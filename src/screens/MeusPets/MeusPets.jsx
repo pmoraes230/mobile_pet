@@ -19,6 +19,7 @@ import HeaderHome from '../../components/HeaderHome';
 import { deletePet, getPetsByTutor } from '../../services/pet';
 import { formateCPF, formateDate } from '../../utils/formatters';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const normalizeSearchText = (value = '') =>
   String(value)
@@ -30,6 +31,7 @@ const normalizeSearchText = (value = '') =>
 export default function TelaMeusPets() {
   const navigation = useNavigation();
   const { isDarkMode } = useAppTheme();
+  const { t } = useLanguage();
   const palette = isDarkMode
     ? {
         overlay: 'rgba(5, 7, 18, 0.72)',
@@ -67,10 +69,10 @@ export default function TelaMeusPets() {
   const [deletingPetId, setDeletingPetId] = useState(null);
 
   const filterOptions = [
-    { id: 'todos', label: 'Todos', description: 'Mostrar todos os pets', Icon: PawPrint },
-    { id: 'cachorro', label: 'Cachorros', description: 'Apenas pets caninos', Icon: Dog },
-    { id: 'gato', label: 'Gatos', description: 'Apenas pets felinos', Icon: Heart },
-    { id: 'outros', label: 'Outros', description: 'Outras especies cadastradas', Icon: PawPrint },
+    { id: 'todos', label: t('Todos'), description: t('Mostrar todos os pets'), Icon: PawPrint },
+    { id: 'cachorro', label: t('Cachorros'), description: t('Apenas pets caninos'), Icon: Dog },
+    { id: 'gato', label: t('Gatos'), description: t('Apenas pets felinos'), Icon: Heart },
+    { id: 'outros', label: t('Outros'), description: t('Outras especies cadastradas'), Icon: PawPrint },
   ];
 
   // Função para tratar imagem do S3 (Mantendo o padrão do Coração em Patas)
@@ -158,7 +160,7 @@ export default function TelaMeusPets() {
     if (!pet) return;
 
     const petId = pet.id || pet.ID;
-    const petName = pet.nome || pet.NOME || 'este pet';
+    const petName = pet.nome || pet.NOME || t('este pet');
 
     if (!petId || deletingPetId) return;
 
@@ -170,9 +172,9 @@ export default function TelaMeusPets() {
       );
       setDeleteModalVisible(false);
       setPetToDelete(null);
-      Alert.alert('Pet excluído', `${petName} foi removido com sucesso.`);
+      Alert.alert(t('Pet excluído'), t('{{name}} foi removido com sucesso.', { name: petName }));
     } catch (error) {
-      Alert.alert('Erro', error.message || 'Não foi possível excluir este pet.');
+      Alert.alert(t('Erro'), error.message || t('Não foi possível excluir este pet.'));
     } finally {
       setDeletingPetId(null);
     }
@@ -209,7 +211,7 @@ export default function TelaMeusPets() {
           showSearch={true}
           searchValue={searchText}
           onSearch={setSearchText}
-          searchPlaceholder="Buscar nos meus pets"
+          searchPlaceholder={t('Buscar nos meus pets')}
           onFilterPress={handleOpenFilter}
           filterActive={speciesFilter !== 'todos'}
           showBackButton={true} 
@@ -224,9 +226,9 @@ export default function TelaMeusPets() {
         >
           
           <View style={styles.headerSection}>
-            <Text style={styles.title}>Meus pets</Text>
+            <Text style={styles.title}>{t('Meus pets')}</Text>
             <Text style={styles.subtitle}>
-              Gerencie as informações de todos os seus amigos.
+              {t('Gerencie as informações de todos os seus amigos.')}
             </Text>
           </View>
 
@@ -237,18 +239,18 @@ export default function TelaMeusPets() {
             <Text style={{ fontSize: 20, color: '#9127E1', fontWeight: 'bold' }}>
               +
             </Text>
-            <Text style={styles.btnAddText}>Adicionar pet</Text>
+            <Text style={styles.btnAddText}>{t('Adicionar pet')}</Text>
           </TouchableOpacity>
 
           {loading ? (
             <Text style={{ textAlign: 'center', marginTop: 20 }}>
-              Carregando pets...
+              {t('Carregando pets...')}
             </Text>
           ) : petsFiltrados.length === 0 ? (
             <Text style={{ textAlign: 'center', marginTop: 20, color: '#666' }}>
               {pets.length === 0 
-                ? 'Você ainda não cadastrou nenhum pet.'
-                : 'Nenhum pet encontrado com essa busca ou filtro.'}
+                ? t('Você ainda não cadastrou nenhum pet.')
+                : t('Nenhum pet encontrado com essa busca ou filtro.')}
             </Text>
           ) : (
             petsFiltrados.map((pet) => (
@@ -293,9 +295,11 @@ export default function TelaMeusPets() {
                 <PawPrint size={26} color={palette.danger} />
               </View>
 
-              <Text style={[styles.deleteTitle, { color: palette.text }]}>Excluir pet?</Text>
+              <Text style={[styles.deleteTitle, { color: palette.text }]}>{t('Excluir pet?')}</Text>
               <Text style={[styles.deleteMessage, { color: palette.subtitle }]}>
-                {`Tem certeza que deseja excluir ${petToDelete?.nome || petToDelete?.NOME || 'este pet'}? Essa ação não pode ser desfeita.`}
+                {t('Tem certeza que deseja excluir {{name}}? Essa ação não pode ser desfeita.', {
+                  name: petToDelete?.nome || petToDelete?.NOME || t('este pet'),
+                })}
               </Text>
 
               <View style={styles.deleteActions}>
@@ -309,9 +313,9 @@ export default function TelaMeusPets() {
                   }}
                   disabled={!!deletingPetId}
                   accessibilityRole="button"
-                  accessibilityLabel="Cancelar exclusão"
+                  accessibilityLabel={t('Cancelar')}
                 >
-                  <Text style={[styles.deleteCancelText, { color: palette.text }]}>Cancelar</Text>
+                  <Text style={[styles.deleteCancelText, { color: palette.text }]}>{t('Cancelar')}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -319,12 +323,12 @@ export default function TelaMeusPets() {
                   onPress={confirmDeletePet}
                   disabled={!!deletingPetId}
                   accessibilityRole="button"
-                  accessibilityLabel="Confirmar exclusão do pet"
+                  accessibilityLabel={t('Excluir pet')}
                 >
                   {deletingPetId ? (
                     <ActivityIndicator size="small" color="#FFF" />
                   ) : (
-                    <Text style={styles.deleteConfirmText}>Excluir pet</Text>
+                    <Text style={styles.deleteConfirmText}>{t('Excluir pet')}</Text>
                   )}
                 </TouchableOpacity>
               </View>

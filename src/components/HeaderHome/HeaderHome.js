@@ -22,6 +22,7 @@ import {
 } from '../../services/notificacoes';
 import { registerForPushNotificationsAsync } from '../../services/pushNotifications';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const TUTOR_IMAGE = require('../../assets/user_default.png');
 
@@ -42,6 +43,7 @@ export default function HeaderHome({
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { isDarkMode } = useAppTheme();
+  const { language, t } = useLanguage();
   const headerIconColor = isDarkMode ? '#F5F7FF' : '#0D214F';
   const notificationIconColor = isDarkMode ? '#E9D5FF' : '#333';
   const [showNotifModal, setShowNotifModal] = useState(false);
@@ -54,38 +56,77 @@ export default function HeaderHome({
     const normalizedType = String(tipo).toLowerCase();
 
     if (normalizedType.includes('match')) {
-      return { title: 'Novo match', icon: Heart, color: '#EC4899' };
+      return { title: t('Novo match'), icon: Heart, color: '#EC4899' };
     }
 
     if (normalizedType.includes('adoc')) {
-      return { title: 'Adoção', icon: HandHeart, color: '#14B8A6' };
+      return { title: t('Adoção'), icon: HandHeart, color: '#14B8A6' };
     }
 
     if (normalizedType.includes('vacina')) {
-      return { title: 'Vacina', icon: Syringe, color: '#0EA5E9' };
+      return { title: t('Vacina'), icon: Syringe, color: '#0EA5E9' };
     }
 
     if (normalizedType.includes('medic')) {
-      return { title: 'Medicamento', icon: Pill, color: '#F59E0B' };
+      return { title: t('Medicamento'), icon: Pill, color: '#F59E0B' };
     }
 
     if (normalizedType.includes('consulta') || normalizedType.includes('agenda')) {
-      return { title: 'Agendamento', icon: CalendarCheck, color: '#10B981' };
+      return { title: t('Agendamento'), icon: CalendarCheck, color: '#10B981' };
     }
 
-    return { title: 'Notificação', icon: PawPrint, color: '#536DFE' };
+    return { title: t('Notificação'), icon: PawPrint, color: '#536DFE' };
+  };
+
+  const translateNotificationMessage = (message) => {
+    const fallback = t('Você tem uma nova notificação.');
+    if (!message) return fallback;
+
+    const exact = t(message);
+    if (language !== 'en' || exact !== message) return exact;
+
+    return String(message)
+      .replace(/\b[Vv]ocê\b/g, 'You')
+      .replace(/\b[Ss]eu\b/g, 'Your')
+      .replace(/\b[Ss]ua\b/g, 'Your')
+      .replace(/\b[Ss]eus\b/g, 'Your')
+      .replace(/\b[Ss]uas\b/g, 'Your')
+      .replace(/\b[Tt]em\b/g, 'have')
+      .replace(/\b[Nn]ova\b/g, 'new')
+      .replace(/\b[Nn]ovo\b/g, 'new')
+      .replace(/\b[Nn]otificação\b/g, 'notification')
+      .replace(/\b[Cc]onsulta\b/g, 'appointment')
+      .replace(/\b[Aa]gendamento\b/g, 'appointment')
+      .replace(/\b[Aa]gendada\b/g, 'scheduled')
+      .replace(/\b[Aa]gendado\b/g, 'scheduled')
+      .replace(/\b[Cc]onfirmada\b/g, 'confirmed')
+      .replace(/\b[Cc]onfirmado\b/g, 'confirmed')
+      .replace(/\b[Cc]ancelada\b/g, 'canceled')
+      .replace(/\b[Cc]ancelado\b/g, 'canceled')
+      .replace(/\b[Pp]endente\b/g, 'pending')
+      .replace(/\b[Vv]acina\b/g, 'vaccine')
+      .replace(/\b[Vv]acinação\b/g, 'vaccination')
+      .replace(/\b[Mm]edicamento\b/g, 'medication')
+      .replace(/\b[Aa]doção\b/g, 'adoption')
+      .replace(/\b[Ii]nteresse\b/g, 'interest')
+      .replace(/\b[Hh]oje\b/g, 'today')
+      .replace(/\b[Aa]manhã\b/g, 'tomorrow')
+      .replace(/\b[Pp]ara\b/g, 'for')
+      .replace(/\b[Dd]o\b/g, 'of')
+      .replace(/\b[Dd]a\b/g, 'of')
+      .replace(/\b[Dd]e\b/g, 'of');
   };
 
   const formatNotificationDate = (date) => {
-    if (!date) return 'Agora';
+    if (!date) return t('Agora');
 
     const parsedDate = new Date(date);
 
     if (Number.isNaN(parsedDate.getTime())) {
-      return 'Agora';
+      return t('Agora');
     }
 
-    return parsedDate.toLocaleDateString('pt-BR', {
+    return parsedDate.toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR', {
       day: '2-digit',
       month: 'short',
       hour: '2-digit',
@@ -99,7 +140,7 @@ export default function HeaderHome({
     return {
       id: item.id,
       title: meta.title,
-      message: item.mensagem || 'Você tem uma nova notificação.',
+      message: translateNotificationMessage(item.mensagem),
       time: formatNotificationDate(item.data_criacao),
       read: Boolean(item.lida),
       icon: meta.icon,
@@ -127,7 +168,7 @@ export default function HeaderHome({
     } finally {
       setLoadingNotifications(false);
     }
-  }, []);
+  }, [language, t]);
 
   useEffect(() => {
     let mounted = true;
@@ -186,12 +227,12 @@ export default function HeaderHome({
             {showGreeting && (
               <View style={styles.greetingInfo}>
                 <Text style={styles.greeting} numberOfLines={1} ellipsizeMode="tail">
-                  {showBackButton ? 'Bem-vindo!' : `Olá ${userData?.nome || userName}`}
+                  {showBackButton ? t('Bem-vindo!') : `${t('Olá')} ${userData?.nome || userName}`}
                 </Text>
                 <Text style={styles.subGreeting} numberOfLines={1} ellipsizeMode="tail">
                   {showBackButton
-                    ? `Olá, ${userData?.nome || userName}`
-                    : 'Que você tenha um excelente atendimento!'}
+                    ? `${t('Olá')}, ${userData?.nome || userName}`
+                    : t('Que você tenha um excelente atendimento!')}
                 </Text>
               </View>
             )}
@@ -288,7 +329,9 @@ export default function HeaderHome({
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, isDarkMode && styles.modalContentDark]}>
             <View style={[styles.modalHeader, isDarkMode && styles.modalHeaderDark]}>
-              <Text style={[styles.modalTitle, isDarkMode && styles.modalTitleDark]}>Notificações</Text>
+                <Text style={[styles.modalTitle, isDarkMode && styles.modalTitleDark, isDarkMode && { color: '#F8FAFC' }]}>
+                  {t('Notificações')}
+                </Text>
               <View style={styles.modalActions}>
 
                 <TouchableOpacity
@@ -306,7 +349,7 @@ export default function HeaderHome({
               {loadingNotifications ? (
                 <View style={styles.notificationEmpty}>
                   <ActivityIndicator color="#9127E1" />
-                  <Text style={styles.notificationEmptyText}>Carregando notificações...</Text>
+                  <Text style={[styles.notificationEmptyText, isDarkMode && styles.notificationEmptyTextDark]}>{t('Carregando notificações...')}</Text>
                 </View>
               ) : notifications.length > 0 ? (
                 notifications.map((notif) => (
@@ -326,17 +369,41 @@ export default function HeaderHome({
                     </View>
                     <View style={styles.notifContent}>
                       <View style={styles.notifTitleRow}>
-                        <Text style={[styles.notifTitle, isDarkMode && styles.notifTitleDark]}>{notif.title}</Text>
+                        <Text
+                          style={[
+                            styles.notifTitle,
+                            isDarkMode && styles.notifTitleDark,
+                            isDarkMode && { color: '#FFFFFF' },
+                          ]}
+                        >
+                          {notif.title}
+                        </Text>
                         {!notif.read ? <View style={styles.unreadDot} /> : null}
                       </View>
-                      <Text style={[styles.notifMessage, isDarkMode && styles.notifMessageDark]}>{notif.message}</Text>
-                      <Text style={[styles.notifTime, isDarkMode && styles.notifTimeDark]}>{notif.time}</Text>
+                      <Text
+                        style={[
+                          styles.notifMessage,
+                          isDarkMode && styles.notifMessageDark,
+                          isDarkMode && { color: '#E8ECF7' },
+                        ]}
+                      >
+                        {notif.message}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.notifTime,
+                          isDarkMode && styles.notifTimeDark,
+                          isDarkMode && { color: '#CBD5E1' },
+                        ]}
+                      >
+                        {notif.time}
+                      </Text>
                     </View>
                   </TouchableOpacity>
                 ))
               ) : (
                 <View style={styles.notificationEmpty}>
-                  <Text style={styles.notificationEmptyText}>Nenhuma notificação por enquanto.</Text>
+                  <Text style={[styles.notificationEmptyText, isDarkMode && styles.notificationEmptyTextDark]}>{t('Nenhuma notificação por enquanto.')}</Text>
                 </View>
               )}
             </ScrollView>
@@ -351,7 +418,7 @@ export default function HeaderHome({
               accessibilityLabel="Ver todas as notificações"
               accessibilityHint="Abre a lista completa de notificações"
             >
-              <Text style={styles.seeAllBtnText}>Ver Todas as Notificações →</Text>
+              <Text style={[styles.seeAllBtnText, isDarkMode && styles.seeAllBtnTextDark]}>{t('Ver Todas as Notificações →')}</Text>
             </TouchableOpacity>
           </View>
         </View>

@@ -30,6 +30,7 @@ import RedefinirSenha from './src/screens/RedefinirSenha/RedefinirSenha';
 import NotificacoesGerais from './src/screens/NotificacoesGerais/notificacoesgerais';
 import { ThemeProvider, useAppTheme } from './src/theme/ThemeContext';
 import { AppAlertProvider } from './src/components/AppAlert';
+import { LanguageProvider } from './src/i18n/LanguageContext';
 import {
   addNotificationResponseListener,
   getLastNotificationResponseAsync,
@@ -167,9 +168,11 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <AppAlertProvider>
-        <AppRoutes />
-      </AppAlertProvider>
+      <LanguageProvider>
+        <AppAlertProvider>
+          <AppRoutes />
+        </AppAlertProvider>
+      </LanguageProvider>
     </ThemeProvider>
   );
 }

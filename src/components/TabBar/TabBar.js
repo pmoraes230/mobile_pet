@@ -5,11 +5,13 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { styles } from './styles';
 import Sidebar from '../Sidebar/Sidebar';
 import { Home, PawPrint, CalendarDays, MessageCircle, LayoutGrid } from 'lucide-react-native';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function TabBar({ onLogout, activeTab, onTabPress }) {
   const navigation = useNavigation();
   const route = useRoute();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [showSidebar, setShowSidebar] = useState(false);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
@@ -17,11 +19,11 @@ export default function TabBar({ onLogout, activeTab, onTabPress }) {
   const inactiveColor = '#A0A7BA';
 
   const tabs = [
-    { id: 'Home', label: 'Home', icon: Home },
-    { id: 'MeusPets', label: 'Pets', icon: PawPrint },
-    { id: 'Agendamento', label: 'Agenda', icon: CalendarDays },
-    { id: 'Mensagens', label: 'Chat', icon: MessageCircle },
-    { id: 'geral', label: 'Menu', icon: LayoutGrid },
+    { id: 'Home', label: t('Home'), icon: Home },
+    { id: 'MeusPets', label: t('Pets'), icon: PawPrint },
+    { id: 'Agendamento', label: t('Agenda'), icon: CalendarDays },
+    { id: 'Mensagens', label: t('Chat'), icon: MessageCircle },
+    { id: 'geral', label: t('Menu'), icon: LayoutGrid },
   ];
 
   const handleTabPress = (tabId) => {

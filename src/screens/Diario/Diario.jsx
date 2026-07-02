@@ -32,6 +32,7 @@ import { styles } from './styles';
 import TabBar from '../../components/TabBar';
 import HeaderHome from '../../components/HeaderHome';
 import { useAppTheme } from '../../theme/ThemeContext';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 import api from '../../services/api';
 
@@ -89,6 +90,7 @@ const DIARIO_THEME = {
 export default function TelaDiario() {
   const navigation = useNavigation();
   const { isDarkMode } = useAppTheme();
+  const { t, language } = useLanguage();
   const p = isDarkMode ? DIARIO_THEME.dark : DIARIO_THEME.light;
 
   const [activeTab, setActiveTab] = useState('consultas');
@@ -195,12 +197,12 @@ export default function TelaDiario() {
   async function salvarRegistro() {
     try {
       if (!selectedPet) {
-        Alert.alert('Erro', 'Selecione um pet');
+        Alert.alert(t('Erro'), t('Selecione um pet'));
         return;
       }
 
       if (!relato.trim()) {
-        Alert.alert('Erro', 'Digite um relato');
+        Alert.alert(t('Erro'), t('Digite um relato'));
         return;
       }
 
@@ -226,12 +228,12 @@ export default function TelaDiario() {
       setRelato('');
       await loadRegistros(selectedPet.id);
 
-      Alert.alert('Sucesso', 'Registro salvo!');
+      Alert.alert(t('Sucesso'), t('Registro salvo!'));
 
     } catch (error) {
       Alert.alert(
-        'Erro',
-        error.response?.data?.error || 'Erro ao salvar registro'
+        t('Erro'),
+        error.response?.data?.error || t('Erro ao salvar registro')
       );
     }
   }
@@ -314,8 +316,8 @@ export default function TelaDiario() {
       ],
       legend: compareMode
         ? [
-            'Esta semana',
-            'Semana passada',
+            t('Esta semana'),
+            t('Semana passada'),
           ]
         : [],
     };
@@ -323,12 +325,13 @@ export default function TelaDiario() {
     registros,
     compareMode,
     p.accent,
+    t,
   ]);
 
   function getMoodLabel(humor) {
-    if (humor === 1) return 'Triste';
-    if (humor === 2) return 'Neutro';
-    return 'Feliz';
+    if (humor === 1) return t('Triste');
+    if (humor === 2) return t('Neutro');
+    return t('Feliz');
   }
 
   function getMoodIcon(humor) {
@@ -407,7 +410,7 @@ export default function TelaDiario() {
                     letterSpacing: 0.5,
                   }}
                 >
-                  Humor emocional
+                  {t('Humor emocional')}
                 </Text>
 
                 <Text
@@ -418,7 +421,7 @@ export default function TelaDiario() {
                     fontWeight: '600',
                   }}
                 >
-                  Tendência dos últimos dias
+                  {t('Tendência dos últimos dias')}
                 </Text>
               </View>
 
@@ -463,15 +466,15 @@ export default function TelaDiario() {
                 >
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: '#FF7A2F', fontSize: 18, marginBottom: 4 }}>😢</Text>
-                    <Text style={{ color: p.subtitle, fontSize: 10 }}>1 = Triste</Text>
+                    <Text style={{ color: p.subtitle, fontSize: 10 }}>1 = {t('Triste')}</Text>
                   </View>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: '#FFD166', fontSize: 18, marginBottom: 4 }}>😐</Text>
-                    <Text style={{ color: p.subtitle, fontSize: 10 }}>2 = Neutro</Text>
+                    <Text style={{ color: p.subtitle, fontSize: 10 }}>2 = {t('Neutro')}</Text>
                   </View>
                   <View style={{ alignItems: 'center', flex: 1 }}>
                     <Text style={{ color: '#52D273', fontSize: 18, marginBottom: 4 }}>😊</Text>
-                    <Text style={{ color: p.subtitle, fontSize: 10 }}>3 = Feliz</Text>
+                    <Text style={{ color: p.subtitle, fontSize: 10 }}>3 = {t('Feliz')}</Text>
                   </View>
                 </View>
 
@@ -549,7 +552,7 @@ export default function TelaDiario() {
                     textAlign: 'center',
                   }}
                 >
-                  Nenhum registro de humor ainda
+                  {t('Nenhum registro de humor ainda')}
                 </Text>
                 <Text
                   style={{
@@ -559,7 +562,7 @@ export default function TelaDiario() {
                     textAlign: 'center',
                   }}
                 >
-                  Comece a registrar o humor do {selectedPet?.name}
+                  {t('Comece a registrar o humor do {{name}}', { name: selectedPet?.name || t('pet') })}
                 </Text>
               </View>
             )}
@@ -602,7 +605,7 @@ export default function TelaDiario() {
                     fontWeight: '700',
                   }}
                 >
-                  Triste
+                  {t('Triste')}
                 </Text>
               </View>
 
@@ -634,7 +637,7 @@ export default function TelaDiario() {
                     fontWeight: '700',
                   }}
                 >
-                  Neutro
+                  {t('Neutro')}
                 </Text>
               </View>
 
@@ -666,7 +669,7 @@ export default function TelaDiario() {
                     fontWeight: '700',
                   }}
                 >
-                  Feliz
+                  {t('Feliz')}
                 </Text>
               </View>
             </View>
@@ -742,7 +745,7 @@ export default function TelaDiario() {
             </View>
 
             <Text style={styles.labelWhite}>
-              ESCOLHER PET
+              {t('ESCOLHER PET')}
             </Text>
 
             <TouchableOpacity
@@ -760,12 +763,12 @@ export default function TelaDiario() {
             >
               <Text style={{ color: p.inputFieldText, fontWeight: '700' }}>
                 {selectedPet?.name ||
-                  'Selecione'}
+                  t('Selecione')}
               </Text>
             </TouchableOpacity>
 
             <Text style={styles.labelWhite}>
-              RELATO DO DIA
+              {t('RELATO DO DIA')}
             </Text>
 
             <TextInput
@@ -778,7 +781,7 @@ export default function TelaDiario() {
                   borderColor: p.inputFieldBorder,
                 },
               ]}
-              placeholder="Como foi o dia dele?"
+              placeholder={t('Como foi o dia dele?')}
               placeholderTextColor="#A0A7BA"
               multiline
               value={relato}
@@ -790,7 +793,7 @@ export default function TelaDiario() {
               onPress={salvarRegistro}
             >
               <Text style={[styles.btnFullText, { color: p.inputButtonText }]}>
-                SALVAR REGISTRO
+                {t('SALVAR REGISTRO')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -825,8 +828,8 @@ export default function TelaDiario() {
               }}
             >
               {compareMode
-                ? 'SAIR DA COMPARAÇÃO'
-                : 'COMPARAR PERÍODOS'}
+                ? t('SAIR DA COMPARAÇÃO')
+                : t('COMPARAR PERÍODOS')}
             </Text>
           </TouchableOpacity>
 
@@ -850,7 +853,7 @@ export default function TelaDiario() {
                   marginBottom: 12,
                 }}
               >
-                📊 Comparando Períodos
+                {t('Comparando Períodos')}
               </Text>
               
               <View style={{ flexDirection: 'row', gap: 12, justifyContent: 'center' }}>
@@ -871,7 +874,7 @@ export default function TelaDiario() {
                       fontWeight: '700',
                     }}
                   >
-                    ESTA SEMANA
+                    {t('ESTA SEMANA')}
                   </Text>
                   <Text
                     style={{
@@ -880,7 +883,7 @@ export default function TelaDiario() {
                       marginTop: 4,
                     }}
                   >
-                    Últimos 7 dias
+                    {t('Últimos 7 dias')}
                   </Text>
                 </View>
                 
@@ -901,7 +904,7 @@ export default function TelaDiario() {
                       fontWeight: '700',
                     }}
                   >
-                    SEMANA PASSADA
+                    {t('SEMANA PASSADA')}
                   </Text>
                   <Text
                     style={{
@@ -910,7 +913,7 @@ export default function TelaDiario() {
                       marginTop: 4,
                     }}
                   >
-                    7-14 dias atrás
+                    {t('7-14 dias atrás')}
                   </Text>
                 </View>
               </View>
@@ -923,14 +926,14 @@ export default function TelaDiario() {
                   textAlign: 'center',
                 }}
               >
-                😢 = Triste | 😐 = Neutro | 😊 = Feliz
+                {t('Triste')} | {t('Neutro')} | {t('Feliz')}
               </Text>
             </View>
           )}
 
           {/* HISTÓRICO */}
           <Text style={styles.sectionTitle}>
-            Registros recentes
+            {t('Registros recentes')}
           </Text>
 
           {registros.length === 0 && (
@@ -949,7 +952,7 @@ export default function TelaDiario() {
                   color: p.muted,
                 }}
               >
-                Nenhum registro ainda.
+                {t('Nenhum registro ainda.')}
               </Text>
             </View>
           )}
@@ -982,7 +985,7 @@ export default function TelaDiario() {
                     {new Date(
                       item.data
                     ).toLocaleDateString(
-                      'pt-BR'
+                      language === 'en' ? 'en-US' : 'pt-BR'
                     )}
                   </Text>
                 </View>
@@ -1023,7 +1026,7 @@ export default function TelaDiario() {
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>
-                Selecione um Pet
+                {t('Selecione um Pet')}
               </Text>
 
               <FlatList
@@ -1070,7 +1073,7 @@ export default function TelaDiario() {
                     styles.modalCloseBtnText
                   }
                 >
-                  Fechar
+                  {t('Fechar')}
                 </Text>
               </TouchableOpacity>
             </View>

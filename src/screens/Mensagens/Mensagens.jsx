@@ -17,6 +17,7 @@ import { styles } from './styles';
 import ConversationCard from '../../components/ConversationCard';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const IMG_PADRAO = require('../../assets/pet.png');
 
@@ -28,6 +29,7 @@ const INITIAL_CONVERSAS = [
 export default function Mensagens() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { t } = useLanguage();
   const [chatAtivo, setChatAtivo] = useState(null);
   const [mensagem, setMensagem] = useState('');
 
@@ -40,7 +42,7 @@ export default function Mensagens() {
     <ConversationCard
       avatar={item.avatar}
       name={item.name}
-      subtitle={item.subtitle}
+      subtitle={t(item.subtitle)}
       onPress={() => setChatAtivo(item)}
     />
   );
@@ -73,8 +75,8 @@ export default function Mensagens() {
               keyboardShouldPersistTaps="handled"
               ListHeaderComponent={
                 <View style={styles.sectionHeader}>
-                  <Text style={styles.title}>Mensagens</Text>
-                  <Text style={styles.subtitle}>Fale com nossos profissionais</Text>
+                  <Text style={styles.title}>{t('Mensagens')}</Text>
+                  <Text style={styles.subtitle}>{t('Fale com nossos profissionais')}</Text>
                 </View>
               }
             />
@@ -91,7 +93,7 @@ export default function Mensagens() {
               >
                 <View style={styles.messageReceived}>
                   <Text style={{ color: '#4A5568', fontSize: 15, lineHeight: 21 }}>
-                    Olá! Como posso ajudar você e seu pet hoje?
+                    {t('Olá! Como posso ajudar você e seu pet hoje?')}
                   </Text>
                 </View>
               </ScrollView>
@@ -101,7 +103,7 @@ export default function Mensagens() {
                   <TextInput
                     value={mensagem}
                     onChangeText={setMensagem}
-                    placeholder="Digite sua mensagem..."
+                    placeholder={t('Digite sua mensagem...')}
                     placeholderTextColor="#A0A7BA"
                     style={styles.input}
                     multiline
@@ -110,7 +112,7 @@ export default function Mensagens() {
                     style={styles.botaoEnviar}
                     onPress={enviarMensagem}
                     accessibilityRole="button"
-                    accessibilityLabel="Enviar mensagem"
+                    accessibilityLabel={t('Enviar mensagem')}
                   >
                     <Send size={20} color="#FFF" />
                   </TouchableOpacity>

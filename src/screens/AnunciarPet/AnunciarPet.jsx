@@ -20,9 +20,11 @@ import api from '../../services/api';
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function AnunciarPet() {
   const navigation = useNavigation();
+  const { t } = useLanguage();
   const [selectedEspecie, setSelectedEspecie] = useState(null);
   const [selectedSexo, setSelectedSexo] = useState(null);
   const [modalEspecieOpen, setModalEspecieOpen] = useState(false);
@@ -75,7 +77,7 @@ export default function AnunciarPet() {
     try {
       const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permissionResult.granted) {
-        Alert.alert('Erro', 'Permissão para galeria é necessária.');
+        Alert.alert(t('Erro'), t('Permissão para galeria é necessária.'));
         return;
       }
       const result = await ImagePicker.launchImageLibraryAsync({
@@ -95,7 +97,7 @@ export default function AnunciarPet() {
   const handleSavePet = async () => {
     try {
       if (!petName.trim() || !selectedEspecie || !petImage) {
-        Alert.alert('Erro', 'Preencha nome, espécie e foto.');
+        Alert.alert(t('Erro'), t('Preencha nome, espécie e foto.'));
         return;
       }
       
@@ -139,7 +141,7 @@ export default function AnunciarPet() {
 
       console.log('✅ Pet cadastrado:', response.data);
 
-      Alert.alert('Sucesso', 'Pet cadastrado!', [
+      Alert.alert(t('Sucesso'), t('Pet cadastrado!'), [
         { text: 'OK', onPress: () => navigation.navigate('MeusPets') },
       ]);
 
@@ -147,13 +149,13 @@ export default function AnunciarPet() {
       console.log('--- ERRO NO SALVAMENTO ---');
       if (error.response) {
         console.log('Dados do erro:', error.response.data);
-        Alert.alert('Erro no Servidor', error.response.data.error || 'Erro interno');
+        Alert.alert(t('Erro no Servidor'), error.response.data.error || t('Erro interno'));
       } else if (error.request) {
         console.log('Erro de requisição:', error.request);
-        Alert.alert('Erro de Rede', 'Não foi possível conectar ao servidor. Verifique sua conexão.');
+        Alert.alert(t('Erro de Rede'), t('Não foi possível conectar ao servidor. Verifique sua conexão.'));
       } else {
         console.log('Mensagem de erro:', error.message);
-        Alert.alert('Erro', error.message);
+        Alert.alert(t('Erro'), error.message);
       }
     } finally {
       setLoading(false);
@@ -170,7 +172,7 @@ export default function AnunciarPet() {
         setModalSexoOpen(false);
       }}
     >
-      <Text style={styles.modalItemText}>{item.name}</Text>
+      <Text style={styles.modalItemText}>{t(item.name)}</Text>
     </TouchableOpacity>
   );
 
@@ -195,11 +197,11 @@ export default function AnunciarPet() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.headerSection}>
-            <Text style={styles.title}>Adicionar Pet</Text>
-            <Text style={styles.subtitle}>Complete as informações para cadastrar seu pet.</Text>
+            <Text style={styles.title}>{t('Adicionar Pet')}</Text>
+            <Text style={styles.subtitle}>{t('Complete as informações para cadastrar seu pet.')}</Text>
           </View>
 
-          <Text style={styles.label}>FOTO DO PET</Text>
+          <Text style={styles.label}>{t('FOTO DO PET')}</Text>
           <TouchableOpacity style={styles.uploadBox} onPress={handleSelectImage}>
             {petImage ? (
               <>
@@ -214,16 +216,16 @@ export default function AnunciarPet() {
             ) : (
               <>
                 <Camera size={30} color="#A0A7BA" />
-                <Text style={styles.uploadText}>Clique para enviar uma foto</Text>
+                <Text style={styles.uploadText}>{t('Clique para enviar uma foto')}</Text>
               </>
             )}
           </TouchableOpacity>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>NOME DO PET</Text>
+            <Text style={styles.label}>{t('NOME DO PET')}</Text>
             <TextInput
               style={styles.inputField}
-              placeholder="Ex: Paçoca"
+              placeholder={t('Ex: Paçoca')}
               placeholderTextColor="#CBD5E0"
               value={petName}
               onChangeText={setPetName}
@@ -232,22 +234,22 @@ export default function AnunciarPet() {
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
             <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={styles.label}>ESPÉCIE</Text>
+              <Text style={styles.label}>{t('ESPÉCIE')}</Text>
               <TouchableOpacity
                 style={[styles.inputField, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
                 onPress={() => setModalEspecieOpen(true)}
               >
                 <Text style={{ color: '#4A5568' }}>
-                  {selectedEspecie ? selectedEspecie.name : 'Selecione'}
+                  {selectedEspecie ? t(selectedEspecie.name) : t('Selecione')}
                 </Text>
                 <ChevronDown size={16} color="#A0A7BA" />
               </TouchableOpacity>
             </View>
             <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={styles.label}>RAÇA</Text>
+              <Text style={styles.label}>{t('RAÇA')}</Text>
               <TextInput 
                 style={styles.inputField} 
-                placeholder="Ex: Vira-lata" 
+                placeholder={t('Ex: Vira-lata')}
                 placeholderTextColor="#CBD5E0"
                 value={petRaca}
                 onChangeText={setPetRaca}
@@ -257,10 +259,10 @@ export default function AnunciarPet() {
 
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
             <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={styles.label}>DATA DE NASCIMENTO</Text>
+              <Text style={styles.label}>{t('DATA DE NASCIMENTO')}</Text>
               <TextInput
                 style={styles.inputField}
-                placeholder="dd/mm/aaaa"
+                placeholder={t('dd/mm/aaaa')}
                 placeholderTextColor="#CBD5E0"
                 keyboardType="numeric"
                 maxLength={10}
@@ -269,13 +271,13 @@ export default function AnunciarPet() {
               />
             </View>
             <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={styles.label}>SEXO</Text>
+              <Text style={styles.label}>{t('SEXO')}</Text>
               <TouchableOpacity
                 style={[styles.inputField, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
                 onPress={() => setModalSexoOpen(true)}
               >
                 <Text style={{ color: '#4A5568' }}>
-                  {selectedSexo ? selectedSexo.name : 'Selecione'}
+                  {selectedSexo ? t(selectedSexo.name) : t('Selecione')}
                 </Text>
                 <ChevronDown size={16} color="#A0A7BA" />
               </TouchableOpacity>
@@ -283,10 +285,10 @@ export default function AnunciarPet() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>PESO (KG)</Text>
+            <Text style={styles.label}>{t('PESO (KG)')}</Text>
             <TextInput
               style={styles.inputField}
-              placeholder="Ex: 5.5"
+              placeholder={t('Ex: 5.5')}
               placeholderTextColor="#CBD5E0"
               keyboardType="decimal-pad"
               value={petPeso}
@@ -295,10 +297,10 @@ export default function AnunciarPet() {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>DESCRIÇÃO E CUIDADOS</Text>
+            <Text style={styles.label}>{t('DESCRIÇÃO E CUIDADOS')}</Text>
             <TextInput
               style={[styles.inputField, styles.textArea]}
-              placeholder="Conte um pouco..."
+              placeholder={t('Conte um pouco...')}
               placeholderTextColor="#A0A7BA"
               multiline
               numberOfLines={4}
@@ -309,7 +311,7 @@ export default function AnunciarPet() {
 
           <View style={styles.footer}>
             <TouchableOpacity style={styles.btnCancel} onPress={() => navigation.goBack()}>
-              <Text style={styles.btnTextCancel}>Cancelar</Text>
+              <Text style={styles.btnTextCancel}>{t('Cancelar')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
@@ -320,7 +322,7 @@ export default function AnunciarPet() {
               {loading ? (
                 <ActivityIndicator size="small" color="#FFF" />
               ) : (
-                <Text style={styles.btnTextSubmit}>Salvar Pet</Text>
+                <Text style={styles.btnTextSubmit}>{t('Salvar Pet')}</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -330,14 +332,14 @@ export default function AnunciarPet() {
         <Modal visible={modalEspecieOpen} transparent animationType="fade" onRequestClose={() => setModalEspecieOpen(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selecione uma Espécie</Text>
+              <Text style={styles.modalTitle}>{t('Selecione uma Espécie')}</Text>
               <FlatList
                 data={especies}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => renderModalItem(item)}
               />
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setModalEspecieOpen(false)}>
-                <Text style={styles.modalCloseBtnText}>Fechar</Text>
+                <Text style={styles.modalCloseBtnText}>{t('Fechar')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -347,14 +349,14 @@ export default function AnunciarPet() {
         <Modal visible={modalSexoOpen} transparent animationType="fade" onRequestClose={() => setModalSexoOpen(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Selecione o Sexo</Text>
+              <Text style={styles.modalTitle}>{t('Selecione o Sexo')}</Text>
               <FlatList
                 data={sexos}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => renderModalItem(item)}
               />
               <TouchableOpacity style={styles.modalCloseBtn} onPress={() => setModalSexoOpen(false)}>
-                <Text style={styles.modalCloseBtnText}>Fechar</Text>
+                <Text style={styles.modalCloseBtnText}>{t('Fechar')}</Text>
               </TouchableOpacity>
             </View>
           </View>

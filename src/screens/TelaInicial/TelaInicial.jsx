@@ -15,6 +15,7 @@ import HeaderHome from '../../components/HeaderHome';
 import DashboardCard from '../../components/DashboardCard';
 import TabBar from '../../components/TabBar';
 import { getAgendaTutor } from '../../services/agendamentoService';
+import { useLanguage } from '../../i18n/LanguageContext';
 
 const normalizarDataHora = (item) => {
   const data = item?.data_consulta || item?.data_aplicacao;
@@ -31,27 +32,27 @@ const normalizarDataHora = (item) => {
   return Number.isNaN(dataHora.getTime()) ? null : dataHora;
 };
 
-const formatarCompromisso = (compromisso) => {
+const formatarCompromisso = (compromisso, t, language) => {
   if (!compromisso) {
     return {
-      titulo: 'Sem agendamentos',
-      subtitulo: 'Tudo tranquilo por enquanto.',
+      titulo: t('Sem agendamentos'),
+      subtitulo: t('Tudo tranquilo por enquanto.'),
     };
   }
 
   const dataHora = normalizarDataHora(compromisso);
   const data = dataHora
-    ? dataHora.toLocaleDateString('pt-BR', {
+    ? dataHora.toLocaleDateString(language === 'en' ? 'en-US' : 'pt-BR', {
         weekday: 'short',
         day: '2-digit',
         month: 'short',
         timeZone: 'UTC',
       })
-    : 'Data não informada';
+    : t('Data não informada');
 
   const hora = compromisso.horario_consulta?.slice(0, 5);
   const pet = compromisso.pet?.nome || 'Pet';
-  const tipo = compromisso.tipo_de_consulta || compromisso.nome || 'Consulta';
+  const tipo = compromisso.tipo_de_consulta || compromisso.nome || t('Consulta');
 
   return {
     titulo: `${tipo} - ${pet}`,
@@ -61,6 +62,7 @@ const formatarCompromisso = (compromisso) => {
 
 export default function TelaInicial() {
   const navigation = useNavigation();
+  const { language, t } = useLanguage();
   const [activeTab, setActiveTab] = useState('home');
   const [agenda, setAgenda] = useState({ consultas: [], vacinas: [] });
   const [carregandoAgenda, setCarregandoAgenda] = useState(true);
@@ -105,8 +107,8 @@ export default function TelaInicial() {
   }, [agenda]);
 
   const cardCompromisso = carregandoAgenda
-    ? { titulo: 'Carregando agenda...', subtitulo: 'Buscando seus proximos compromissos.' }
-    : formatarCompromisso(proximoCompromisso);
+    ? { titulo: t('Carregando agenda...'), subtitulo: t('Buscando seus proximos compromissos.') }
+    : formatarCompromisso(proximoCompromisso, t, language);
 
   const handleLogout = () => {
     navigation.reset({
@@ -128,12 +130,12 @@ export default function TelaInicial() {
   };
 
   const cards = [
-    { id: 1, title: 'Agendamento', description: 'Acesse o Agendamento de Consultas.', icon: Calendar, color: '#E8D5F7' },
-    { id: 2, title: 'Prontuário', description: 'Acesse o prontuário de seus pets.', icon: Clipboard, color: '#E8D5F7' },
-    { id: 3, title: 'Diário emocional', description: 'Registre o diário.', icon: BookOpen, color: '#E8D5F7' },
-    { id: 4, title: 'Meus pets', description: 'Acesse seus pets.', icon: PawPrint, color: '#E8D5F7' },
-    { id: 5, title: 'cupidopet', description: 'Faça o seu pet encontrar um novo parceiro.', icon: Heart, color: '#E8D5F7', badge: true },
-    { id: 6, title: 'Adoção', description: 'Adote um pet e dê uma nova chance.', icon: Dog, color: '#E8D5F7' },
+    { id: 1, title: t('Agendamento'), description: t('Acesse o Agendamento de Consultas.'), icon: Calendar, color: '#E8D5F7' },
+    { id: 2, title: t('Prontuário'), description: t('Acesse o prontuário de seus pets.'), icon: Clipboard, color: '#E8D5F7' },
+    { id: 3, title: t('Diário emocional'), description: t('Registre o diário.'), icon: BookOpen, color: '#E8D5F7' },
+    { id: 4, title: t('Meus pets'), description: t('Acesse seus pets.'), icon: PawPrint, color: '#E8D5F7' },
+    { id: 5, title: t('cupidopet'), description: t('Faça o seu pet encontrar um novo parceiro.'), icon: Heart, color: '#E8D5F7', badge: true },
+    { id: 6, title: t('Adoção'), description: t('Adote um pet e dê uma nova chance.'), icon: Dog, color: '#E8D5F7' },
   ];
 
   const handleTabPress = (tabId) => {
@@ -160,7 +162,7 @@ export default function TelaInicial() {
         >
           {/* PRÓXIMO COMPROMISSO CARD */}
           <View style={styles.appointmentCard}>
-            <Text style={styles.appointmentTitle}>Próximo Compromisso</Text>
+            <Text style={styles.appointmentTitle}>{t('Próximo Compromisso')}</Text>
             <Text style={styles.appointmentMain}>{cardCompromisso.titulo}</Text>
             <Text style={styles.appointmentSubtitle}>{cardCompromisso.subtitulo}</Text>
           </View>
