@@ -1,6 +1,5 @@
-import axios from "axios";
 import { getToken, getUserInfo } from "./auth";
-import { _API_URL_PROD, API_URL } from "../utils/endPoint_Url";
+import api from "./api";
 
 export const getPetsByTutor = async () => {
     try {
@@ -16,16 +15,7 @@ export const getPetsByTutor = async () => {
             throw new Error("Informações do usuário inválidas. Faça login novamente.");
         }
 
-        const url = `${_API_URL_PROD}/api/pets/tutor/${userInfo.id}`;
-
-        const response = await axios.get(
-            url,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
+        const response = await api.get(`/pets/tutor/${userInfo.id}`);
 
         return response.data;
 
@@ -68,14 +58,7 @@ export const deletePet = async (petId) => {
             throw new Error("Usuário não autenticado. Faça login para continuar.");
         }
 
-        const response = await axios.delete(
-            `${_API_URL_PROD}/api/pets/${petId}`,
-            {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            }
-        );
+        const response = await api.delete(`/pets/${petId}`);
 
         return response.data;
     } catch (error) {

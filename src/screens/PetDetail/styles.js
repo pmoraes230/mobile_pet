@@ -324,6 +324,10 @@ export const styles = StyleSheet.create({
     shadowRadius: 8,
   },
 
+  contactButtonDisabled: {
+    opacity: 0.7,
+  },
+
   contactButtonText: {
     fontSize: 16,
     fontWeight: '700',

@@ -787,7 +787,7 @@ export default function TelaAdocao() {
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
                     onPress={() => navigation.navigate('PetDetail', { petData: pet })}
-                    actionLabel={t('Quero Adotar')}
+                    actionLabel={t('Adotar')}
                     onActionPress={() =>
                       navigation.navigate('PetDetail', { petData: pet })
                     }

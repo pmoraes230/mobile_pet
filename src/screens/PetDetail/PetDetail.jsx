@@ -11,7 +11,7 @@ import {
   ActivityIndicator
 } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Share2, Heart } from 'lucide-react-native';
+import { Share2, Heart, MessageCircle } from 'lucide-react-native';
 import { ChevronLeft } from 'lucide-react-native/icons';
 import { styles } from './styles';
 import TabBar from '../../components/TabBar';
@@ -440,7 +440,9 @@ export default function PetDetail() {
   const [activeTab, setActiveTab] = useState('home');
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [adopting, setAdopting] = useState(false);
   const [petData, setPetData] = useState(null);
+  const [sourcePetData, setSourcePetData] = useState(null);
   const [vaccines, setVaccines] = useState([]);
 
   // Normaliza dados do pet para formato padrão
@@ -524,6 +526,8 @@ export default function PetDetail() {
           return;
         }
 
+        setSourcePetData(incomingPet);
+
         // Normaliza os dados recebidos
         let normalized = normalizePetData(incomingPet);
         setPetData(normalized);
@@ -547,6 +551,7 @@ export default function PetDetail() {
             const petResponse = await api.get(`/pets/${normalized.id}`);
             const fullPetData = petResponse.data?.pet || petResponse.data?.data || petResponse.data || {};
             petWithTutor = { ...incomingPet, ...fullPetData };
+            setSourcePetData(petWithTutor);
             tutorId = getTutorIdFromPet(petWithTutor);
             normalized = {
               ...normalizePetData(petWithTutor),
@@ -563,6 +568,7 @@ export default function PetDetail() {
 
           if (publicFeedPet) {
             petWithTutor = { ...petWithTutor, ...publicFeedPet };
+            setSourcePetData(petWithTutor);
             tutorId = getTutorIdFromPet(petWithTutor) || tutorId;
             normalized = {
               ...normalizePetData(petWithTutor),
@@ -653,6 +659,38 @@ export default function PetDetail() {
 
   const handleContact = () => {
     Alert.alert(t('Contato'), t('Enviando mensagem para entrar em contato com o tutor...'));
+  };
+
+  const handleAdopt = async () => {
+    if (adopting) return;
+
+    try {
+      setAdopting(true);
+      const petId = pet.id || sourcePetData?.id || sourcePetData?.ID || sourcePetData?.ID_PET;
+
+      if (!petId) {
+        Alert.alert(t('Erro'), t('Não foi possível identificar este pet.'));
+        return;
+      }
+
+      const response = await api.post(`/pets/${petId}/adopt`);
+      const adoptedPet = response.data?.pet || response.data?.data || response.data || {};
+
+      Alert.alert(
+        t('Adoção concluída'),
+        t('{{name}} agora está em Meus pets.', { name: adoptedPet.nome || adoptedPet.NOME || pet.name }),
+        [{ text: 'OK', onPress: () => navigation.navigate('MeusPets') }]
+      );
+    } catch (error) {
+      Alert.alert(
+        t('Erro'),
+        error.response?.data?.error ||
+          error.response?.data?.message ||
+          t('Não foi possível concluir a adoção.')
+      );
+    } finally {
+      setAdopting(false);
+    }
   };
 
   const handleShare = () => {
@@ -746,7 +784,7 @@ export default function PetDetail() {
                 style={styles.messageButton}
                 onPress={handleContact}
               >
-                <Text style={styles.messageButtonText}>💬</Text>
+                <MessageCircle size={22} color="#FFF" strokeWidth={2.5} />
               </TouchableOpacity>
             </View>
           </View>
@@ -827,11 +865,16 @@ export default function PetDetail() {
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={styles.contactButton}
-              onPress={handleContact}
+              style={[styles.contactButton, adopting && styles.contactButtonDisabled]}
+              onPress={handleAdopt}
+              disabled={adopting}
             >
-              <Heart size={18} color="white" />
-              <Text style={styles.contactButtonText}>{t('Quero entrar em contato')}</Text>
+              {adopting ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <Heart size={18} color="white" />
+              )}
+              <Text style={styles.contactButtonText}>{adopting ? t('Adotando...') : t('Adotar')}</Text>
             </TouchableOpacity>
           </View>
           </>
