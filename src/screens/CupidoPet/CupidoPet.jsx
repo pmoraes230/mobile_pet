@@ -48,6 +48,145 @@ const MISSY_IMAGE = require('../../assets/default-pet.png');
 
 const getPetId = (pet) => String(pet?.id || pet?.ID || '');
 
+const firstValue = (...values) => values.find((value) => value !== undefined && value !== null && value !== '');
+
+const firstPrimitiveValue = (...values) => values.find((value) => (
+  value !== undefined &&
+  value !== null &&
+  value !== '' &&
+  (typeof value === 'string' || typeof value === 'number')
+));
+
+const isValidTutorName = (value) => {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim().toLowerCase();
+  return Boolean(normalized) && ![
+    'tutor',
+    'owner',
+    'responsável',
+    'responsavel',
+    'tutor não informado',
+    'tutor nao informado',
+    'não informado',
+    'nao informado',
+    'not informed',
+  ].includes(normalized);
+};
+
+const getTutorIdFromPet = (pet) => firstPrimitiveValue(
+  pet?.tutor?.id,
+  pet?.tutor?.ID,
+  pet?.tutor?.id_tutor,
+  pet?.tutor?.ID_TUTOR,
+  pet?.ID_TUTOR?.id,
+  pet?.ID_TUTOR?.ID,
+  pet?.id_tutor?.id,
+  pet?.id_tutor?.ID,
+  pet?.tutor_responsavel?.id,
+  pet?.tutor_responsavel?.ID,
+  pet?.responsavel?.id,
+  pet?.responsavel?.ID,
+  pet?.ID_TUTOR,
+  pet?.id_tutor,
+  pet?.idTutor,
+  pet?.IDTutor,
+  pet?.tutorId,
+  pet?.TutorId,
+  pet?.tutorID,
+  pet?.TUTOR_ID,
+  pet?.ID_TUTOR_ID,
+  pet?.ID_TUTOR_id,
+  pet?.tutorId_id,
+  pet?.tutor_id_id,
+  pet?.tutor_id,
+  pet?.ownerId,
+  pet?.owner_id,
+  pet?.ID_OWNER,
+);
+
+const getTutorNameFromPet = (pet) => [
+  pet?.nome_tutor,
+  pet?.NOME_TUTOR,
+  pet?.nomeTutor,
+  pet?.tutor_nome,
+  pet?.ownerName,
+  pet?.owner_name,
+  pet?.nomeDono,
+  pet?.donoNome,
+  pet?.nomeResponsavel,
+  pet?.responsavelNome,
+  pet?.TUTOR_NOME,
+  pet?.TUTOR_NOME_TUTOR,
+  pet?.responsavel_nome_tutor,
+  pet?.tutor?.nome,
+  pet?.tutor?.NOME,
+  pet?.tutor?.nome_tutor,
+  pet?.tutor?.NOME_TUTOR,
+  pet?.ID_TUTOR?.nome,
+  pet?.ID_TUTOR?.nome_tutor,
+  pet?.tutor_responsavel?.nome,
+  pet?.tutor_responsavel?.nome_tutor,
+  pet?.responsavel?.nome,
+  pet?.responsavel?.nome_tutor,
+].find(isValidTutorName);
+
+const unwrapTutorResponse = (data) => {
+  if (!data) return null;
+  if (Array.isArray(data)) return data[0] || null;
+  return data.tutor ||
+    data.data?.tutor ||
+    data.data?.usuario ||
+    data.data?.profile ||
+    data.data?.result ||
+    data.data ||
+    data.usuario ||
+    data.profile ||
+    data.result ||
+    data.user ||
+    data;
+};
+
+const fetchTutorById = async (tutorId) => {
+  if (!tutorId || typeof tutorId === 'object') return null;
+
+  const endpoints = [
+    `/tutors/${tutorId}`,
+    `/tutores/${tutorId}`,
+    `/tutor/${tutorId}`,
+  ];
+
+  for (const endpoint of endpoints) {
+    try {
+      const response = await api.get(endpoint);
+      const tutor = unwrapTutorResponse(response.data);
+      const tutorName = firstValue(tutor?.nome, tutor?.NOME, tutor?.nome_tutor, tutor?.NOME_TUTOR);
+      if (tutorName) return { ...tutor, nome_tutor: tutorName };
+    } catch (error) {
+      // Try the next possible API shape.
+    }
+  }
+
+  return null;
+};
+
+const enrichPetWithTutor = async (pet) => {
+  if (!pet || getTutorNameFromPet(pet)) return pet;
+
+  const tutorId = getTutorIdFromPet(pet);
+  const tutor = await fetchTutorById(tutorId);
+
+  if (!tutor?.nome_tutor) return pet;
+
+  return {
+    ...pet,
+    nome_tutor: tutor.nome_tutor,
+    tutor: {
+      ...(typeof pet.tutor === 'object' ? pet.tutor : {}),
+      ...tutor,
+    },
+  };
+};
+
 const ESTADOS_CIDADES = {
   'Acre': ['Rio Branco', 'Cruzeiro do Sul'],
   'Pará': ['Belém', 'Ananindeua', 'Parauapebas', 'Marabá'],
@@ -176,9 +315,10 @@ export default function TinderPet() {
         params: { pet_id: petLogado?.id || petLogado?.ID } 
       });
       const lista = response.data?.candidatos || [];
-      setCandidatos(lista);
+      const listaComTutor = await Promise.all(lista.map(enrichPetWithTutor));
+      setCandidatos(listaComTutor);
       setIndex(0);
-      setPetAtual(lista[0] || null);
+      setPetAtual(listaComTutor[0] || null);
     } catch (error) {
       throw new Error('Erro ao carregar feed: ' + error.message);
       setPetAtual(null);
@@ -246,6 +386,12 @@ export default function TinderPet() {
     } else {
       carregarFeed();
     }
+  };
+
+  const abrirDetalhesPet = async () => {
+    if (!petAtual) return;
+    const petComTutor = await enrichPetWithTutor(petAtual);
+    navigation.navigate('PetDetail', { pet: petComTutor, petData: petComTutor });
   };
 
   const onDislike = async () => {
@@ -371,7 +517,7 @@ export default function TinderPet() {
                   </View>
                 </View>
 
-                <TouchableOpacity style={[styles.btnSmall, { backgroundColor: theme.surface }]} onPress={() => navigation.navigate('PetDetail', { pet: petAtual })}>
+                <TouchableOpacity style={[styles.btnSmall, { backgroundColor: theme.surface }]} onPress={abrirDetalhesPet}>
                   <Info size={28} color="#4A90E2" strokeWidth={3} />
                 </TouchableOpacity>
               </View>

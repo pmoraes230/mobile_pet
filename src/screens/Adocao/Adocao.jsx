@@ -20,6 +20,7 @@ import { Search, Megaphone, ChevronDown } from 'lucide-react-native';
 import api from '../../services/api';
 import { updatePet } from '../../services/updatePet';
 import { getPetsByTutor } from '../../services/pet';
+import { getUserInfo } from '../../services/auth';
 
 import { styles } from './styles';
 import HeaderHome from '../../components/HeaderHome';
@@ -73,6 +74,7 @@ export default function TelaAdocao() {
 
   const [petsFeed, setPetsFeed] = useState([]);
   const [meusPets, setMeusPets] = useState([]);
+  const [currentTutor, setCurrentTutor] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [announcingPetId, setAnnouncingPetId] = useState(null);
@@ -82,6 +84,279 @@ export default function TelaAdocao() {
   const getImageUri = (img) => {
     if (!img) return 'https://via.placeholder.com/150';
     return img.startsWith('http') ? img : `https://coracao-em-patas.s3.sa-east-1.amazonaws.com/${img}`;
+  };
+
+  const firstValue = (...values) =>
+    values.find((value) => value !== undefined && value !== null && value !== '');
+
+  const firstPrimitiveValue = (...values) =>
+    values.find((value) => (
+      value !== undefined &&
+      value !== null &&
+      value !== '' &&
+      (typeof value === 'string' || typeof value === 'number')
+    ));
+
+  const isValidTutorName = (value) => {
+    if (typeof value !== 'string') return false;
+    const normalized = value.trim().toLowerCase();
+    return Boolean(normalized) && ![
+      'tutor',
+      'owner',
+      'responsável',
+      'responsavel',
+      'tutor não informado',
+      'tutor nao informado',
+      'não informado',
+      'nao informado',
+      'not informed',
+      'sem informação',
+      'sem informacao',
+    ].includes(normalized);
+  };
+
+  const collectTutorNameCandidates = (value, visited = new Set(), inOwnerContext = false) => {
+    if (!value || visited.has(value)) return [];
+
+    if (typeof value === 'string') {
+      return inOwnerContext ? [value] : [];
+    }
+
+    if (Array.isArray(value)) {
+      visited.add(value);
+      return value.flatMap((item) => collectTutorNameCandidates(item, visited, inOwnerContext));
+    }
+
+    if (typeof value !== 'object') return [];
+
+    visited.add(value);
+    const candidates = [];
+
+    Object.entries(value).forEach(([key, childValue]) => {
+      const normalizedKey = String(key).toLowerCase();
+      const isOwnerContainer = [
+        'tutor', 'responsavel', 'owner', 'dono', 'tutor_responsavel', 'tutorresponsavel',
+        'dados', 'data', 'usuario', 'profile', 'result', 'user', 'info'
+      ].includes(normalizedKey);
+      const isNameLikeKey = [
+        'nome', 'name', 'fullname', 'full_name', 'nome_tutor', 'nomecompleto',
+        'nome_completo', 'tutor_nome', 'nomeresponsavel', 'responsavelnome',
+        'ownername', 'owner_name', 'dononome', 'nomedono', 'tutorname', 'tutor_name'
+      ].includes(normalizedKey);
+      const nextContext = inOwnerContext || isOwnerContainer;
+
+      if (isNameLikeKey && nextContext) {
+        candidates.push(...collectTutorNameCandidates(childValue, visited, true));
+      } else if (isOwnerContainer || inOwnerContext) {
+        candidates.push(...collectTutorNameCandidates(childValue, visited, nextContext));
+      }
+    });
+
+    return candidates;
+  };
+
+  const getTutorIdFromPet = (pet) =>
+    firstPrimitiveValue(
+      pet?.tutor?.id,
+      pet?.tutor?.ID,
+      pet?.id_tutor?.id,
+      pet?.id_tutor?.ID,
+      pet?.ID_TUTOR?.id,
+      pet?.ID_TUTOR?.ID,
+      pet?.tutor_responsavel?.id,
+      pet?.tutor_responsavel?.ID,
+      pet?.tutorResponsavel?.id,
+      pet?.tutorResponsavel?.ID,
+      pet?.responsavel?.id,
+      pet?.responsavel?.ID,
+      pet?.ID_TUTOR,
+      pet?.id_tutor,
+      pet?.tutorId,
+      pet?.TutorId,
+      pet?.tutorID,
+      pet?.tutor_id,
+      pet?.idTutor,
+      pet?.IDTutor,
+      pet?.TUTOR_ID,
+      pet?.ID_TUTOR_ID,
+      pet?.ID_TUTOR_id,
+      pet?.tutorId_id,
+      pet?.tutor_id_id,
+      pet?.ownerId,
+      pet?.owner_id,
+      pet?.ID_OWNER
+    );
+
+  const getTutorNameFromPet = (pet) =>
+    [
+      pet?.nome_tutor,
+      pet?.NOME_TUTOR,
+      pet?.tutorNome,
+      pet?.nomeTutor,
+      pet?.ownerName,
+      pet?.owner_name,
+      pet?.nomeDono,
+      pet?.donoNome,
+      pet?.nomeResponsavel,
+      pet?.responsavelNome,
+      pet?.TUTOR_NOME,
+      pet?.TUTOR_NOME_TUTOR,
+      pet?.responsavel_nome_tutor,
+      pet?.tutor?.nome_tutor,
+      pet?.tutor?.NOME_TUTOR,
+      pet?.tutor?.nome,
+      pet?.tutor?.NOME,
+      pet?.tutor?.name,
+      pet?.tutorNomeExibido,
+      pet?.tutor_nome_exibido,
+      pet?.tutorNameExibido,
+      pet?.tutor?.tutorNomeExibido,
+      pet?.tutor_responsavel?.nome,
+      pet?.tutor_responsavel?.NOME,
+      pet?.tutor_responsavel?.name,
+      pet?.tutor_responsavel?.nome_tutor,
+      pet?.tutor_responsavel?.NOME_TUTOR,
+      pet?.tutorResponsavel?.nome,
+      pet?.tutorResponsavel?.NOME,
+      pet?.tutorResponsavel?.name,
+      pet?.tutorResponsavel?.nome_tutor,
+      pet?.tutorResponsavel?.NOME_TUTOR,
+      pet?.tutor?.nomeCompleto,
+      pet?.tutor?.NOME_COMPLETO,
+      pet?.tutor?.usuario?.nome,
+      pet?.tutor?.usuario?.nome_tutor,
+      pet?.tutor?.dados?.nome,
+      pet?.tutor?.dados?.nome_tutor,
+      pet?.tutor?.data?.nome,
+      pet?.tutor?.data?.nome_tutor,
+      pet?.id_tutor?.nome_tutor,
+      pet?.id_tutor?.NOME_TUTOR,
+      pet?.id_tutor?.nome,
+      pet?.id_tutor?.nomeCompleto,
+      pet?.ID_TUTOR?.nome_tutor,
+      pet?.ID_TUTOR?.NOME_TUTOR,
+      pet?.ID_TUTOR?.nome,
+      pet?.ID_TUTOR?.nomeCompleto,
+      pet?.responsavel?.nome,
+      pet?.responsavel?.NOME,
+      pet?.responsavel?.name,
+      pet?.responsavel?.nome_tutor,
+      pet?.responsavel?.NOME_TUTOR,
+      pet?.responsavel?.nomeTutor,
+      pet?.owner?.nome,
+      pet?.owner?.NOME,
+      pet?.owner?.name,
+      pet?.owner?.nome_tutor,
+      pet?.owner?.NOME_TUTOR,
+      pet?.owner?.nomeTutor,
+      pet?.dono?.nome,
+      pet?.dono?.NOME,
+      pet?.dono?.name,
+      pet?.dono?.nome_tutor,
+      pet?.dono?.NOME_TUTOR,
+      pet?.dono?.nomeTutor,
+      typeof pet?.tutor === 'string' ? pet.tutor : undefined,
+      typeof pet?.owner === 'string' ? pet.owner : undefined,
+      typeof pet?.dono === 'string' ? pet.dono : undefined,
+      typeof pet?.responsavel === 'string' ? pet.responsavel : undefined,
+      ...collectTutorNameCandidates(pet).filter(isValidTutorName)
+    ].find(isValidTutorName);
+
+  const fetchTutorById = async (tutorId) => {
+    if (!tutorId) return null;
+
+    const routes = [`/tutors/${tutorId}`, `/tutores/${tutorId}`, `/tutor/${tutorId}`];
+
+    for (const route of routes) {
+      try {
+        const response = await api.get(route);
+        const data = response.data;
+        const tutor = Array.isArray(data)
+          ? data[0]
+          : data?.tutor ||
+            data?.data?.tutor ||
+            data?.data?.usuario ||
+            data?.data?.profile ||
+            data?.data?.result ||
+            data?.data ||
+            data?.usuario ||
+            data?.profile ||
+            data?.result ||
+            data?.user ||
+            data;
+        if (tutor) return tutor;
+      } catch (error) {
+        // tenta a proxima rota
+      }
+    }
+
+    return null;
+  };
+
+  const enrichPetsWithTutor = async (pets, fallbackTutor = null) => {
+    const list = Array.isArray(pets) ? pets : [];
+    const cache = {};
+
+    return Promise.all(list.map(async (pet) => {
+      const existingName = getTutorNameFromPet(pet)
+        || pet?.tutorNomeExibido
+        || pet?.tutor_nome_exibido
+        || pet?.tutorNameExibido
+        || pet?.tutor?.tutorNomeExibido
+        || pet?.tutor?.nome_tutor
+        || pet?.tutor?.nome
+        || pet?.tutor?.name;
+      if (existingName) return pet;
+
+      const tutorId = getTutorIdFromPet(pet);
+
+      if (fallbackTutor?.id && tutorId && String(fallbackTutor.id) === String(tutorId)) {
+        return {
+          ...pet,
+          tutor: {
+            ...(typeof pet.tutor === 'object' && pet.tutor !== null ? pet.tutor : {}),
+            id: fallbackTutor.id,
+            nome_tutor: fallbackTutor.nome,
+            imagem_perfil_tutor: fallbackTutor.imagem,
+          },
+          nome_tutor: fallbackTutor.nome,
+        };
+      }
+
+      if (!tutorId) return pet;
+
+      if (!cache[String(tutorId)]) {
+        cache[String(tutorId)] = fetchTutorById(tutorId);
+      }
+
+      const tutor = await cache[String(tutorId)];
+      const tutorName =
+        tutor?.nome_tutor ||
+        tutor?.NOME_TUTOR ||
+        tutor?.nomeTutor ||
+        tutor?.nome ||
+        tutor?.NOME ||
+        tutor?.name ||
+        tutor?.nomeCompleto ||
+        tutor?.NOME_COMPLETO ||
+        tutor?.usuario?.nome_tutor ||
+        tutor?.usuario?.nome ||
+        tutor?.profile?.nome ||
+        tutor?.data?.nome ||
+        tutor?.dados?.nome;
+
+      if (!tutorName) return pet;
+
+      return {
+        ...pet,
+        tutor: {
+          ...(typeof pet.tutor === 'object' && pet.tutor !== null ? pet.tutor : {}),
+          ...tutor,
+          nome_tutor: tutorName,
+        },
+        nome_tutor: tutorName,
+      };
+    }));
   };
 
   const estados = Object.keys(ESTADOS_CIDADES).map((name, idx) => ({
@@ -109,10 +384,13 @@ export default function TelaAdocao() {
   async function loadData() {
 
     setLoading(true);
+    const userInfo = await getUserInfo().catch(() => null);
+    setCurrentTutor(userInfo);
 
     try {
       const myPets = await getPetsByTutor();
-      setMeusPets(Array.isArray(myPets) ? myPets : []);
+      const normalizedMyPets = await enrichPetsWithTutor(Array.isArray(myPets) ? myPets : [], userInfo);
+      setMeusPets(normalizedMyPets);
     } catch (error) {
       setMeusPets([]);
     }
@@ -125,7 +403,8 @@ export default function TelaAdocao() {
         adoptionResponse.data ||
         [];
 
-      setPetsFeed(Array.isArray(adoptionPets) ? adoptionPets : []);
+      const enrichedPets = await enrichPetsWithTutor(Array.isArray(adoptionPets) ? adoptionPets : [], userInfo);
+      setPetsFeed(enrichedPets);
     } catch (error) {
       setPetsFeed([]);
     } finally {
@@ -400,7 +679,7 @@ export default function TelaAdocao() {
                       id: getPetId(pet),
                       nome: pet.nome || pet.NOME,
                       info: `${pet.especie || pet.ESPECIE} • ${pet.raca || pet.RACA}`,
-                      tutor: t('Tutor'),
+                      tutor: getTutorNameFromPet(pet) || currentTutor?.nome || '',
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
                     onPress={() => navigation.navigate('PetDetail', { petData: pet })}
@@ -504,7 +783,7 @@ export default function TelaAdocao() {
                       id: getPetId(pet),
                       nome: pet.nome || pet.NOME,
                       info: `${pet.especie || pet.ESPECIE} • ${pet.raca || pet.RACA}`,
-                      tutor: t('Tutor'),
+                      tutor: getTutorNameFromPet(pet) || '',
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
                     onPress={() => navigation.navigate('PetDetail', { petData: pet })}

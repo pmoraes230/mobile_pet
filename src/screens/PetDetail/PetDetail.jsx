@@ -118,8 +118,101 @@ const formatWeight = (value) => {
 const firstValue = (...values) =>
   values.find((value) => value !== undefined && value !== null && value !== '');
 
+const firstPrimitiveValue = (...values) =>
+  values.find((value) => (
+    value !== undefined &&
+    value !== null &&
+    value !== '' &&
+    (typeof value === 'string' || typeof value === 'number')
+  ));
+
+const isValidTutorName = (value) => {
+  if (typeof value !== 'string') return false;
+  const normalized = value.trim().toLowerCase();
+  return Boolean(normalized) && ![
+    'tutor',
+    'owner',
+    'responsável',
+    'responsavel',
+    'tutor não informado',
+    'tutor nao informado',
+    'não informado',
+    'nao informado',
+    'not informed',
+    'sem informação',
+    'sem informacao',
+  ].includes(normalized);
+};
+
+const collectTutorNameCandidates = (value, visited = new Set(), inOwnerContext = false) => {
+  if (!value || visited.has(value)) return [];
+
+  if (typeof value === 'string') {
+    return inOwnerContext ? [value] : [];
+  }
+
+  if (Array.isArray(value)) {
+    visited.add(value);
+    return value.flatMap((item) => collectTutorNameCandidates(item, visited, inOwnerContext));
+  }
+
+  if (typeof value !== 'object') return [];
+
+  visited.add(value);
+  const candidates = [];
+
+  Object.entries(value).forEach(([key, childValue]) => {
+    const normalizedKey = String(key).toLowerCase();
+    const isOwnerContainer = [
+      'tutor', 'responsavel', 'owner', 'dono', 'tutor_responsavel', 'tutorresponsavel',
+      'dados', 'data', 'usuario', 'profile', 'result', 'user', 'info'
+    ].includes(normalizedKey);
+    const isNameLikeKey = [
+      'nome', 'name', 'fullname', 'full_name', 'nome_tutor', 'nomecompleto',
+      'nome_completo', 'tutor_nome', 'nomeresponsavel', 'responsavelnome',
+      'ownername', 'owner_name', 'dononome', 'nomedono', 'tutorname', 'tutor_name'
+    ].includes(normalizedKey);
+    const nextContext = inOwnerContext || isOwnerContainer;
+
+    if (isNameLikeKey && nextContext) {
+      candidates.push(...collectTutorNameCandidates(childValue, visited, true));
+    } else if (isOwnerContainer || inOwnerContext) {
+      candidates.push(...collectTutorNameCandidates(childValue, visited, nextContext));
+    }
+  });
+
+  return candidates;
+};
+
+const getPetIdFromData = (rawData = {}) =>
+  firstPrimitiveValue(
+    rawData.id,
+    rawData.ID,
+    rawData.ID_PET,
+    rawData.petId,
+    rawData.pet_id,
+    rawData.id_pet
+  );
+
 const getTutorIdFromPet = (rawData = {}) =>
-  firstValue(
+  firstPrimitiveValue(
+    rawData.tutor?.id,
+    rawData.tutor?.ID,
+    rawData.tutor?.id_tutor,
+    rawData.tutor?.ID_TUTOR,
+    rawData.TUTOR?.id,
+    rawData.TUTOR?.ID,
+    rawData.id_tutor?.id,
+    rawData.id_tutor?.ID,
+    rawData.id_tutor?.id_tutor,
+    rawData.ID_TUTOR?.id,
+    rawData.ID_TUTOR?.ID,
+    rawData.tutor_responsavel?.id,
+    rawData.tutor_responsavel?.ID,
+    rawData.tutorResponsavel?.id,
+    rawData.tutorResponsavel?.ID,
+    rawData.responsavel?.id,
+    rawData.responsavel?.ID,
     rawData.idTutor,
     rawData.ID_TUTOR,
     rawData.id_tutor,
@@ -135,23 +228,16 @@ const getTutorIdFromPet = (rawData = {}) =>
     rawData.idResponsavel,
     rawData.ID_RESPONSAVEL,
     rawData.responsavelId,
-    rawData.tutor?.id,
-    rawData.tutor?.ID,
-    rawData.tutor?.id_tutor,
-    rawData.tutor?.ID_TUTOR,
-    rawData.TUTOR?.id,
-    rawData.TUTOR?.ID,
-    rawData.id_tutor?.id,
-    rawData.id_tutor?.ID,
-    rawData.id_tutor?.id_tutor,
-    rawData.ID_TUTOR?.id,
-    rawData.ID_TUTOR?.ID,
-    rawData.responsavel?.id,
-    rawData.responsavel?.ID
+    rawData.responsavel_id,
+    rawData.ownerId,
+    rawData.owner_id,
+    rawData.ID_OWNER,
+    rawData.tutor_id,
+    rawData.tutorId
   );
 
 const getTutorNameFromPet = (rawData = {}) =>
-  firstValue(
+  [
     rawData.nomeTutor,
     rawData.NOME_TUTOR,
     rawData.nome_tutor,
@@ -159,6 +245,11 @@ const getTutorNameFromPet = (rawData = {}) =>
     rawData.tutor_nome_tutor,
     rawData.TUTOR_NOME_TUTOR,
     rawData.responsavel_nome_tutor,
+    rawData.tutorName,
+    rawData.ownerName,
+    rawData.owner_name,
+    rawData.donoNome,
+    rawData.nomeDono,
     rawData.tutorNome,
     rawData.TUTOR_NOME,
     rawData.tutor_nome,
@@ -167,23 +258,76 @@ const getTutorNameFromPet = (rawData = {}) =>
     rawData.responsavelNome,
     rawData.tutor?.nome,
     rawData.tutor?.NOME,
+    rawData.tutor?.name,
+    rawData.tutorNomeExibido,
+    rawData.tutor_nome_exibido,
+    rawData.tutorNameExibido,
+    rawData.tutor?.tutorNomeExibido,
+    rawData.tutor_responsavel?.nome,
+    rawData.tutor_responsavel?.NOME,
+    rawData.tutor_responsavel?.name,
+    rawData.tutor_responsavel?.nome_tutor,
+    rawData.tutor_responsavel?.NOME_TUTOR,
+    rawData.tutorResponsavel?.nome,
+    rawData.tutorResponsavel?.NOME,
+    rawData.tutorResponsavel?.name,
+    rawData.tutorResponsavel?.nome_tutor,
+    rawData.tutorResponsavel?.NOME_TUTOR,
+    rawData.tutor?.nomeTutor,
     rawData.tutor?.nome_tutor,
     rawData.tutor?.NOME_TUTOR,
+    rawData.tutor?.nomeCompleto,
+    rawData.tutor?.NOME_COMPLETO,
+    rawData.tutor?.usuario?.nome,
+    rawData.tutor?.usuario?.nome_tutor,
+    rawData.tutor?.dados?.nome,
+    rawData.tutor?.dados?.nome_tutor,
+    rawData.tutor?.data?.nome,
+    rawData.tutor?.data?.nome_tutor,
+    rawData.tutor?.profile?.nome,
+    rawData.tutor?.profile?.nome_tutor,
     rawData.TUTOR?.nome,
     rawData.TUTOR?.NOME,
     rawData.TUTOR?.nome_tutor,
+    rawData.TUTOR?.nomeCompleto,
     rawData.id_tutor?.nome,
     rawData.id_tutor?.NOME,
+    rawData.id_tutor?.name,
+    rawData.id_tutor?.nomeTutor,
     rawData.id_tutor?.nome_tutor,
     rawData.id_tutor?.NOME_TUTOR,
+    rawData.id_tutor?.nomeCompleto,
     rawData.ID_TUTOR?.nome,
     rawData.ID_TUTOR?.NOME,
+    rawData.ID_TUTOR?.name,
+    rawData.ID_TUTOR?.nomeTutor,
     rawData.ID_TUTOR?.nome_tutor,
     rawData.ID_TUTOR?.NOME_TUTOR,
+    rawData.ID_TUTOR?.nomeCompleto,
     rawData.responsavel?.nome,
     rawData.responsavel?.NOME,
-    typeof rawData.tutor === 'string' ? rawData.tutor : undefined
-  );
+    rawData.responsavel?.name,
+    rawData.responsavel?.nome_tutor,
+    rawData.responsavel?.NOME_TUTOR,
+    rawData.responsavel?.nomeTutor,
+    rawData.owner?.nome,
+    rawData.owner?.NOME,
+    rawData.owner?.name,
+    rawData.owner?.nome_tutor,
+    rawData.owner?.NOME_TUTOR,
+    rawData.owner?.nomeTutor,
+    rawData.dono?.nome,
+    rawData.dono?.NOME,
+    rawData.dono?.name,
+    rawData.dono?.nome_tutor,
+    rawData.dono?.NOME_TUTOR,
+    rawData.dono?.nomeTutor,
+    typeof rawData.tutor === 'string' ? rawData.tutor : undefined,
+    typeof rawData.owner === 'string' ? rawData.owner : undefined,
+    typeof rawData.dono === 'string' ? rawData.dono : undefined,
+    typeof rawData.responsavel === 'string' ? rawData.responsavel : undefined,
+    ...collectTutorNameCandidates(rawData).filter(isValidTutorName)
+  ].find(isValidTutorName);
 
 const getTutorImageFromPet = (rawData = {}) =>
   firstValue(
@@ -216,7 +360,67 @@ const getTutorImageFromPet = (rawData = {}) =>
   );
 
 const unwrapTutorResponse = (data) =>
-  data?.tutor || data?.data?.tutor || data?.data || data?.user || data;
+  Array.isArray(data)
+    ? data[0]
+    : data?.tutor ||
+      data?.data?.tutor ||
+      data?.data?.usuario ||
+      data?.data?.profile ||
+      data?.data?.result ||
+      data?.data ||
+      data?.usuario ||
+      data?.profile ||
+      data?.result ||
+      data?.user ||
+      data;
+
+const fetchTutorById = async (tutorId) => {
+  if (!tutorId) return null;
+
+  const routes = [
+    `/tutors/${tutorId}`,
+    `/tutores/${tutorId}`,
+    `/tutor/${tutorId}`,
+  ];
+
+  for (const route of routes) {
+    try {
+      const response = await api.get(route);
+      const tutorData = unwrapTutorResponse(response.data);
+      if (tutorData) return tutorData;
+    } catch (error) {
+      // Tenta a proxima variacao de rota.
+    }
+  }
+
+  return null;
+};
+
+const unwrapPetList = (data) => {
+  const list = data?.pets || data?.data?.pets || data?.data || data?.results || data;
+  return Array.isArray(list) ? list : [];
+};
+
+const findPetInPublicFeeds = async (petId) => {
+  if (!petId) return null;
+
+  const routes = [
+    '/pets/adocao',
+    '/pets/adocao?includeTutor=true',
+  ];
+
+  for (const route of routes) {
+    try {
+      const response = await api.get(route);
+      const pet = unwrapPetList(response.data).find((item) => String(getPetIdFromData(item)) === String(petId));
+      if (pet) return pet;
+    } catch (error) {
+      // Continua tentando outros formatos de feed.
+    }
+  }
+
+  return null;
+};
 
 const formatTutorImage = (image) => {
   if (!image || typeof image !== 'string') return TUTOR_DEFAULT;
@@ -261,7 +465,16 @@ export default function PetDetail() {
     const sexo = (rawData.sexo || rawData.SEXO || '♂').toLowerCase();
     const genero = sexoMap[sexo] || '♂';
 
-    const tutorName = getTutorNameFromPet(rawData);
+    const tutorName = getTutorNameFromPet(rawData)
+      || rawData?.tutorNomeExibido
+      || rawData?.tutor_nome_exibido
+      || rawData?.tutorNameExibido
+      || rawData?.tutor?.tutorNomeExibido
+      || rawData?.tutor?.nome_tutor
+      || rawData?.tutor?.nome
+      || rawData?.tutor?.name
+      || rawData?.tutor?.NOME_TUTOR
+      || rawData?.tutor?.NOME;
     const tutorImage = getTutorImageFromPet(rawData);
 
     // Trata castrado (pode vir como string ou boolean)
@@ -290,7 +503,7 @@ export default function PetDetail() {
       sexo: rawData.sexo || rawData.SEXO || 'Não informado',
       description: rawData.descricao || rawData.DESCRICAO || rawData.biografiaAdocao || t('O tutor ainda não escreveu uma descrição detalhada para este pet.'),
       personality: rawData.personalidade || rawData.PERSONALIDADE || t('Nenhuma característica informada.'),
-      tutor: typeof tutorName === 'string' ? tutorName : t('Tutor não informado'),
+      tutor: typeof tutorName === 'string' ? tutorName : '',
       tutorImage: formatTutorImage(tutorImage),
       image: getImageUri(rawData.imagem || rawData.IMAGEM),
       genero: genero,
@@ -345,24 +558,44 @@ export default function PetDetail() {
           }
         }
 
+        if ((!tutorId || getTutorNameFromPet(petWithTutor) === undefined) && normalized.id) {
+          const publicFeedPet = await findPetInPublicFeeds(normalized.id);
+
+          if (publicFeedPet) {
+            petWithTutor = { ...petWithTutor, ...publicFeedPet };
+            tutorId = getTutorIdFromPet(petWithTutor) || tutorId;
+            normalized = {
+              ...normalizePetData(petWithTutor),
+              vaccines: normalized.vaccines,
+            };
+            setPetData(normalized);
+          }
+        }
+
         // Se temos o ID do tutor, busca os dados dele
         if (tutorId) {
           try {
             setLoading(true);
-            const response = await api.get(`/tutors/${tutorId}`);
-            const tutorData = unwrapTutorResponse(response.data);
+            const tutorData = await fetchTutorById(tutorId);
 
             if (tutorData) {
               // Atualiza os dados do tutor
               normalized.tutor =
-                tutorData.nome ||
-                tutorData.NOME ||
                 tutorData.nome_tutor ||
                 tutorData.NOME_TUTOR ||
                 tutorData.nomeTutor ||
-                tutorData.NOME_TUTOR ||
+                tutorData.nome ||
+                tutorData.NOME ||
+                tutorData.name ||
+                tutorData.nomeCompleto ||
+                tutorData.NOME_COMPLETO ||
+                tutorData.usuario?.nome_tutor ||
+                tutorData.usuario?.nome ||
+                tutorData.profile?.nome ||
+                tutorData.data?.nome ||
+                tutorData.dados?.nome ||
                 normalized.tutor ||
-                'Tutor';
+                '';
               normalized.tutorImage = formatTutorImage(
                 tutorData.imagem ||
                 tutorData.IMAGEM ||
@@ -378,7 +611,7 @@ export default function PetDetail() {
           } catch (error) {
             setPetData({
               ...normalized,
-              tutor: normalized.tutor || 'Tutor não informado',
+              tutor: normalized.tutor || '',
             });
           } finally {
             setLoading(false);
