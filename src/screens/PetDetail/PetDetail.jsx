@@ -437,6 +437,7 @@ export default function PetDetail() {
   const { isDarkMode } = useAppTheme();
   const { t, language } = useLanguage();
   const p = isDarkMode ? PET_DETAIL_THEME.dark : PET_DETAIL_THEME.light;
+  const showAdoptAction = route.params?.showAdoptAction === true;
   const [activeTab, setActiveTab] = useState('home');
   const [isFavorite, setIsFavorite] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -865,16 +866,22 @@ export default function PetDetail() {
             </TouchableOpacity>
 
             <TouchableOpacity 
-              style={[styles.contactButton, adopting && styles.contactButtonDisabled]}
-              onPress={handleAdopt}
-              disabled={adopting}
+              style={[styles.contactButton, showAdoptAction && adopting && styles.contactButtonDisabled]}
+              onPress={showAdoptAction ? handleAdopt : handleContact}
+              disabled={showAdoptAction && adopting}
             >
-              {adopting ? (
+              {showAdoptAction && adopting ? (
                 <ActivityIndicator size="small" color="#FFF" />
-              ) : (
+              ) : showAdoptAction ? (
                 <Heart size={18} color="white" />
+              ) : (
+                <MessageCircle size={18} color="white" />
               )}
-              <Text style={styles.contactButtonText}>{adopting ? t('Adotando...') : t('Adotar')}</Text>
+              <Text style={styles.contactButtonText}>
+                {showAdoptAction
+                  ? (adopting ? t('Adotando...') : t('Adotar'))
+                  : t('Quero entrar em contato')}
+              </Text>
             </TouchableOpacity>
           </View>
           </>

@@ -682,7 +682,7 @@ export default function TelaAdocao() {
                       tutor: getTutorNameFromPet(pet) || currentTutor?.nome || '',
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
-                    onPress={() => navigation.navigate('PetDetail', { petData: pet })}
+                    onPress={() => navigation.navigate('PetDetail', { petData: pet, showAdoptAction: false })}
                     actionLabel={removingPetId === getPetId(pet) ? t('Removendo...') : t('Tirar da adoção')}
                     onActionPress={() => handleRemovePetFromAdoption(pet)}
                     cardStyle={styles.smallCard}
@@ -786,10 +786,10 @@ export default function TelaAdocao() {
                       tutor: getTutorNameFromPet(pet) || '',
                       imagem: getImageUri(pet.imagem || pet.IMAGEM)
                     }}
-                    onPress={() => navigation.navigate('PetDetail', { petData: pet })}
+                    onPress={() => navigation.navigate('PetDetail', { petData: pet, showAdoptAction: true })}
                     actionLabel={t('Adotar')}
                     onActionPress={() =>
-                      navigation.navigate('PetDetail', { petData: pet })
+                      navigation.navigate('PetDetail', { petData: pet, showAdoptAction: true })
                     }
                     cardStyle={styles.smallCard}
                   />

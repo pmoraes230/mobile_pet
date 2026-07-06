@@ -391,7 +391,11 @@ export default function TinderPet() {
   const abrirDetalhesPet = async () => {
     if (!petAtual) return;
     const petComTutor = await enrichPetWithTutor(petAtual);
-    navigation.navigate('PetDetail', { pet: petComTutor, petData: petComTutor });
+    navigation.navigate('PetDetail', {
+      pet: petComTutor,
+      petData: petComTutor,
+      showAdoptAction: false,
+    });
   };
 
   const onDislike = async () => {
