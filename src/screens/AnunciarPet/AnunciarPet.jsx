@@ -257,31 +257,31 @@ export default function AnunciarPet() {
             </View>
           </View>
 
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-            <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={styles.label}>{t('DATA DE NASCIMENTO')}</Text>
-              <TextInput
-                style={styles.inputField}
-                placeholder={t('dd/mm/aaaa')}
-                placeholderTextColor="#CBD5E0"
-                keyboardType="numeric"
-                maxLength={10}
-                value={petData}
-                onChangeText={handleDataChange}
-              />
-            </View>
-            <View style={[styles.inputGroup, { flex: 1 }]}>
-              <Text style={styles.label}>{t('SEXO')}</Text>
-              <TouchableOpacity
-                style={[styles.inputField, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
-                onPress={() => setModalSexoOpen(true)}
-              >
-                <Text style={{ color: '#4A5568' }}>
-                  {selectedSexo ? t(selectedSexo.name) : t('Selecione')}
-                </Text>
-                <ChevronDown size={16} color="#A0A7BA" />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('DATA DE NASCIMENTO')}</Text>
+            <TextInput
+              style={styles.inputField}
+              placeholder={t('dd/mm/aaaa')}
+              placeholderTextColor="#CBD5E0"
+              keyboardType="numeric"
+              maxLength={10}
+              value={petData}
+              onChangeText={handleDataChange}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>{t('SEXO')}</Text>
+            <TouchableOpacity
+              style={[styles.inputField, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}
+              onPress={() => setModalSexoOpen(true)}
+              activeOpacity={0.85}
+            >
+              <Text style={{ color: '#4A5568' }}>
+                {selectedSexo ? t(selectedSexo.name) : t('Selecione')}
+              </Text>
+              <ChevronDown size={16} color="#A0A7BA" />
+            </TouchableOpacity>
           </View>
 
           <View style={styles.inputGroup}>
@@ -346,7 +346,7 @@ export default function AnunciarPet() {
         </Modal>
 
         {/* Modal de Sexo */}
-        <Modal visible={modalSexoOpen} transparent animationType="fade" onRequestClose={() => setModalSexoOpen(false)}>
+        <Modal visible={modalSexoOpen} transparent animationType="slide" onRequestClose={() => setModalSexoOpen(false)}>
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>{t('Selecione o Sexo')}</Text>

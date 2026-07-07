@@ -17,6 +17,14 @@ import TabBar from '../../components/TabBar';
 import { getAgendaTutor } from '../../services/agendamentoService';
 import { useLanguage } from '../../i18n/LanguageContext';
 
+const getAxiosErrorDetails = (error) => ({
+  message: error?.message,
+  status: error?.response?.status,
+  url: error?.config?.url,
+  baseURL: error?.config?.baseURL,
+  response: error?.response?.data,
+});
+
 const normalizarDataHora = (item) => {
   const data = item?.data_consulta || item?.data_aplicacao;
   if (!data) return null;
@@ -78,7 +86,7 @@ export default function TelaInicial() {
           const dados = await getAgendaTutor();
           if (ativo) setAgenda(dados);
         } catch (error) {
-          console.error('Erro ao buscar proximo compromisso:', error);
+          console.error('Erro ao buscar proximo compromisso:', getAxiosErrorDetails(error));
           if (ativo) setAgenda({ consultas: [], vacinas: [] });
         } finally {
           if (ativo) setCarregandoAgenda(false);

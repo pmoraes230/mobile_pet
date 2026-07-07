@@ -16,6 +16,7 @@ export default function PetCard({
   const { t } = useLanguage();
   const rawImage = pet?.foto || pet?.imagem;
   const menuIconColor = isDarkMode ? '#F5F7FF' : '#323232';
+  const menuButtonBackground = isDarkMode ? 'rgba(15,16,32,0.82)' : 'rgba(255,255,255,0.9)';
 
   const imageUri = rawImage
     ? rawImage.startsWith('http')
@@ -41,7 +42,7 @@ export default function PetCard({
 
         {onMenuPress ? (
           <TouchableOpacity
-            style={styles.menuBtn}
+            style={[styles.menuBtn, { backgroundColor: menuButtonBackground }]}
             onPress={(event) => {
               event?.stopPropagation?.();
               onMenuPress(event);

@@ -2,6 +2,19 @@ import axios from "axios";
 import { getToken } from "./auth";
 import { API_URL, _API_URL_PROD } from "../utils/endPoint_Url";
 import { getPetsByTutor } from "./pet";
+import api from "./api";
+
+const getAxiosErrorDetails = (error) => ({
+    message: error?.message,
+    status: error?.response?.status,
+    url: error?.config?.url,
+    baseURL: error?.config?.baseURL,
+    response: error?.response?.data,
+});
+
+const AGENDA_CACHE_MS = 10000;
+const agendaCache = {};
+const agendaRequests = {};
 
 // Formata a data para o padrão DD-MM-YYYY
 const formatarData = (data) => {
@@ -43,6 +56,22 @@ const normalizarListaPets = (data) => {
     const lista = Array.isArray(data)
         ? data
         : data?.pets || data?.pet || data?.results || [];
+
+    return Array.isArray(lista) ? lista : [];
+};
+
+const normalizarListaConsultas = (data) => {
+    const lista = Array.isArray(data)
+        ? data
+        : data?.consultas || data?.consulta || data?.data?.consultas || data?.results || [];
+
+    return Array.isArray(lista) ? lista : [];
+};
+
+const normalizarListaVacinas = (data) => {
+    const lista = Array.isArray(data)
+        ? []
+        : data?.vacinas || data?.vacina || data?.data?.vacinas || [];
 
     return Array.isArray(lista) ? lista : [];
 };
@@ -223,16 +252,34 @@ export const getAgendaDisponivelTimes = async (vetId, date) => {
 };
 
 // ====================== GET AGENDA TUTOR ======================
-export const getAgendaTutor = async () => {
+export const getAgendaTutor = async (data = new Date()) => {
+    const cacheKey = formatarData(data);
+    const cached = agendaCache[cacheKey];
+
+    if (cached && Date.now() - cached.timestamp < AGENDA_CACHE_MS) {
+        return cached.data;
+    }
+
+    if (agendaRequests[cacheKey]) {
+        return agendaRequests[cacheKey];
+    }
+
+    agendaRequests[cacheKey] = (async () => {
     try {
         const token = await getToken();
         if (!token) throw new Error("Usuário não autenticado.");
 
-        const response = await axios.get(`${_API_URL_PROD}/api/consultas/marcadas`, {
-            headers: { 
-                Authorization: `Bearer ${token}` 
-            }
-        });
+        let response;
+
+        try {
+            response = await api.get('/consultas/marcadas');
+        } catch (error) {
+            if (error?.response?.status !== 404) throw error;
+
+            response = await api.get('/consultas/agenda', {
+                params: { data: formatarData(data) },
+            });
+        }
 
         const petsDaResposta = normalizarListaPets(response.data?.pets || response.data?.pet);
         let petsDoTutor = petsDaResposta;
@@ -246,7 +293,7 @@ export const getAgendaTutor = async () => {
         const petsPorId = criarMapaPetsPorId(petsDoTutor);
 
         // Mapear dados da API para o formato esperado pelo frontend
-        const consultas = (response.data.consultas || response.data || []).map(consulta => {
+        const consultas = normalizarListaConsultas(response.data).map(consulta => {
             const petId = getPetIdConsulta(consulta);
             const petNome = getPetNomeConsulta(consulta) || petsPorId[String(petId)] || null;
 
@@ -276,7 +323,7 @@ export const getAgendaTutor = async () => {
             });
         });
 
-        const vacinas = (response.data.vacinas || []).map((vacina) => {
+        const vacinas = normalizarListaVacinas(response.data).map((vacina) => {
             const petId = getPetIdConsulta(vacina);
             const petNome = getPetNomeConsulta(vacina) || petsPorId[String(petId)] || null;
 
@@ -290,12 +337,24 @@ export const getAgendaTutor = async () => {
             };
         });
 
-        return { 
+        const agenda = { 
             consultas,
             vacinas
         };
+
+        agendaCache[cacheKey] = {
+            data: agenda,
+            timestamp: Date.now(),
+        };
+
+        return agenda;
     } catch (error) {
-        console.error("Erro em getAgendaTutor:", error);
+        console.error("Erro em getAgendaTutor:", getAxiosErrorDetails(error));
         throw error;
+    } finally {
+        delete agendaRequests[cacheKey];
     }
+    })();
+
+    return agendaRequests[cacheKey];
 };

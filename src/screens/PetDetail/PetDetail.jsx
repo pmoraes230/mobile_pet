@@ -437,10 +437,11 @@ export default function PetDetail() {
   const { isDarkMode } = useAppTheme();
   const { t, language } = useLanguage();
   const p = isDarkMode ? PET_DETAIL_THEME.dark : PET_DETAIL_THEME.light;
-  const showAdoptAction = route.params?.showAdoptAction === true;
+  const cameFromCupido = route.params?.source === 'cupido';
+  const showAdoptAction = route.params?.showAdoptAction === true && !cameFromCupido;
   const [activeTab, setActiveTab] = useState('home');
   const [isFavorite, setIsFavorite] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [adopting, setAdopting] = useState(false);
   const [petData, setPetData] = useState(null);
   const [sourcePetData, setSourcePetData] = useState(null);
@@ -524,9 +525,11 @@ export default function PetDetail() {
         const incomingPet = params.petData || params.pet;
 
         if (!incomingPet) {
+          setLoading(false);
           return;
         }
 
+        setLoading(true);
         setSourcePetData(incomingPet);
 
         // Normaliza os dados recebidos
@@ -582,7 +585,6 @@ export default function PetDetail() {
         // Se temos o ID do tutor, busca os dados dele
         if (tutorId) {
           try {
-            setLoading(true);
             const tutorData = await fetchTutorById(tutorId);
 
             if (tutorData) {
