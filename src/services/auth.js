@@ -125,7 +125,7 @@ export const getUserInfo = async () => {
         return {
             id: decoded.id,
             email: decoded.email || decoded.EMAIL,
-            nome: decoded.nome || decoded.nome_tutor,
+            nome: decoded.nome_tutor || decoded.nome || "Usuário", // Prioridade para nome_tutor
             imagem,
         };
     } catch (err) {
@@ -149,7 +149,7 @@ export const refreshAccessToken = async () => {
         throw new Error("Sessão expirada. Faça login novamente.");
     }
 
-    const response = await axios.post(`${API_URL}/api/auth/refresh`, {
+    const response = await axios.post(`${_API_URL_PROD}/api/auth/refresh`, {
         token: refreshToken,
     });
 
@@ -158,6 +158,7 @@ export const refreshAccessToken = async () => {
 
 export const register = async (nome, email, senha, cpfCnpj, dataNascimento, endereco, telefone = '') => {
     try {
+        await logout(); // <--- ADICIONE ESTA LINHA AQUI para limpar dados de "outra pessoa"
         // Validações básicas
         if (!nome || !email || !senha || !cpfCnpj || !dataNascimento || !endereco) {
             throw new Error("Todos os campos são obrigatórios.");
@@ -186,13 +187,19 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
         }
 
         // Formatar data (dd/mm/aaaa → yyyy-mm-dd)
-        const [dia, mes, ano] = dataNascimento.split('/');
-        const dataFormatada = `${ano}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+        // Substitua as duas linhas da data por estas:
+        const p = (dataNascimento || "").split('/');
+        const dataFormatada = `${p[2]}-${String(p[1] || '').padStart(2, '0')}-${String(p[0] || '').padStart(2, '0')}T00:00:00.000Z`;
 
         // Remover caracteres especiais de CPF/CNPJ
-        const cpfLimpo = cpfCnpj.replace(/[^0-9]/g, '');
+        // Remover caracteres especiais de CPF/CNPJ
+        const cpfLimpo = String(cpfCnpj || "").replace(/\D/g, '');
 
-        const response = await axios.post(`${API_URL || _API_URL_PROD}/api/auth/register`, {
+        // GERAR ID DE 32 CARACTERES MANUALMENTE
+        const idManual = (Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)).substring(0, 32);
+
+        const response = await axios.post(`${_API_URL_PROD}/api/auth/register`, {
+            id: idManual, // <--- ADICIONADO O ID AQUI
             nome_tutor: nome,
             EMAIL: email,
             senha_tutor: senha,
@@ -206,17 +213,11 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
         const user = response.data?.user || response.data;
 
         if (token) {
-            await SecureStore.setItemAsync(TOKEN_KEY, token);
-            await AsyncStorage.setItem('@token', token);
-            
-            try {
-                const decoded = jwtDecode(token);
-                if (decoded.id) {
-                    await AsyncStorage.setItem('userId', decoded.id.toString());
-                }
-            } catch (decodeErr) {
-                console.error("Erro ao decodificar token no registro:", decodeErr);
-            }
+            // Isso aqui limpa o passado e grava o futuro corretamente
+            await saveSession({ 
+                token, 
+                refreshToken: response.data?.refreshToken || response.data?.refresh_token 
+            });
         }
 
         return { token, user };

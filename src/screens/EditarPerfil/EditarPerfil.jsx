@@ -53,7 +53,8 @@ export default function EditarPerfil() {
   };
 
   const splitPhone = (value = '') => {
-    const digits = String(value).replace(/\D/g, '');
+    // O || '' evita que o String transforme null em "null" ou "undefined"
+    const digits = String(value || '').replace(/\D/g, '');
 
     if (digits.length >= 10) {
       return {
@@ -62,7 +63,6 @@ export default function EditarPerfil() {
         numero: digits.substring(2),
       };
     }
-
     return { tipoContato: 'WhatsApp', ddd: '', numero: digits };
   };
 
@@ -87,10 +87,12 @@ export default function EditarPerfil() {
       setLoading(true);
       setError(null);
 
+      // Adicionamos o .catch(() => null) em todos para a tela carregar 
+      // mesmo que um serviço específico falhe.
       const [userRes, cpfRes, imageRes, contactsRes] = await Promise.all([
-        searchTutors(),
-        consumerCPF(),
-        getUserInfo(),
+        searchTutors().catch(() => null),
+        consumerCPF().catch(() => null),
+        getUserInfo().catch(() => null),
         getCurrentTutorContacts().catch(() => []),
       ]);
 
@@ -101,11 +103,14 @@ export default function EditarPerfil() {
       setUserData(user);
       setCpfData(cpf);
       setImageUser(image);
+      
+      // Aqui usamos o || '' para nunca deixar o state como null/undefined
       setName(user?.nome || user?.nome_tutor || '');
       setAddress(user?.endereco || user?.ENDERECO || '');
       setPhones(normalizeLoadedPhones(contactsRes, user?.telefone || user?.TELEFONE || ''));
+      
     } catch (err) {
-      console.error(err);
+      console.error("Erro no loadAll:", err);
       setError(t('Erro ao carregar dados para edição.'));
     } finally {
       setLoading(false);
@@ -262,7 +267,7 @@ export default function EditarPerfil() {
     ? { uri: normalizeTutorImage(imageUser?.imagem || userData?.imagemPerfil || userData?.imagem_perfil_tutor) }
     : require('../../assets/user_default.png');
 
-  const cpfExibir = cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF || '';
+  const cpfExibir = String(cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF || "").replace(/\D/g, "");
 
   return (
     <KeyboardAvoidingView
@@ -332,10 +337,11 @@ export default function EditarPerfil() {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>{t('CPF (não editável)')}</Text>
               <TextInput
-                value={formateCPF(cpfExibir)}
-                editable={false}
-                style={[styles.textInput, styles.disabledInput]}
-              />
+                  // Só chama o formatador se existir um CPF para formatar
+                  value={cpfExibir ? formateCPF(cpfExibir) : ''}
+                  editable={false}
+                  style={[styles.textInput, styles.disabledInput]}
+                />
             </View>
 
             <View style={styles.fieldContainer}>

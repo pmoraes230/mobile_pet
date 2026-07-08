@@ -31,13 +31,41 @@ export default function ResponsavelCadastro() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState('');
 
+  // --- FUNÇÕES DE MÁSCARA (Visual) ---
+  const maskCPF = (value) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+      .slice(0, 14);
+  };
+
+  const maskData = (value) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{2})(\d)/, '$1/$2')
+      .replace(/(\d{2})(\d)/, '$1/$2')
+      .slice(0, 10);
+  };
+
+  const maskPhone = (value) => {
+    return value
+      .replace(/\D/g, '')
+      .replace(/(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{5})(\d)/, '$1-$2')
+      .slice(0, 15);
+  };
+
   // Validações de senha
   const temMinimo8 = senha.length >= 8;
   const temMaiuscula = /[A-Z]/.test(senha);
   const temNumero = /[0-9]/.test(senha);
-  const temSimbolo = /[@$%]/.test(senha);
+  const temSimbolo = /[@#$%!&*]/.test(senha);
   
-  const podeRegistrar = temMinimo8 && temMaiuscula && temNumero && temSimbolo && nome && email && cpfCnpj && dataNascimento && endereco;
+  const podeRegistrar = temMinimo8 && temMaiuscula && temNumero && temSimbolo && 
+                        nome.length > 3 && email.includes('@') && 
+                        cpfCnpj.length >= 14 && dataNascimento.length === 10;
 
   const handleCadastro = async () => {
     if (!podeRegistrar) {
@@ -49,14 +77,22 @@ export default function ResponsavelCadastro() {
     setLoading(true);
 
     try {
-      const resposta = await register(nome, email, senha, cpfCnpj, dataNascimento, endereco, telefone);
+      await register(
+        nome, 
+        email, 
+        senha, 
+        cpfCnpj, 
+        dataNascimento, 
+        endereco, 
+        telefone
+      );
       
       Alert.alert(
         t('Sucesso!'),
         t('Cadastro realizado com sucesso!'),
         [
-          {
-            text: 'OK',
+          { 
+            text: 'OK', 
             onPress: () => {
               navigation.reset({
                 index: 0,
@@ -67,7 +103,7 @@ export default function ResponsavelCadastro() {
         ]
       );
     } catch (err) {
-      const mensagemErro = err.message || t('Erro ao cadastrar. Tente novamente.');
+      const mensagemErro = err.message || t('Erro ao cadastrar.');
       setErro(mensagemErro);
       Alert.alert(t('Erro'), mensagemErro);
     } finally {
@@ -145,13 +181,13 @@ export default function ResponsavelCadastro() {
             ✓ {t('Um símbolo (@$%)')}
           </Text>
 
-          <Text style={styles.labelInput}>{t('CPF OU CNPJ')}</Text>
+          <Text style={styles.labelInput}>{t('CPF')}</Text>
           <TextInput
-            placeholder="000.000.000-00 ou 00.000.000/0000-00"
+            placeholder="000.000.000-00"
             placeholderTextColor="#A0A7E6"
             style={styles.input}
             value={cpfCnpj}
-            onChangeText={setCpfCnpj}
+            onChangeText={(t) => setCpfCnpj(maskCPF(t))}
             keyboardType="numeric"
           />
 
@@ -161,7 +197,7 @@ export default function ResponsavelCadastro() {
             placeholderTextColor="#A0A7E6"
             style={styles.input}
             value={dataNascimento}
-            onChangeText={setDataNascimento}
+            onChangeText={(t) => setDataNascimento(maskData(t))}
             keyboardType="numeric"
           />
 
@@ -180,7 +216,7 @@ export default function ResponsavelCadastro() {
             placeholderTextColor="#A0A7E6"
             style={styles.input}
             value={telefone}
-            onChangeText={setTelefone}
+            onChangeText={(t) => setTelefone(maskPhone(t))}
             keyboardType="phone-pad"
           />
 

@@ -71,9 +71,11 @@ const Perfil = () => {
       setLoading(true);
       setError(null);
 
+      // Adicionamos .catch(() => null) para que se o CPF falhar, 
+      // o NOME e os PETS continuem carregando normalmente.
       const [tutorRes, cpfRes, petsRes] = await Promise.all([
-        searchTutors(),
-        consumerCPF(),
+        searchTutors().catch(() => null),
+        consumerCPF().catch(() => null),
         getPetsByTutor().catch(() => []),
       ]);
 
@@ -82,7 +84,7 @@ const Perfil = () => {
       setPets(normalizePets(petsRes));
     } catch (err) {
       console.error('Erro ao carregar perfil:', err);
-      setError(t('Não foi possível carregar os dados do perfil'));
+      // Aqui o erro só vai aparecer se TUDO falhar
     } finally {
       setLoading(false);
     }
@@ -140,8 +142,8 @@ const Perfil = () => {
   const emailExibir = userData?.email || userData?.EMAIL || t('Não informado');
   const telefoneExibir = userData?.telefone || userData?.TELEFONE || t('Não informado');
   const enderecoExibir = userData?.endereco || userData?.ENDERECO || t('Endereço não informado');
-  const rawNascimento = userData?.dataNascimento || userData?.DATA_NASCIMENTO;
-  const cpfBruto = cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF;
+  const rawNascimento = userData?.dataNascimento || userData?.DATA_NASCIMENTO || null;
+  const cpfBruto = String(cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF || "").replace(/\D/g, "");
   const fotoUrl = normalizeTutorImage(userData?.imagemPerfil || userData?.imagem_perfil_tutor);
   const fotoPerfil = fotoUrl ? { uri: fotoUrl } : defaultAvatar;
   const firstPet = pets[0];
@@ -215,15 +217,16 @@ const Perfil = () => {
 
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>{t('Documento CPF')}</Text>
-                <Text style={styles.detailValue}>
-                  {cpfBruto ? formateCPF(cpfBruto) : t('Não informado')}
-                </Text>
+                  <Text style={styles.detailValue}>
+                    {/* Só formata se o CPF tiver o tamanho de um CPF real, senão mostra "Carregando" ou "Não informado" */}
+                    {cpfBruto.length >= 11 ? formateCPF(cpfBruto) : t('Não informado')}
+                  </Text>
               </View>
 
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>{t('Nascimento')}</Text>
                 <Text style={styles.detailValue}>
-                  {rawNascimento ? formateDate(rawNascimento) : t('Não informado')}
+                  {rawNascimento && rawNascimento !== "undefined" ? formateDate(rawNascimento) : t('Não informado')}
                 </Text>
               </View>
 

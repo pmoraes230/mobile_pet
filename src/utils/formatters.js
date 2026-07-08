@@ -11,12 +11,14 @@ export const formateDate = (dateString) => {
 }
 
 export const formateCPF = (cpf) => {
-    if(!cpf) return "Não informado";
+    // Garante que o valor seja uma string e evita o erro se for nulo
+    const value = String(cpf || "");
+    if (!value || value === "null" || value === "undefined") return "Não informado";
 
-    const clearCPF = cpf.replace(/\D/g, "");
+    const clearCPF = value.replace(/\D/g, "");
 
     return clearCPF.replace(
         /(\d{3})(\d{3})(\d{3})(\d{2})/,
         "$1.$2.$3-$4"
-    )
+    );
 }
