@@ -105,8 +105,8 @@ export default function EditarPerfil() {
       setImageUser(image);
       
       // Aqui usamos o || '' para nunca deixar o state como null/undefined
-      setName(user?.nome || user?.nome_tutor || '');
-      setAddress(user?.endereco || user?.ENDERECO || '');
+      setName(user?.nome_tutor || '');
+      setAddress(user?.ENDERECO || '');
       setPhones(normalizeLoadedPhones(contactsRes, user?.telefone || user?.TELEFONE || ''));
       
     } catch (err) {
@@ -140,17 +140,25 @@ export default function EditarPerfil() {
       if (result.canceled || !result.assets?.[0]?.uri) return;
 
       const uri = result.assets[0].uri;
-      const tutorId = userData?.id || imageUser?.id;
+      const tutorId =
+        userData?.id ||
+        userData?.ID ||
+        imageUser?.id ||
+        imageUser?.ID;
 
       if (!tutorId) {
         Alert.alert(t('Erro'), t('Não foi possível identificar seu usuário.'));
         return;
-      }
+      } 
+      console.log("USER DATA:", userData);
+      console.log("IMAGE USER:", imageUser);
+      console.log("TUTOR ID:", tutorId);
 
       setUploadingPhoto(true);
       setImageUser((current) => ({ ...current, imagem: uri }));
 
       const updatedTutor = await uploadTutorPhoto(tutorId, uri);
+      console.log("RETORNO UPLOAD FOTO:", updatedTutor);
       const nextImage = normalizeTutorImage(
         updatedTutor?.imagemPerfil || updatedTutor?.imagem_perfil_tutor || uri
       );
@@ -162,15 +170,26 @@ export default function EditarPerfil() {
         imagem_perfil_tutor: updatedTutor?.imagem_perfil_tutor || current?.imagem_perfil_tutor,
       }));
       Alert.alert(t('Sucesso'), t('Foto de perfil atualizada!'));
-    } catch (err) {
-      console.error(err);
-      Alert.alert(t('Erro'), err?.message || t('Não foi possível alterar a foto.'));
+
+          } catch (err) {
+      console.log("ERRO FOTO STATUS:", err.response?.status);
+      console.log("ERRO FOTO DATA:", err.response?.data);
+      console.log("ERRO FOTO:", err);
+
+      Alert.alert(
+        t('Erro'),
+        err.response?.data?.error ||
+        JSON.stringify(err.response?.data) ||
+        err.message
+      );
+
     } finally {
       setUploadingPhoto(false);
     }
   };
 
-  const updatePhoneField = (index, field, value) => {
+
+    const updatePhoneField = (index, field, value) => {
     const sanitizedValue = field === 'tipoContato'
       ? value
       : String(value).replace(/\D/g, '').slice(0, field === 'ddd' ? 2 : 9);

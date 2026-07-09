@@ -170,17 +170,21 @@ export default function HeaderHome({
     }
   }, [language, t]);
 
-  useEffect(() => {
-    let mounted = true;
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
 
-    getUserInfo().then((info) => {
-      if (mounted) setUserData(info);
-    });
+      getUserInfo().then((info) => {
+        if (mounted) {
+          setUserData(info);
+        }
+      });
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+      return () => {
+        mounted = false;
+      };
+    }, [])
+  );
 
   useFocusEffect(
     useCallback(() => {

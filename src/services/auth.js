@@ -15,7 +15,7 @@ export const updateLastActive = async () => {
     await SecureStore.setItemAsync(LAST_ACTIVE_KEY, Date.now().toString());
 };
 
-const saveSession = async ({ token, accessToken, refreshToken }) => {
+const saveSession = async ({ token, accessToken, refreshToken, user }) => {
     const nextAccessToken = accessToken || token;
 
     if (!nextAccessToken) {
@@ -31,13 +31,25 @@ const saveSession = async ({ token, accessToken, refreshToken }) => {
         await AsyncStorage.setItem('@refreshToken', refreshToken);
     }
 
+    if (user) {
+        await AsyncStorage.setItem(
+            'userData',
+            JSON.stringify(user)
+        );
+    }
+
     try {
         const decoded = jwtDecode(nextAccessToken);
+
         if (decoded.id) {
-            await AsyncStorage.setItem('userId', decoded.id.toString());
+            await AsyncStorage.setItem(
+                'userId',
+                decoded.id.toString()
+            );
         }
+
     } catch (decodeErr) {
-        console.error("Erro ao decodificar token no login:", decodeErr);
+        console.error("Erro ao decodificar token:", decodeErr);
     }
 
     return nextAccessToken;
@@ -53,7 +65,12 @@ export const login = async (email, senha) => {
         await saveSession(response.data || {});
         return response.data;
     } catch (error) {
+        console.log("ERRO COMPLETO:", error);
+
         if (error.response) {
+            console.log("Status:", error.response.status);
+            console.log("Resposta da API:", error.response.data);
+
             const status = error.response.status;
             const serverMessage =
                 error.response.data?.message ||
@@ -122,12 +139,24 @@ export const getUserInfo = async () => {
                 : `${S3_BASE}/${rawImage}`
             : null;
 
-        return {
-            id: decoded.id,
-            email: decoded.email || decoded.EMAIL,
-            nome: decoded.nome_tutor || decoded.nome || "Usuário", // Prioridade para nome_tutor
-            imagem,
-        };
+            const user = JSON.parse(
+                    await AsyncStorage.getItem('userData') || "{}"
+                );
+
+            return {
+                id: decoded.id,
+                email: decoded.email || decoded.EMAIL,
+                nome:
+                    decoded.nome_tutor ||
+                    decoded.nome ||
+                    user.nome_tutor ||
+                    user.nome ||
+                    "Usuário",
+                imagem:
+                    imagem ||
+                    user.imagem_perfil_tutor ||
+                    null,
+            };
     } catch (err) {
         console.error("Erro ao decodificar token:", err);
         return null;
@@ -197,38 +226,53 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
 
         // GERAR ID DE 32 CARACTERES MANUALMENTE
         const idManual = (Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)).substring(0, 32);
-
-        const response = await axios.post(`${_API_URL_PROD}/api/auth/register`, {
-            id: idManual, // <--- ADICIONADO O ID AQUI
-            nome_tutor: nome,
-            EMAIL: email,
-            senha_tutor: senha,
-            CPF: cpfLimpo,
-            DATA_NASCIMENTO: dataFormatada,
-            ENDERECO: endereco,
-            TELEFONE: telefone,
-        });
-
-        const token = response.data?.token || response.data?.accessToken;
-        const user = response.data?.user || response.data;
-
-        if (token) {
-            // Isso aqui limpa o passado e grava o futuro corretamente
-            await saveSession({ 
-                token, 
-                refreshToken: response.data?.refreshToken || response.data?.refresh_token 
+        console.log({
+                nome_tutor: nome,
+                EMAIL: email,
+                senha_tutor: senha,
+                CPF: cpfLimpo,
+                DATA_NASCIMENTO: dataFormatada,
+                ENDERECO: endereco,
+                TELEFONE: telefone,
             });
-        }
+
+            const response = await axios.post(`${_API_URL_PROD}/api/auth/register`, {
+                nome_tutor: nome,
+                EMAIL: email,
+                senha_tutor: senha,
+                CPF: cpfLimpo,
+                DATA_NASCIMENTO: dataFormatada,
+                ENDERECO: endereco,
+                TELEFONE: telefone,
+            });
+        const token = response.data?.token || response.data?.accessToken;
+
+            const user = {
+                nome_tutor: nome,
+                EMAIL: email,
+                imagem_perfil_tutor: null,
+            };
+
+            await saveSession({ 
+                token,
+                refreshToken: response.data?.refreshToken || response.data?.refresh_token,
+                user
+            });
+
 
         return { token, user };
 
     } catch (error) {
-        // ==================== TRATAMENTO DE ERROS AMIGÁVEL ====================
+    console.log("ERRO DO CADASTRO:", error);
 
-        if (error.response) {
-            const status = error.response.status;
-            const serverMessage = error.response.data?.message || 
-                                error.response.data?.error;
+    if (error.response) {
+        console.log("Status:", error.response.status);
+        console.log("Resposta da API:", error.response.data);
+
+        const status = error.response.status;
+        const serverMessage =
+            error.response.data?.message ||
+            error.response.data?.error;
 
             if (status === 400) {
                 throw new Error(serverMessage || "Dados inválidos. Verifique as informações.");
@@ -261,6 +305,7 @@ export const logout = async () => {
     await AsyncStorage.removeItem('@token');
     await AsyncStorage.removeItem('@refreshToken');
     await AsyncStorage.removeItem('userId');
+    await AsyncStorage.removeItem('userData');
 };
 
 export const setupAxiosInterceptors = () => {
@@ -272,9 +317,8 @@ export const setupAxiosInterceptors = () => {
             const token = await SecureStore.getItemAsync(TOKEN_KEY);
 
             if (token && !config.headers?.Authorization) {
-                config.headers.Authorization = `Bearer ${token}`;
-                await updateLastActive();
-            }
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
 
             return config;
         },
