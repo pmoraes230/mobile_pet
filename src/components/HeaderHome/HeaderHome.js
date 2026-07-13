@@ -21,6 +21,7 @@ import {
   marcarTodasNotificacoesComoLidas,
 } from '../../services/notificacoes';
 import { registerForPushNotificationsAsync } from '../../services/pushNotifications';
+import { normalizeTutorImage } from '../../services/tutorProfile'; // ADICIONADO PARA FUNCIONAR A FOTO
 import { useAppTheme } from '../../theme/ThemeContext';
 import { useLanguage } from '../../i18n/LanguageContext';
 
@@ -51,6 +52,9 @@ export default function HeaderHome({
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [userData, setUserData] = useState(null);
+
+  // ESTADO ADICIONADO PARA TRAVAR O TEMPO DA FOTO E EVITAR PISCADEIRA AO DIGITAR
+  const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
 
   const getNotificationMeta = (tipo = '') => {
     const normalizedType = String(tipo).toLowerCase();
@@ -117,6 +121,18 @@ export default function HeaderHome({
       .replace(/\b[Dd]e\b/g, 'of');
   };
 
+  const loadUserData = useCallback(async () => {
+    try {
+      const info = await getUserInfo();
+      console.log("USER INFO:", info);
+      setUserData(info);
+      // SÓ ATUALIZA O TIMESTAMP QUANDO OS DADOS SÃO CARREGADOS
+      setPhotoTimestamp(Date.now());
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
+
   const formatNotificationDate = (date) => {
     if (!date) return t('Agora');
 
@@ -170,20 +186,11 @@ export default function HeaderHome({
     }
   }, [language, t]);
 
+
   useFocusEffect(
     useCallback(() => {
-      let mounted = true;
-
-      getUserInfo().then((info) => {
-        if (mounted) {
-          setUserData(info);
-        }
-      });
-
-      return () => {
-        mounted = false;
-      };
-    }, [])
+      loadUserData();
+    }, [loadUserData])
   );
 
   useFocusEffect(
@@ -211,6 +218,19 @@ export default function HeaderHome({
       loadNotifications();
     }
   };
+
+  // FUNÇÃO AUXILIAR PARA GERAR A URI DA IMAGEM SEM PISCAR
+  const getProfileImageSource = () => {
+    const rawUri = userData?.imagem || userData?.imagemPerfil || userProfileImage;
+    if (!rawUri) return TUTOR_IMAGE;
+
+    const normalized = normalizeTutorImage(rawUri);
+    return {
+      uri: `${normalized}${normalized.includes('?') ? '&' : '?'}t=${photoTimestamp}`,
+      cache: 'reload',
+    };
+  };
+
   return (
     <>
       <View style={[styles.container, { paddingTop: Math.max(insets.top, 12) + 8 }]}>
@@ -267,15 +287,9 @@ export default function HeaderHome({
                 accessibilityHint="Vai para a tela de perfil"
               >
                 <Image
-                  source={
-                    userData?.imagem
-                      ? { uri: userData.imagem }
-                      : userProfileImage
-                        ? { uri: userProfileImage }
-                        : TUTOR_IMAGE
-                  }
-                  style={styles.profileImage}
-                />
+                    source={getProfileImageSource()}
+                    style={styles.profileImage}
+                  />
               </TouchableOpacity>
             </View>
           )}

@@ -14,6 +14,7 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
 import { Camera, Phone, Smile, Plus, Trash2 } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import HeaderHome from '../../components/HeaderHome';
 import TabBar from '../../components/TabBar';
@@ -47,15 +48,16 @@ export default function EditarPerfil() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState(null);
 
+  // ESTADO PARA CONTROLAR O REFRESH DA FOTO SEM PISCAR AO DIGITAR
+  const [photoTimestamp, setPhotoTimestamp] = useState(Date.now());
+
   const handleData = (res) => {
     if (!res) return null;
     return Array.isArray(res) ? res[0] : res;
   };
 
   const splitPhone = (value = '') => {
-    // O || '' evita que o String transforme null em "null" ou "undefined"
     const digits = String(value || '').replace(/\D/g, '');
-
     if (digits.length >= 10) {
       return {
         tipoContato: 'WhatsApp',
@@ -87,8 +89,6 @@ export default function EditarPerfil() {
       setLoading(true);
       setError(null);
 
-      // Adicionamos o .catch(() => null) em todos para a tela carregar 
-      // mesmo que um serviço específico falhe.
       const [userRes, cpfRes, imageRes, contactsRes] = await Promise.all([
         searchTutors().catch(() => null),
         consumerCPF().catch(() => null),
@@ -104,10 +104,11 @@ export default function EditarPerfil() {
       setCpfData(cpf);
       setImageUser(image);
       
-      // Aqui usamos o || '' para nunca deixar o state como null/undefined
-      setName(user?.nome_tutor || '');
-      setAddress(user?.ENDERECO || '');
-      setPhones(normalizeLoadedPhones(contactsRes, user?.telefone || user?.TELEFONE || ''));
+      // BUSCA O NOME E ENDEREÇO EM TODAS AS CHAVES POSSÍVEIS (GARANTIA DE EXIBIÇÃO)
+      setName(user?.nome_tutor || user?.nome || image?.nome || '');
+      setAddress(user?.ENDERECO || user?.endereco || image?.endereco || '');
+      
+      setPhones(normalizeLoadedPhones(contactsRes, user?.telefone || user?.TELEFONE || image?.telefone || ''));
       
     } catch (err) {
       console.error("Erro no loadAll:", err);
@@ -131,7 +132,7 @@ export default function EditarPerfil() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: 'images',
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.85,
@@ -140,56 +141,53 @@ export default function EditarPerfil() {
       if (result.canceled || !result.assets?.[0]?.uri) return;
 
       const uri = result.assets[0].uri;
-      const tutorId =
-        userData?.id ||
-        userData?.ID ||
-        imageUser?.id ||
-        imageUser?.ID;
+      const tutorId = userData?.id || userData?.ID || imageUser?.id || imageUser?.ID;
 
       if (!tutorId) {
         Alert.alert(t('Erro'), t('Não foi possível identificar seu usuário.'));
         return;
       } 
-      console.log("USER DATA:", userData);
-      console.log("IMAGE USER:", imageUser);
-      console.log("TUTOR ID:", tutorId);
 
       setUploadingPhoto(true);
       setImageUser((current) => ({ ...current, imagem: uri }));
 
       const updatedTutor = await uploadTutorPhoto(tutorId, uri);
-      console.log("RETORNO UPLOAD FOTO:", updatedTutor);
-      const nextImage = normalizeTutorImage(
-        updatedTutor?.imagemPerfil || updatedTutor?.imagem_perfil_tutor || uri
-      );
+      
+      const storedUser = JSON.parse(await AsyncStorage.getItem('userData') || '{}');
+      const novaImagemUrl = updatedTutor?.imagem_perfil_tutor || updatedTutor?.imagemPerfil;
+      
+      const updatedUser = {
+        ...storedUser,
+        ...updatedTutor,
+        imagemPerfil: novaImagemUrl || uri,
+        imagem: novaImagemUrl || uri
+      };
+      await AsyncStorage.setItem('userData', JSON.stringify(updatedUser));
 
-      setImageUser((current) => ({ ...current, imagem: nextImage || uri }));
+      setPhotoTimestamp(Date.now());
+
+      setImageUser((current) => ({
+        ...current,
+        imagem: novaImagemUrl || uri,
+      }));
+
       setUserData((current) => ({
         ...current,
-        imagemPerfil: updatedTutor?.imagemPerfil || current?.imagemPerfil,
-        imagem_perfil_tutor: updatedTutor?.imagem_perfil_tutor || current?.imagem_perfil_tutor,
+        ...updatedTutor,
+        imagemPerfil: novaImagemUrl || current?.imagemPerfil,
       }));
+
       Alert.alert(t('Sucesso'), t('Foto de perfil atualizada!'));
 
-          } catch (err) {
-      console.log("ERRO FOTO STATUS:", err.response?.status);
-      console.log("ERRO FOTO DATA:", err.response?.data);
+    } catch (err) {
       console.log("ERRO FOTO:", err);
-
-      Alert.alert(
-        t('Erro'),
-        err.response?.data?.error ||
-        JSON.stringify(err.response?.data) ||
-        err.message
-      );
-
+      Alert.alert(t('Erro'), t('Não foi possível atualizar a foto.'));
     } finally {
       setUploadingPhoto(false);
     }
   };
 
-
-    const updatePhoneField = (index, field, value) => {
+  const updatePhoneField = (index, field, value) => {
     const sanitizedValue = field === 'tipoContato'
       ? value
       : String(value).replace(/\D/g, '').slice(0, field === 'ddd' ? 2 : 9);
@@ -204,7 +202,6 @@ export default function EditarPerfil() {
       Alert.alert(t('Limite atingido'), t('Você pode cadastrar no máximo 2 telefones.'));
       return;
     }
-
     setPhones((current) => [...current, { ...emptyPhone }]);
   };
 
@@ -225,53 +222,56 @@ export default function EditarPerfil() {
         numero: String(phone.numero || '').replace(/\D/g, ''),
       }))
       .filter((phone) => phone.ddd || phone.numero);
+    
     const cleanPhone = validPhones[0] ? `${validPhones[0].ddd}${validPhones[0].numero}` : '';
 
     if (!cleanName) {
-      Alert.alert(t('Preencha os campos'), t('Informe seu nome.'));
-      return;
-    }
-
-    if (validPhones.length > 2) {
-      Alert.alert(t('Limite atingido'), t('Você pode cadastrar no máximo 2 telefones.'));
-      return;
-    }
-
-    for (const phone of validPhones) {
-      if (phone.ddd.length !== 2 || phone.numero.length < 8) {
-        Alert.alert(t('Telefone inválido'), t('Informe telefones válidos com DDD.'));
-        return;
-      }
-    }
-
-    const uniquePhones = new Set(validPhones.map((phone) => `${phone.ddd}${phone.numero}`));
-
-    if (uniquePhones.size !== validPhones.length) {
-      Alert.alert(t('Telefone repetido'), t('Os telefones precisam ser diferentes.'));
+      Alert.alert(t('Erro'), t('O nome não pode estar vazio.'));
       return;
     }
 
     try {
       setSaving(true);
 
+      // 1. Salva no banco (Certifique-se que o serviço usa chaves ENDERECO e nome_tutor)
       const updatedTutor = await updateCurrentTutorProfile({
         nome: cleanName,
         endereco: cleanAddress,
         telefone: cleanPhone,
       });
-      const updatedContacts = await updateCurrentTutorContacts(validPhones);
 
-      setUserData(updatedTutor);
-      setPhones(normalizeLoadedPhones(updatedContacts, cleanPhone));
-      Alert.alert(t('Sucesso'), t('Perfil atualizado!'));
-      navigation.goBack();
+      // 2. Salva os contatos extras
+      await updateCurrentTutorContacts(validPhones);
+
+      // 3. Atualiza localmente
+      setUserData(prev => ({...prev, ...updatedTutor}));
+
+      Alert.alert(
+        t('Sucesso'), 
+        t('Perfil atualizado com sucesso!'), 
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+      
     } catch (err) {
       console.error(err);
-      Alert.alert(t('Erro'), err?.message || t('Não foi possível atualizar o perfil.'));
+      Alert.alert(t('Erro'), t('Não foi possível atualizar o perfil.'));
     } finally {
       setSaving(false);
     }
   };
+
+  const renderFotoPerfil = () => {
+    const uriRaw = imageUser?.imagem || userData?.imagem_perfil_tutor || userData?.imagemPerfil;
+    if (!uriRaw) return require('../../assets/user_default.png');
+    if (typeof uriRaw === 'string' && uriRaw.startsWith('file://')) {
+      return { uri: uriRaw };
+    }
+    const normalized = normalizeTutorImage(uriRaw);
+    return { uri: `${normalized}?t=${photoTimestamp}` };
+  };
+
+  const fotoPerfil = renderFotoPerfil();
+  const cpfExibir = String(cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF || "").replace(/\D/g, "");
 
   if (loading) {
     return (
@@ -281,12 +281,6 @@ export default function EditarPerfil() {
       </View>
     );
   }
-
-  const fotoPerfil = imageUser?.imagem || userData?.imagemPerfil || userData?.imagem_perfil_tutor
-    ? { uri: normalizeTutorImage(imageUser?.imagem || userData?.imagemPerfil || userData?.imagem_perfil_tutor) }
-    : require('../../assets/user_default.png');
-
-  const cpfExibir = String(cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF || "").replace(/\D/g, "");
 
   return (
     <KeyboardAvoidingView
@@ -356,7 +350,6 @@ export default function EditarPerfil() {
             <View style={styles.fieldContainer}>
               <Text style={styles.fieldLabel}>{t('CPF (não editável)')}</Text>
               <TextInput
-                  // Só chama o formatador se existir um CPF para formatar
                   value={cpfExibir ? formateCPF(cpfExibir) : ''}
                   editable={false}
                   style={[styles.textInput, styles.disabledInput]}
@@ -449,10 +442,8 @@ export default function EditarPerfil() {
             </TouchableOpacity>
           </View>
         </ScrollView>
-
         <TabBar />
       </View>
     </KeyboardAvoidingView>
   );
 }
-
