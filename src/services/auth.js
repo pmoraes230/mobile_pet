@@ -11,6 +11,16 @@ const SESSION_TIMEOUT = 30 * 60 * 1000;
 
 let interceptorsConfigured = false;
 
+// Generates a 32-character hexadecimal ID (UUID without dashes)
+const generateClientId = () => {
+    const hex = '0123456789abcdef';
+    let id = '';
+    for (let i = 0; i < 32; i++) {
+        id += hex.charAt(Math.floor(Math.random() * 16));
+    }
+    return id;
+};
+
 export const updateLastActive = async () => {
     await SecureStore.setItemAsync(LAST_ACTIVE_KEY, Date.now().toString());
 };
@@ -57,7 +67,7 @@ const saveSession = async ({ token, accessToken, refreshToken, user }) => {
 
 export const login = async (email, senha) => {
     try {
-        const response = await axios.post(`${_API_URL_PROD}/api/tutors/login`, {
+        const response = await axios.post(`${API_URL}/api/tutors/login`, {
             email,
             senha,
         });
@@ -189,7 +199,7 @@ export const refreshAccessToken = async () => {
         throw new Error("Sessão expirada. Faça login novamente.");
     }
 
-    const response = await axios.post(`${_API_URL_PROD}/api/auth/refresh`, {
+    const response = await axios.post(`${API_URL}/api/auth/refresh`, {
         token: refreshToken,
     });
 
@@ -203,6 +213,8 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
             throw new Error("Todos os campos são obrigatórios.");
         }
 
+        console.log(senha, "SENHA DO CADASTRO");
+
         if (senha.length < 8) {
             throw new Error("A senha deve ter no mínimo 8 caracteres.");
         }
@@ -215,8 +227,8 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
             throw new Error("A senha deve conter pelo menos um número.");
         }
 
-        if (!/[@$%]/.test(senha)) {
-            throw new Error("A senha deve conter pelo menos um símbolo (@$%).");
+        if (!/[^A-Za-z0-9]/.test(senha)) {
+            throw new Error("A senha deve conter pelo menos um símbolo.");
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -239,7 +251,8 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
                 TELEFONE: telefone,
             });
 
-            const response = await axios.post(`${_API_URL_PROD}/api/auth/register`, {
+            const response = await axios.post(`${API_URL}/api/auth/register`, {
+                id: generateClientId(),
                 nome_tutor: nome,
                 EMAIL: email,
                 senha_tutor: senha,

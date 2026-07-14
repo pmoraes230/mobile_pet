@@ -145,7 +145,7 @@ export const getAgendaSemanal = async (data = new Date()) => {
 
         const dataFormatada = formatarData(data);
 
-        const response = await axios.get(`${_API_URL_PROD}/api/consultas/agenda`, {
+        const response = await axios.get(`${API_URL}/api/consultas/agenda`, {
             params: { data: dataFormatada },
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -172,7 +172,7 @@ export const criarAgendamento = async (dadosAgendamento) => {
 
         const { agendaDisponivelId, petId, tipo, obs } = dadosAgendamento;
 
-        const response = await axios.post(`${_API_URL_PROD}/api/consultas`, {
+        const response = await axios.post(`${API_URL}/api/consultas`, {
             agendaDisponivelId,
             petId,
             tipo,
@@ -191,7 +191,7 @@ export const criarAgendamento = async (dadosAgendamento) => {
 // GET Veterinários
 export const getVeterinarios = async () => {
     const token = await getToken();
-    const response = await axios.get(`${_API_URL_PROD}/api/consultas/veterinarios`, {
+    const response = await axios.get(`${API_URL}/api/consultas/veterinarios`, {
         headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -203,7 +203,7 @@ export const getAgendaDisponivelDates = async (vetId) => {
         const token = await getToken();
         if (!token) throw new Error("Usuário não autenticado.");
 
-        const response = await axios.get(`${_API_URL_PROD}/api/consultas/horarios`, {
+        const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
             params: { vet_id: vetId },
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -233,7 +233,7 @@ export const getAgendaDisponivelTimes = async (vetId, date) => {
     const token = await getToken();
     if (!token) throw new Error("Usuário não autenticado.");
 
-    const response = await axios.get(`${_API_URL_PROD}/api/consultas/horarios`, {
+    const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
       params: { vet_id: vetId, data: date },
       headers: { Authorization: `Bearer ${token}` }
     });
