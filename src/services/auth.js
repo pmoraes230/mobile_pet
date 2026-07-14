@@ -132,31 +132,42 @@ export const getUserInfo = async () => {
     try {
         const decoded = jwtDecode(token);
         const S3_BASE = 'https://coracao-em-patas.s3.sa-east-1.amazonaws.com';
-        const rawImage = decoded.imagem || decoded.IMAGEM;
-        const imagem = rawImage
+        
+        // Buscamos os dados atualizados do armazenamento local
+        const userStorageRaw = await AsyncStorage.getItem('userData');
+        const user = JSON.parse(userStorageRaw || "{}");
+
+        // PRIORIDADE 1: AsyncStorage (Dados novos que o usuário editou)
+        // PRIORIDADE 2: Token (Dados antigos de quando fez login)
+        const rawImage = 
+            user.imagem_perfil_tutor || 
+            user.imagemPerfil || 
+            user.imagem || 
+            decoded.imagem_perfil_tutor || 
+            decoded.imagem || 
+            decoded.IMAGEM;
+
+        const imagemFinal = rawImage
             ? rawImage.startsWith('http')
                 ? rawImage
                 : `${S3_BASE}/${rawImage}`
             : null;
 
-            const user = JSON.parse(
-                    await AsyncStorage.getItem('userData') || "{}"
-                );
+        return {
+            id: decoded.id,
+            email: user.EMAIL || user.email || decoded.email || decoded.EMAIL,
+            nome:
+                user.nome_tutor ||
+                user.nome ||
+                decoded.nome_tutor ||
+                decoded.nome ||
+                "Usuário",
 
-            return {
-                id: decoded.id,
-                email: decoded.email || decoded.EMAIL,
-                nome:
-                    decoded.nome_tutor ||
-                    decoded.nome ||
-                    user.nome_tutor ||
-                    user.nome ||
-                    "Usuário",
-                imagem:
-                    imagem ||
-                    user.imagem_perfil_tutor ||
-                    null,
-            };
+            // MAPEAMENTO PARA O EDITAR PERFIL ENCONTRAR O ENDEREÇO E TELEFONE
+            endereco: user.ENDERECO || user.endereco || decoded.ENDERECO || "", 
+            telefone: user.TELEFONE || user.telefone || decoded.TELEFONE || "",
+            imagem: imagemFinal,
+        };
     } catch (err) {
         console.error("Erro ao decodificar token:", err);
         return null;
@@ -187,8 +198,7 @@ export const refreshAccessToken = async () => {
 
 export const register = async (nome, email, senha, cpfCnpj, dataNascimento, endereco, telefone = '') => {
     try {
-        await logout(); // <--- ADICIONE ESTA LINHA AQUI para limpar dados de "outra pessoa"
-        // Validações básicas
+        await logout(); 
         if (!nome || !email || !senha || !cpfCnpj || !dataNascimento || !endereco) {
             throw new Error("Todos os campos são obrigatórios.");
         }
@@ -209,23 +219,16 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
             throw new Error("A senha deve conter pelo menos um símbolo (@$%).");
         }
 
-        // Validação de email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             throw new Error("Email inválido.");
         }
 
-        // Formatar data (dd/mm/aaaa → yyyy-mm-dd)
-        // Substitua as duas linhas da data por estas:
         const p = (dataNascimento || "").split('/');
         const dataFormatada = `${p[2]}-${String(p[1] || '').padStart(2, '0')}-${String(p[0] || '').padStart(2, '0')}T00:00:00.000Z`;
 
-        // Remover caracteres especiais de CPF/CNPJ
-        // Remover caracteres especiais de CPF/CNPJ
         const cpfLimpo = String(cpfCnpj || "").replace(/\D/g, '');
 
-        // GERAR ID DE 32 CARACTERES MANUALMENTE
-        const idManual = (Math.random().toString(36).substring(2) + Math.random().toString(36).substring(2)).substring(0, 32);
         console.log({
                 nome_tutor: nome,
                 EMAIL: email,
@@ -247,9 +250,12 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
             });
         const token = response.data?.token || response.data?.accessToken;
 
+            // SALVANDO AS CHAVES EXATAS PARA O APP JÁ COMEÇAR COM DADOS
             const user = {
                 nome_tutor: nome,
                 EMAIL: email,
+                ENDERECO: endereco, 
+                TELEFONE: telefone,
                 imagem_perfil_tutor: null,
             };
 
@@ -293,7 +299,6 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
             throw new Error("Sem conexão com a internet. Verifique sua rede e tente novamente.");
         }
 
-        // Erros de validação ou outros erros
         throw error;
     }
 };

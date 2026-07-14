@@ -54,6 +54,8 @@ const Perfil = () => {
 
   const getPetName = (pet) => pet?.NOME || pet?.nome || pet?.name || 'Pet';
   const getPetBreed = (pet) => pet?.RACA || pet?.raca || pet?.COR || pet?.cor || t('Sem detalhe');
+  
+  // CORREÇÃO: Lógica de imagem de pet com timestamp
   const getPetImage = (pet) => {
     const rawImage =
       pet?.imagem ||
@@ -63,7 +65,11 @@ const Perfil = () => {
       pet?.imagemPet ||
       pet?.imagem_pet;
 
-    return normalizeTutorImage(rawImage);
+    if (!rawImage) return null;
+    
+    const normalized = normalizeTutorImage(rawImage);
+    // Adiciona timestamp para evitar cache de imagens de pets também
+    return `${normalized}?t=${new Date().getTime()}`;
   };
 
   const loadAllData = useCallback(async () => {
@@ -71,8 +77,6 @@ const Perfil = () => {
       setLoading(true);
       setError(null);
 
-      // Adicionamos .catch(() => null) para que se o CPF falhar, 
-      // o NOME e os PETS continuem carregando normalmente.
       const [tutorRes, cpfRes, petsRes] = await Promise.all([
         searchTutors().catch(() => null),
         consumerCPF().catch(() => null),
@@ -84,7 +88,6 @@ const Perfil = () => {
       setPets(normalizePets(petsRes));
     } catch (err) {
       console.error('Erro ao carregar perfil:', err);
-      // Aqui o erro só vai aparecer se TUDO falhar
     } finally {
       setLoading(false);
     }
@@ -109,15 +112,8 @@ const Perfil = () => {
       t('Sair da conta'),
       t('Tem certeza que deseja sair da conta?'),
       [
-        {
-          text: t('Cancelar'),
-          style: 'cancel',
-        },
-        {
-          text: t('Sair'),
-          style: 'destructive',
-          onPress: executeLogout,
-        },
+        { text: t('Cancelar'), style: 'cancel' },
+        { text: t('Sair'), style: 'destructive', onPress: executeLogout },
       ],
       { cancelable: true }
     );
@@ -144,10 +140,15 @@ const Perfil = () => {
   const enderecoExibir = userData?.endereco || userData?.ENDERECO || t('Endereço não informado');
   const rawNascimento = userData?.dataNascimento || userData?.DATA_NASCIMENTO || null;
   const cpfBruto = String(cpfData?.cpf || cpfData?.CPF || userData?.cpf || userData?.CPF || "").replace(/\D/g, "");
-  const fotoUrl = normalizeTutorImage(userData?.imagemPerfil || userData?.imagem_perfil_tutor);
-  const fotoPerfil = fotoUrl ? { uri: fotoUrl } : defaultAvatar;
+  
+  // CORREÇÃO: Lógica de imagem de perfil com timestamp anti-cache
+  const fotoUrlRaw = userData?.imagemPerfil || userData?.imagem_perfil_tutor;
+  const fotoPerfil = fotoUrlRaw 
+    ? { uri: `${normalizeTutorImage(fotoUrlRaw)}?t=${new Date().getTime()}` } 
+    : defaultAvatar;
+
   const firstPet = pets[0];
-  const firstPetImage = getPetImage(firstPet);
+  const firstPetImage = firstPet ? getPetImage(firstPet) : null;
 
   return (
     <KeyboardAvoidingView
@@ -218,7 +219,6 @@ const Perfil = () => {
               <View style={styles.detailRow}>
                 <Text style={styles.detailLabel}>{t('Documento CPF')}</Text>
                   <Text style={styles.detailValue}>
-                    {/* Só formata se o CPF tiver o tamanho de um CPF real, senão mostra "Carregando" ou "Não informado" */}
                     {cpfBruto.length >= 11 ? formateCPF(cpfBruto) : t('Não informado')}
                   </Text>
               </View>
@@ -247,17 +247,10 @@ const Perfil = () => {
               {firstPet ? (
                 <View style={styles.petItem}>
                   <View style={styles.petAvatar}>
-                    {firstPetImage ? (
-                      <Image
-                        source={{ uri: firstPetImage }}
-                        style={styles.petAvatarImage}
-                      />
-                    ) : (
-                      <Image
-                        source={defaultPetImage}
-                        style={styles.petAvatarImage}
-                      />
-                    )}
+                    <Image
+                      source={firstPetImage ? { uri: firstPetImage } : defaultPetImage}
+                      style={styles.petAvatarImage}
+                    />
                   </View>
                   <View style={styles.petInfo}>
                     <Text style={styles.petName}>{getPetName(firstPet)}</Text>
@@ -309,4 +302,3 @@ const Perfil = () => {
 };
 
 export default Perfil;
-
