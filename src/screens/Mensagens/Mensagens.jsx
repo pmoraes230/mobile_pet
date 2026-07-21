@@ -1,4 +1,86 @@
-﻿import React, { useState } from 'react';
+﻿import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { MessageSquare } from 'lucide-react-native'; // Ícone sugestivo
+
+import { styles as originalStyles } from './styles'; // Mantendo os estilos originais para o container
+import HeaderHome from '../../components/HeaderHome';
+import TabBar from '../../components/TabBar';
+import { useLanguage } from '../../i18n/LanguageContext';
+
+export default function Mensagens() {
+  const navigation = useNavigation();
+  const { t } = useLanguage();
+
+  return (
+    <View style={originalStyles.container}>
+      {/* Header padrão para manter a identidade visual */}
+      <HeaderHome
+        userName="Pet Coração"
+        showSearch={false}
+        showBackButton={true}
+        showGreeting={false}
+        onBackPress={() => navigation.goBack()}
+      />
+
+      <View style={localStyles.centeredContent}>
+        <View style={localStyles.iconContainer}>
+          <MessageSquare size={64} color="#A0A7BA" strokeWidth={1.5} />
+        </View>
+        
+        <Text style={localStyles.title}>
+          {t('Em Breve')}
+        </Text>
+        
+        <Text style={localStyles.subtitle}>
+          {t('Estamos trabalhando para trazer a melhor experiência de conversa para você e seu pet.')}
+        </Text>
+      </View>
+
+      {/* Mantém a TabBar para que o usuário possa navegar para outras telas */}
+      <TabBar activeTab="mensagens" />
+    </View>
+  );
+}
+
+const localStyles = StyleSheet.create({
+  centeredContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 40,
+    // O background transparente ou dinâmico aqui ajuda no modo escuro 
+    // se o originalStyles.container já lidar com isso
+  },
+  iconContainer: {
+    marginBottom: 20,
+    backgroundColor: '#F7FAFC', // Ajuste para uma cor que combine com seu modo claro/escuro
+    padding: 24,
+    borderRadius: 100,
+  },
+  title: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#2D3748', // No modo escuro real, você usaria uma cor dinâmica aqui
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#718096',
+    textAlign: 'center',
+    lineHeight: 24,
+  },
+});
+
+/* 
+CÓDIGO ORIGINAL COMENTADO PARA REFERÊNCIA FUTURA:
+
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -127,3 +209,4 @@ export default function Mensagens() {
     </KeyboardAvoidingView>
   );
 }
+*/
