@@ -607,6 +607,9 @@ const translations = {
     'Medicamento': 'Medication',
     'Sim': 'Yes',
     'Não': 'No',
+    'Estamos trabalhando para trazer a melhor experiência de conversa para você e seu pet.': 'We are working to bring the best conversation experience for you and your pet.',
+    'Em breve você poderá conversar com outros tutores e veterinários.': 'Soon you will be able to chat with other owners and veterinarians.',
+    'Em Breve': 'Coming Soon',
   },
 };
 
