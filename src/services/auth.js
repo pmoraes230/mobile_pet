@@ -67,7 +67,7 @@ const saveSession = async ({ token, accessToken, refreshToken, user }) => {
 
 export const login = async (email, senha) => {
     try {
-        const response = await axios.post(`${API_URL}/api/tutors/login`, {
+        const response = await axios.post(`${_API_URL_PROD}/api/tutors/login`, {
             email,
             senha,
         });
@@ -199,7 +199,7 @@ export const refreshAccessToken = async () => {
         throw new Error("Sessão expirada. Faça login novamente.");
     }
 
-    const response = await axios.post(`${API_URL}/api/auth/refresh`, {
+    const response = await axios.post(`${_API_URL_PROD}/api/auth/refresh`, {
         token: refreshToken,
     });
 
@@ -251,7 +251,7 @@ export const register = async (nome, email, senha, cpfCnpj, dataNascimento, ende
                 TELEFONE: telefone,
             });
 
-            const response = await axios.post(`${API_URL}/api/auth/register`, {
+            const response = await axios.post(`${_API_URL_PROD}/api/auth/register`, {
                 id: generateClientId(),
                 nome_tutor: nome,
                 EMAIL: email,
