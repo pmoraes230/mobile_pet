@@ -142,7 +142,7 @@ export default function TelaInicial() {
     { id: 2, title: t('Prontuário'), description: t('Acesse o prontuário de seus pets.'), icon: Clipboard, color: '#E8D5F7' },
     { id: 3, title: t('Diário emocional'), description: t('Registre o diário.'), icon: BookOpen, color: '#E8D5F7' },
     { id: 4, title: t('Meus pets'), description: t('Acesse seus pets.'), icon: PawPrint, color: '#E8D5F7' },
-    { id: 5, title: t('cupidopet'), description: t('Faça o seu pet encontrar um novo parceiro.'), icon: Heart, color: '#E8D5F7', badge: true },
+    { id: 5, title: t('Cupidopet'), description: t('Faça o seu pet encontrar um novo parceiro.'), icon: Heart, color: '#E8D5F7', badge: true },
     { id: 6, title: t('Adoção'), description: t('Adote um pet e dê uma nova chance.'), icon: Dog, color: '#E8D5F7' },
   ];
 

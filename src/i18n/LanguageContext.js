@@ -48,7 +48,7 @@ const translations = {
     'Registre o diário.': 'Record the diary.',
     'Meus pets': 'My pets',
     'Acesse seus pets.': 'Open your pets.',
-    'cupidopet': 'Cupidopet',
+    'Cupidopet': 'Cupidopet',
     'Faça o seu pet encontrar um novo parceiro.': 'Help your pet find a new friend.',
     'Adote um pet e dê uma nova chance.': 'Adopt a pet and give them a new chance.',
     'Configurações da Conta': 'Account Settings',

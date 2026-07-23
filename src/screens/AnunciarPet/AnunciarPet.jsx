@@ -42,9 +42,7 @@ export default function AnunciarPet() {
   const especies = [
     { id: 1, name: 'Cachorro' },
     { id: 2, name: 'Gato' },
-    { id: 3, name: 'Coelho' },
-    { id: 4, name: 'Hamster' },
-    { id: 5, name: 'Pássaro' },
+    { id: 3, name: 'Outro' },
   ];
 
   const sexos = [
