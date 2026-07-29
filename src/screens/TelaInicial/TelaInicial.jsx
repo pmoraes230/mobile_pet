@@ -44,7 +44,7 @@ const formatarCompromisso = (compromisso, t, language) => {
   if (!compromisso) {
     return {
       titulo: t('Sem agendamentos'),
-      subtitulo: t('Você não possui agendamentos futuros.'),
+      subtitulo: t('Você não possui consultas marcadas no momento.'),
     };
   }
 
