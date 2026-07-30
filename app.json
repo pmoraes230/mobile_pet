@@ -28,7 +28,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/splash-icon.png",
+          "image": "./assets/pet.png",
           "imageWidth": 220,
           "resizeMode": "contain",
           "backgroundColor": "#573F94",
@@ -42,6 +42,12 @@
       "router": {},
       "eas": {
         "projectId": "c9159dfd-5687-4452-86ca-f2be4f4d4dae"
+      }
+    },
+    "ios": {
+      "bundleIdentifier": "com.mobilepet.app",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
       }
     }
   }

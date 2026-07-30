@@ -38,7 +38,7 @@ export const styles = StyleSheet.create({
     height: 92,
     borderRadius: 22,
     overflow: 'hidden',
-    backgroundColor: '#e0e7ff',
+    backgroundColor: '#f5f5f5',
   },
   avatar: {
     width: '100%',
