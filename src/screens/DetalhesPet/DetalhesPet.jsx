@@ -4,6 +4,7 @@ import {
   ScrollView, 
   Text, 
   TouchableOpacity, 
+  Pressable,
   Image, 
   TextInput,
   KeyboardAvoidingView,
@@ -158,6 +159,80 @@ export default function TelaDetalhesPet({ route }) {
   const [vaccineApplicationDate, setVaccineApplicationDate] = useState('');
   const [vaccineNextDoseDate, setVaccineNextDoseDate] = useState('');
   const [savingVaccine, setSavingVaccine] = useState(false);
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [datePickerTarget, setDatePickerTarget] = useState(null);
+  const [calendarMonth, setCalendarMonth] = useState(new Date().getMonth());
+  const [calendarYear, setCalendarYear] = useState(new Date().getFullYear());
+
+  const parseDateString = (value) => {
+    const match = String(value).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return null;
+    const [, day, month, year] = match;
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    if (
+      date.getFullYear() !== Number(year) ||
+      date.getMonth() !== Number(month) - 1 ||
+      date.getDate() !== Number(day)
+    ) {
+      return null;
+    }
+    return date;
+  };
+
+  const formatDateLabel = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
+
+  const getCalendarDays = (year, month) => {
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const days = Array.from({ length: firstDay }, () => null);
+
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      days.push(new Date(year, month, day));
+    }
+
+    return days;
+  };
+
+  const isValidCalendarDate = (date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const maxPast = new Date(today);
+    maxPast.setDate(today.getDate() - 90);
+
+    if (datePickerTarget === 'application') {
+      return date >= maxPast && date <= today;
+    }
+
+    return date >= today;
+  };
+
+  const openVaccineDatePicker = (target) => {
+    setDatePickerTarget(target);
+    const selectedDate = target === 'application' ? parseDateString(vaccineApplicationDate) : parseDateString(vaccineNextDoseDate);
+    const current = selectedDate || new Date();
+    setCalendarMonth(current.getMonth());
+    setCalendarYear(current.getFullYear());
+    setDatePickerVisible(true);
+  };
+
+  const closeVaccineDatePicker = () => {
+    setDatePickerVisible(false);
+    setDatePickerTarget(null);
+  };
+
+  const handleSelectVaccineDate = (date) => {
+    if (datePickerTarget === 'application') {
+      setVaccineApplicationDate(formatDateLabel(date));
+    } else if (datePickerTarget === 'nextDose') {
+      setVaccineNextDoseDate(formatDateLabel(date));
+    }
+    closeVaccineDatePicker();
+  };
 
   useEffect(() => {
     carregarVacinas();
@@ -818,13 +893,17 @@ export default function TelaDetalhesPet({ route }) {
 
               <TextInput
                 value={vaccineName}
-                onChangeText={setVaccineName}
+                onChangeText={(value) => setVaccineName(value.slice(0, 30))}
                 placeholder={t('Nome da Vacina')}
                 placeholderTextColor={p.muted}
+                maxLength={30}
                 style={[styles.vaccineModalInput, { backgroundColor: p.field, color: p.text, borderColor: p.border }]}
               />
 
-              <View style={[styles.vaccineDateInputWrapper, { backgroundColor: p.field, borderColor: p.border }]}>
+              <Text style={{ color: p.subtitle, fontSize: 12, marginBottom: 6, fontWeight: '700' }}>
+                {t('Data de aplicação')}
+              </Text>
+              <View style={[styles.vaccineDateInputWrapper, { backgroundColor: p.field, borderColor: p.border }]}> 
                 <TextInput
                   value={vaccineApplicationDate}
                   onChangeText={(value) => setVaccineApplicationDate(formatDateInput(value))}
@@ -834,10 +913,15 @@ export default function TelaDetalhesPet({ route }) {
                   maxLength={10}
                   style={[styles.vaccineDateInput, { color: p.text }]}
                 />
-                <Calendar size={18} color={p.text} />
+                <TouchableOpacity onPress={() => openVaccineDatePicker('application')} activeOpacity={0.75}>
+                  <Calendar size={18} color={p.text} />
+                </TouchableOpacity>
               </View>
 
-              <View style={[styles.vaccineDateInputWrapper, { backgroundColor: p.field, borderColor: p.border }]}>
+              <Text style={{ color: p.subtitle, fontSize: 12, marginBottom: 6, fontWeight: '700' }}>
+                {t('Próxima dose')}
+              </Text>
+              <View style={[styles.vaccineDateInputWrapper, { backgroundColor: p.field, borderColor: p.border }]}> 
                 <TextInput
                   value={vaccineNextDoseDate}
                   onChangeText={(value) => setVaccineNextDoseDate(formatDateInput(value))}
@@ -847,7 +931,9 @@ export default function TelaDetalhesPet({ route }) {
                   maxLength={10}
                   style={[styles.vaccineDateInput, { color: p.text }]}
                 />
-                <Calendar size={18} color={p.text} />
+                <TouchableOpacity onPress={() => openVaccineDatePicker('nextDose')} activeOpacity={0.75}>
+                  <Calendar size={18} color={p.text} />
+                </TouchableOpacity>
               </View>
 
               <View style={styles.vaccineModalActions}>
@@ -873,6 +959,117 @@ export default function TelaDetalhesPet({ route }) {
               </View>
             </View>
           </KeyboardAvoidingView>
+        </Modal>
+
+        <Modal
+          visible={datePickerVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={closeVaccineDatePicker}
+        >
+          <Pressable
+            style={[styles.vaccineModalOverlay, { backgroundColor: p.overlay || 'rgba(5, 7, 18, 0.52)' }]}
+            onPress={closeVaccineDatePicker}
+          >
+            <Pressable
+              onPress={() => {} }
+              style={[styles.vaccineModalCard, { backgroundColor: p.surface, borderColor: p.border, maxWidth: 360 }]}
+            >
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <TouchableOpacity
+                  onPress={() => {
+                    const prev = new Date(calendarYear, calendarMonth - 1, 1);
+                    setCalendarMonth(prev.getMonth());
+                    setCalendarYear(prev.getFullYear());
+                  }}
+                  style={{ padding: 10, borderRadius: 12, backgroundColor: p.surfaceAlt }}
+                >
+                  <Text style={{ color: p.text, fontWeight: '700', fontSize: 16 }}>{'<'}</Text>
+                </TouchableOpacity>
+                <View style={{ alignItems: 'center' }}>
+                  <Text style={{ color: p.text, fontSize: 17, fontWeight: '900' }}>
+                    {new Date(calendarYear, calendarMonth).toLocaleString('pt-BR', { month: 'long', year: 'numeric' })}
+                  </Text>
+                  <Text style={{ color: p.subtitle, fontSize: 12 }}>
+                    {datePickerTarget === 'application'
+                      ? t('Data de aplicação')
+                      : t('Próxima dose')}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    const next = new Date(calendarYear, calendarMonth + 1, 1);
+                    setCalendarMonth(next.getMonth());
+                    setCalendarYear(next.getFullYear());
+                  }}
+                  style={{ padding: 10, borderRadius: 12, backgroundColor: p.surfaceAlt }}
+                >
+                  <Text style={{ color: p.text, fontWeight: '700', fontSize: 16 }}>{'>'}</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <TouchableOpacity
+                  onPress={() => setCalendarYear((prevYear) => prevYear - 1)}
+                  style={{ padding: 10, borderRadius: 12, backgroundColor: p.surfaceAlt }}
+                >
+                  <Text style={{ color: p.text, fontWeight: '700' }}>{t('Ano -')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setCalendarYear((prevYear) => prevYear + 1)}
+                  style={{ padding: 10, borderRadius: 12, backgroundColor: p.surfaceAlt }}
+                >
+                  <Text style={{ color: p.text, fontWeight: '700' }}>{t('Ano +')}</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((label, index) => (
+                  <Text key={`${label}-${index}`} style={{ flex: 1, textAlign: 'center', color: p.subtitle, fontSize: 12, fontWeight: '700' }}>
+                    {label}
+                  </Text>
+                ))}
+              </View>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+                {getCalendarDays(calendarYear, calendarMonth).map((date, index) => {
+                  if (!date) {
+                    return <View key={`empty-${index}`} style={{ width: `${100 / 7}%`, height: 42 }} />;
+                  }
+
+                  const isValid = isValidCalendarDate(date);
+                  const dateLabel = String(date.getDate()).padStart(2, '0');
+
+                  return (
+                    <TouchableOpacity
+                      key={date.toISOString()}
+                      disabled={!isValid}
+                      onPress={() => handleSelectVaccineDate(date)}
+                      style={{
+                        width: `${100 / 7}%`,
+                        height: 42,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        backgroundColor: isValid ? p.surfaceAlt : 'transparent',
+                        opacity: isValid ? 1 : 0.35,
+                        borderRadius: 10,
+                        marginBottom: 6,
+                      }}
+                    >
+                      <Text style={{ color: isValid ? p.text : p.subtitle, fontSize: 14, fontWeight: '700' }}>
+                        {dateLabel}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+              <TouchableOpacity
+                style={[styles.vaccineCancelButton, { backgroundColor: p.surfaceAlt, marginTop: 16 }]}
+                onPress={closeVaccineDatePicker}
+              >
+                <Text style={[styles.vaccineCancelText, { color: p.text }]}> 
+                  {t('Cancelar')}
+                </Text>
+              </TouchableOpacity>
+            </Pressable>
+          </Pressable>
         </Modal>
 
         <TabBar onLogout={handleLogout} />

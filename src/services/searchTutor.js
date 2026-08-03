@@ -2,7 +2,7 @@ import axios from "axios"
 import { jwtDecode } from "jwt-decode";
 import * as SecureStore from 'expo-secure-store';
 import { isAuthenticated, getUserInfo, getToken } from "./auth";
-import { API_URL, _API_URL_PROD } from "../utils/endPoint_Url";
+import { _API_URL_PROD } from "../utils/endPoint_Url";
 
 const TOKEN_KEY = "auth_token";
 

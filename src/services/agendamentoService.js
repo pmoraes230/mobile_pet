@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getToken } from "./auth";
-import { API_URL, _API_URL_PROD } from "../utils/endPoint_Url";
+import { _API_URL_PROD } from "../utils/endPoint_Url";
 import { getPetsByTutor } from "./pet";
 import api from "./api";
 
@@ -123,6 +123,43 @@ const getPetIdConsulta = (consulta) => primeiroValor(
     pareceId(consulta.animal) ? consulta.animal : undefined
 );
 
+const parseTimeString = (time) => {
+    if (!time || typeof time !== 'string') return null;
+    const parts = time.split(':').map((part) => Number(part));
+    if (parts.length < 2 || parts.some((value) => Number.isNaN(value))) return null;
+    return { hours: parts[0], minutes: parts[1] };
+};
+
+const isSlotTaken = (item) => {
+    const status = primeiroValor(
+        item?.status,
+        item?.STATUS,
+        item?.ocupado,
+        item?.disponivel === false ? 'ocupado' : undefined,
+        item?.reserved,
+        item?.booked,
+        item?.disponivel === false ? 'ocupado' : undefined
+    );
+
+    if (!status) return false;
+    const normalized = String(status).toLowerCase();
+    return [
+        'ocupado', 'reservado', 'booked', 'taken', 'unavailable', 'indisponivel',
+        'indisponível', 'busy', 'agendado', 'scheduled'
+    ].some((value) => normalized.includes(value));
+};
+
+const isPastSlot = (dateString, timeString) => {
+    const parsed = parseTimeString(timeString);
+    if (!parsed || !dateString) return false;
+
+    const [year, month, day] = String(dateString).split('-').map(Number);
+    if ([year, month, day].some((value) => Number.isNaN(value))) return false;
+
+    const slotDate = new Date(year, month - 1, day, parsed.hours, parsed.minutes, 0);
+    return slotDate.getTime() <= Date.now();
+};
+
 const getVeterinarioNomeConsulta = (consulta) => {
     if (typeof consulta.veterinario === "string") return consulta.veterinario;
 
@@ -145,7 +182,7 @@ export const getAgendaSemanal = async (data = new Date()) => {
 
         const dataFormatada = formatarData(data);
 
-        const response = await axios.get(`${API_URL}/api/consultas/agenda`, {
+        const response = await axios.get(`${_API_URL_PROD}/api/consultas/agenda`, {
             params: { data: dataFormatada },
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -172,7 +209,7 @@ export const criarAgendamento = async (dadosAgendamento) => {
 
         const { agendaDisponivelId, petId, tipo, obs } = dadosAgendamento;
 
-        const response = await axios.post(`${API_URL}/api/consultas`, {
+        const response = await axios.post(`${_API_URL_PROD}/api/consultas`, {
             agendaDisponivelId,
             petId,
             tipo,
@@ -191,7 +228,7 @@ export const criarAgendamento = async (dadosAgendamento) => {
 // GET Veterinários
 export const getVeterinarios = async () => {
     const token = await getToken();
-    const response = await axios.get(`${API_URL}/api/consultas/veterinarios`, {
+    const response = await axios.get(`${_API_URL_PROD}/api/consultas/veterinarios`, {
         headers: { Authorization: `Bearer ${token}` }
     });
     return response.data;
@@ -203,7 +240,7 @@ export const getAgendaDisponivelDates = async (vetId) => {
         const token = await getToken();
         if (!token) throw new Error("Usuário não autenticado.");
 
-        const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
+        const response = await axios.get(`${_API_URL_PROD}/api/consultas/horarios`, {
             params: { vet_id: vetId },
             headers: { Authorization: `Bearer ${token}` }
         });
@@ -233,18 +270,29 @@ export const getAgendaDisponivelTimes = async (vetId, date) => {
     const token = await getToken();
     if (!token) throw new Error("Usuário não autenticado.");
 
-    const response = await axios.get(`${API_URL}/api/consultas/horarios`, {
+    const response = await axios.get(`${_API_URL_PROD}/api/consultas/horarios`, {
       params: { vet_id: vetId, data: date },
       headers: { Authorization: `Bearer ${token}` }
     });
 
     const horarios = response.data.horarios || [];
 
-    return horarios.map(item => ({
-      ID: item.id || item.ID,
-      HORA: item.texto || item.HORA,   // importante
-      raw: item
-    }));
+    return horarios
+      .filter((item) => {
+        const dateValue = item.DATA || item.data || date;
+        const timeValue = item.texto || item.HORA || item.hora || item.HORARIO;
+
+        if (!timeValue) return false;
+        if (isSlotTaken(item)) return false;
+        if (isPastSlot(dateValue, timeValue)) return false;
+
+        return true;
+      })
+      .map((item) => ({
+        ID: item.id || item.ID,
+        HORA: item.texto || item.HORA || item.hora || item.HORARIO,
+        raw: item
+      }));
   } catch (error) {
     console.error("Erro em getAgendaDisponivelTimes:", error);
     throw error;

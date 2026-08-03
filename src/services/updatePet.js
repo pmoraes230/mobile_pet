@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getToken } from './auth';
-import {API_URL, _API_URL_PROD } from '../utils/endPoint_Url';
+import { _API_URL_PROD } from '../utils/endPoint_Url';
 
 export const updatePet = async (petId, data) => {
   const token = await getToken();

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { _API_URL_PROD, API_URL } from '../utils/endPoint_Url';
+import { _API_URL_PROD } from '../utils/endPoint_Url';
 
 const recuperacaoApi = axios.create({
   baseURL: `${_API_URL_PROD}/api`,

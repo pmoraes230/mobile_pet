@@ -333,8 +333,16 @@ export default function TelaNovoAgendamento() {
         setSelectedVeterinario((prev) => prev || primeiroVet);
         if (primeiroVet) await loadAvailableDates(getItemId(primeiroVet));
       } catch (err) {
+        console.log("--- ERRO DE CONEXÃO ---");
+        console.log("Configuração da requisição:", err.config); // Aqui mostra a URL tentada
+        if (err.response) {
+            console.log("O servidor respondeu com:", err.response.status);
+        } else {
+            console.log("O servidor não respondeu. Pode ser IP errado ou servidor desligado.");
+        }
         setAgendaErro(err.message || t('Erro ao carregar dados.'));
-      } finally {
+      }
+       finally {
         setAgendaCarregando(false);
       }
     })();
