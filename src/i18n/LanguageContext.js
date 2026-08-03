@@ -480,7 +480,7 @@ const translations = {
     'Histórico': 'History',
     'Consultas e vacinas anteriores.': 'Past appointments and vaccines.',
     'Nenhum histórico encontrado.': 'No history found.',
-    'Humor emocional': 'Emotional Mood',
+    'Diário emocional': 'Emotional Diary',
     'Tendência dos últimos dias': 'Trend over the last days',
     'Triste': 'Sad',
     'Neutro': 'Neutral',

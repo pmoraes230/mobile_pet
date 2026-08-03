@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState } from 'react';
+﻿import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   ScrollView,
@@ -19,6 +19,7 @@ import {
   getNotificationPreferences,
   updateNotificationPreferences,
 } from '../../services/notificacoes';
+import { registerForPushNotificationsAsync } from '../../services/pushNotifications';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 export default function Configuracoes() {
@@ -31,6 +32,19 @@ export default function Configuracoes() {
   const [userEmail, setUserEmail] = useState('');
   const { isDarkMode, setThemeMode } = useAppTheme();
   const { language, setLanguage, t } = useLanguage();
+  const latestPreferencesRef = useRef({
+    pushEnabled: true,
+    vaccineRemindersEnabled: true,
+    weeklyTipsEnabled: false,
+  });
+  const saveInProgressRef = useRef(false);
+  const pendingPreferencesRef = useRef(null);
+
+  const syncLocalPreferences = (preferences) => {
+    setPushEnabled(Boolean(preferences.pushEnabled));
+    setLembretesVacinas(Boolean(preferences.vaccineRemindersEnabled));
+    setDicasSemanais(Boolean(preferences.weeklyTipsEnabled));
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -44,9 +58,13 @@ export default function Configuracoes() {
     getNotificationPreferences()
       .then((preferences) => {
         if (mounted) {
-          setPushEnabled(preferences.pushEnabled);
-          setLembretesVacinas(preferences.vaccineRemindersEnabled);
-          setDicasSemanais(preferences.weeklyTipsEnabled);
+          const normalizedPreferences = {
+            pushEnabled: Boolean(preferences.pushEnabled),
+            vaccineRemindersEnabled: Boolean(preferences.vaccineRemindersEnabled),
+            weeklyTipsEnabled: Boolean(preferences.weeklyTipsEnabled),
+          };
+          latestPreferencesRef.current = normalizedPreferences;
+          syncLocalPreferences(normalizedPreferences);
         }
       })
       .catch((error) => {
@@ -58,26 +76,58 @@ export default function Configuracoes() {
     };
   }, []);
 
-  const saveNotificationPreferences = async (nextPreferences) => {
-    if (savingNotifications) return;
+  const saveNotificationPreferences = async (nextPreferences = {}) => {
+    const mergedPreferences = {
+      pushEnabled: nextPreferences.pushEnabled ?? latestPreferencesRef.current.pushEnabled,
+      vaccineRemindersEnabled: nextPreferences.vaccineRemindersEnabled ?? latestPreferencesRef.current.vaccineRemindersEnabled,
+      weeklyTipsEnabled: nextPreferences.weeklyTipsEnabled ?? latestPreferencesRef.current.weeklyTipsEnabled,
+    };
 
+    latestPreferencesRef.current = mergedPreferences;
+    syncLocalPreferences(mergedPreferences);
+
+    if (saveInProgressRef.current) {
+      pendingPreferencesRef.current = mergedPreferences;
+      return;
+    }
+
+    saveInProgressRef.current = true;
     setSavingNotifications(true);
 
     try {
-      const savedPreferences = await updateNotificationPreferences({
-        pushEnabled,
-        vaccineRemindersEnabled: lembretesVacinas,
-        weeklyTipsEnabled: dicasSemanais,
-        ...nextPreferences,
-      });
+      while (true) {
+        const preferencesToPersist = pendingPreferencesRef.current || latestPreferencesRef.current;
+        pendingPreferencesRef.current = null;
 
-      setPushEnabled(savedPreferences.pushEnabled);
-      setLembretesVacinas(savedPreferences.vaccineRemindersEnabled);
-      setDicasSemanais(savedPreferences.weeklyTipsEnabled);
+        const savedPreferences = await updateNotificationPreferences(preferencesToPersist);
+        const normalizedSavedPreferences = {
+          pushEnabled: Boolean(savedPreferences.pushEnabled),
+          vaccineRemindersEnabled: Boolean(savedPreferences.vaccineRemindersEnabled),
+          weeklyTipsEnabled: Boolean(savedPreferences.weeklyTipsEnabled),
+        };
+
+        latestPreferencesRef.current = normalizedSavedPreferences;
+        syncLocalPreferences(normalizedSavedPreferences);
+
+        if (!pendingPreferencesRef.current) {
+          break;
+        }
+      }
+
+      if (latestPreferencesRef.current.pushEnabled) {
+        await registerForPushNotificationsAsync();
+      }
     } catch (error) {
-      console.log('Erro ao salvar preferências de notificação:', error?.response?.data || error?.message);
-      Alert.alert(t('Erro'), t('Não foi possível salvar as preferências de notificação.'));
+      const backendMessage = error?.response?.data?.message || error?.response?.data?.error || error?.message;
+      console.log('Erro ao salvar preferências de notificação:', backendMessage || error);
+      Alert.alert(
+        t('Erro'),
+        backendMessage
+          ? `${t('Não foi possível salvar as preferências de notificação.')}\n${backendMessage}`
+          : t('Não foi possível salvar as preferências de notificação.')
+      );
     } finally {
+      saveInProgressRef.current = false;
       setSavingNotifications(false);
     }
   };

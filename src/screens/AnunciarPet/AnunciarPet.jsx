@@ -227,6 +227,7 @@ export default function AnunciarPet() {
               placeholderTextColor="#CBD5E0"
               value={petName}
               onChangeText={setPetName}
+              maxLength={30}
             />
           </View>
 
@@ -251,6 +252,7 @@ export default function AnunciarPet() {
                 placeholderTextColor="#CBD5E0"
                 value={petRaca}
                 onChangeText={setPetRaca}
+                maxLength={25}
               />
             </View>
           </View>
@@ -291,6 +293,7 @@ export default function AnunciarPet() {
               keyboardType="decimal-pad"
               value={petPeso}
               onChangeText={setPetPeso}
+              maxLength={6}
             />
           </View>
 
@@ -304,6 +307,7 @@ export default function AnunciarPet() {
               numberOfLines={4}
               value={petDescricao}
               onChangeText={setPetDescricao}
+              maxLength={200}
             />
           </View>
 
