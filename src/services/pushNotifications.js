@@ -3,7 +3,10 @@ import Constants from 'expo-constants';
 import { isRunningInExpoGo } from 'expo';
 import { getNotificationPreferences, registrarPushToken } from './notificacoes';
 
+const PUSH_REGISTRATION_TIMEOUT_MS = 15000;
+
 let didRegisterToken = false;
+let registeredToken = null;
 let notificationsModule = null;
 
 const noopSubscription = {
@@ -32,8 +35,6 @@ const getNotificationsModule = () => {
 };
 
 export const registerForPushNotificationsAsync = async () => {
-  if (didRegisterToken) return null;
-
   try {
     const Notifications = getNotificationsModule();
 
@@ -44,7 +45,13 @@ export const registerForPushNotificationsAsync = async () => {
     const preferences = await getNotificationPreferences().catch(() => ({ pushEnabled: true }));
 
     if (!preferences.pushEnabled) {
+      didRegisterToken = false;
+      registeredToken = null;
       return null;
+    }
+
+    if (didRegisterToken && registeredToken) {
+      return registeredToken;
     }
 
     if (Platform.OS === 'android') {
@@ -70,15 +77,19 @@ export const registerForPushNotificationsAsync = async () => {
 
     const projectId =
       Constants.easConfig?.projectId ||
-      Constants.expoConfig?.extra?.eas?.projectId;
+      Constants.expoConfig?.extra?.eas?.projectId ||
+      'c9159dfd-5687-4452-86ca-f2be4f4d4dae';
 
-    if (!projectId) {
-      console.log('Push notification sem projectId. Rode eas init antes de gerar o APK.');
+    const expoTokenResponse = await Promise.race([
+      Notifications.getExpoPushTokenAsync({ projectId }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), PUSH_REGISTRATION_TIMEOUT_MS)),
+    ]);
+
+    const token = expoTokenResponse?.data;
+
+    if (!token) {
       return null;
     }
-
-    const expoToken = await Notifications.getExpoPushTokenAsync({ projectId });
-    const token = expoToken.data;
 
     await registrarPushToken({
       token,
@@ -86,8 +97,11 @@ export const registerForPushNotificationsAsync = async () => {
     });
 
     didRegisterToken = true;
+    registeredToken = token;
     return token;
   } catch (error) {
+    didRegisterToken = false;
+    registeredToken = null;
     console.log('Erro ao registrar push notification:', error?.response?.data || error?.message);
     return null;
   }

@@ -4,7 +4,7 @@
     "slug": "mobile_pet",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/pet.png",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
     "android": {
@@ -12,7 +12,7 @@
       "versionCode": 1,
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/pet.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#573F94"
       }
     },

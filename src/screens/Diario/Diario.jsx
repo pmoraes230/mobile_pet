@@ -35,6 +35,7 @@ import { useAppTheme } from '../../theme/ThemeContext';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 import api from '../../services/api';
+import { getToken } from '../../services/auth';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -134,7 +135,7 @@ export default function TelaDiario() {
       const tutorId = await AsyncStorage.getItem('userId'); 
       
       // 2. Você PRECISA do token, pois sua rota /pets/tutor/:id é protegida
-      const token = await AsyncStorage.getItem('@token');
+      const token = await getToken();
 
       if (!tutorId || !token) {
         return;
@@ -165,7 +166,7 @@ export default function TelaDiario() {
 
   async function loadRegistros(petId) {
   try {
-    const token = await AsyncStorage.getItem('@token');
+    const token = await getToken();
     
     const response = await api.get(`/diario/pet/${petId}`, {
       headers: { Authorization: `Bearer ${token}` }
@@ -207,7 +208,7 @@ export default function TelaDiario() {
       }
 
       // 1. Pega o token do armazenamento
-      const token = await AsyncStorage.getItem('@token');
+      const token = await getToken();
 
       // Debug: log dos dados que serão enviados
       const payload = {
@@ -397,20 +398,21 @@ export default function TelaDiario() {
               style={{
                 flexDirection: 'row',
                 justifyContent: 'space-between',
-                alignItems: 'center',
+                alignItems: 'flex-start',
                 marginBottom: 28,
               }}
             >
-              <View>
+              <View style={{ flex: 1, marginRight: 12 }}>
                 <Text
                   style={{
                     color: p.text,
                     fontSize: 24,
                     fontWeight: '900',
                     letterSpacing: 0.5,
+                    flexShrink: 1,
                   }}
                 >
-                  {t('Humor emocional')}
+                  {t('Diário emocional')}
                 </Text>
 
                 <Text
@@ -419,6 +421,7 @@ export default function TelaDiario() {
                     marginTop: 6,
                     fontSize: 13,
                     fontWeight: '600',
+                    flexShrink: 1,
                   }}
                 >
                   {t('Tendência dos últimos dias')}
@@ -437,6 +440,8 @@ export default function TelaDiario() {
                   shadowOpacity: 0.25,
                   shadowRadius: 8,
                   elevation: 4,
+                  maxWidth: '55%',
+                  flexShrink: 1,
                 }}
                 onPress={() => setModalPetOpen(true)}
                 activeOpacity={0.7}
@@ -447,6 +452,8 @@ export default function TelaDiario() {
                     fontWeight: '800',
                     fontSize: 12,
                     letterSpacing: 0.5,
+                    textAlign: 'right',
+                    flexWrap: 'wrap',
                   }}
                 >
                   {selectedPet?.name?.toUpperCase()}
@@ -504,24 +511,24 @@ export default function TelaDiario() {
                     bezier
                     segments={3}
                     chartConfig={{
-                      backgroundGradientFrom: 'transparent',
-                      backgroundGradientTo: 'transparent',
+                      backgroundGradientFrom: isDarkMode ? '#17182B' : '#FFFFFF',
+                      backgroundGradientTo: isDarkMode ? '#17182B' : '#FFFFFF',
 
                       decimalPlaces: 0,
 
-                      color: () => p.accent,
+                      color: () => (isDarkMode ? p.accent : '#A78BFA'),
 
-                      labelColor: () => p.accentMuted,
+                      labelColor: () => (isDarkMode ? p.accentMuted : '#7C3AED'),
 
                       propsForDots: {
                         r: '6',
                         strokeWidth: '3',
                         stroke: isDarkMode ? '#17182B' : '#FFFFFF',
-                        fill: p.accent,
+                        fill: isDarkMode ? p.accent : '#C4B5FD',
                       },
 
                       propsForBackgroundLines: {
-                        stroke: 'transparent',
+                        stroke: isDarkMode ? 'rgba(255,255,255,0.14)' : 'rgba(147, 51, 234, 0.14)',
                       },
                     }}
                     style={{

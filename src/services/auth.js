@@ -33,12 +33,10 @@ const saveSession = async ({ token, accessToken, refreshToken, user }) => {
     }
 
     await SecureStore.setItemAsync(TOKEN_KEY, nextAccessToken);
-    await AsyncStorage.setItem('@token', nextAccessToken);
     await updateLastActive();
 
     if (refreshToken) {
         await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
-        await AsyncStorage.setItem('@refreshToken', refreshToken);
     }
 
     if (user) {
@@ -320,8 +318,6 @@ export const logout = async () => {
     await SecureStore.deleteItemAsync(TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
     await SecureStore.deleteItemAsync(LAST_ACTIVE_KEY);
-    await AsyncStorage.removeItem('@token');
-    await AsyncStorage.removeItem('@refreshToken');
     await AsyncStorage.removeItem('userId');
     await AsyncStorage.removeItem('userData');
 };
