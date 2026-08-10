@@ -27,7 +27,7 @@ import { formateCPF, formateDate } from '../../utils/formatters';
 import { useLanguage } from '../../i18n/LanguageContext';
 
 const defaultAvatar = require('../../assets/user_default.png');
-const defaultPetImage = require('../../assets/default-pet.png');
+const defaultPetImage = require('../../assets/user_default.png');
 
 const Perfil = () => {
   const navigation = useNavigation();

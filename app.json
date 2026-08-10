@@ -4,15 +4,20 @@
     "slug": "mobile_pet",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": false,
+    "splash": {
+      "image": "assets/pet.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#573F94"
+    },
     "android": {
       "package": "com.mobilepet.app",
       "versionCode": 1,
       "softwareKeyboardLayoutMode": "pan",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "assets/adaptive-icon.png",
         "backgroundColor": "#573F94"
       }
     },
@@ -28,7 +33,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/pet.png",
+          "image": "assets/pet.png",
           "imageWidth": 220,
           "resizeMode": "contain",
           "backgroundColor": "#573F94",
