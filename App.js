@@ -1,7 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { Text, TextInput } from 'react-native';
 import { createNavigationContainerRef, DarkTheme, DefaultTheme, NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { StatusBar } from 'expo-status-bar';
+import { useFonts, Rubik_400Regular, Rubik_500Medium, Rubik_700Bold } from '@expo-google-fonts/rubik';
 
 import { setupAxiosInterceptors } from './src/services/auth';
 
@@ -161,10 +163,35 @@ function AppRoutes() {
 }
 
 export default function App() {
+  const [fontsLoaded] = useFonts({
+    Rubik_400Regular,
+    Rubik_500Medium,
+    Rubik_700Bold,
+  });
 
   useEffect(() => {
     setupAxiosInterceptors();
   }, []);
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      Text.defaultProps = Text.defaultProps || {};
+      Text.defaultProps.style = {
+        ...(Text.defaultProps.style || {}),
+        fontFamily: 'Rubik_400Regular',
+      };
+
+      TextInput.defaultProps = TextInput.defaultProps || {};
+      TextInput.defaultProps.style = {
+        ...(TextInput.defaultProps.style || {}),
+        fontFamily: 'Rubik_400Regular',
+      };
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
 
   return (
     <ThemeProvider>
